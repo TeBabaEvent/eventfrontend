@@ -53,6 +53,10 @@ export default defineConfig({
   preview: {
     port: 4173,
     strictPort: false,
-    host: true
+    host: true,
+    allowedHosts: [
+      'eventfrontend-production.up.railway.app',
+      '.railway.app' // Permet tous les sous-domaines Railway
+    ]
   }
 })
