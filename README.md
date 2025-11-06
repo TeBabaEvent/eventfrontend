@@ -31,6 +31,8 @@ npm install
 
 ### Environment Configuration
 
+les 
+
 1. Copy the `env.example` file to `.env`:
 ```sh
 # Windows
