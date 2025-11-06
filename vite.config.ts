@@ -29,7 +29,7 @@ export default defineConfig({
       format: {
         comments: false
       }
-    } as any,
+    },
     rollupOptions: {
       output: {
         // Chunking stratégique pour meilleur caching
