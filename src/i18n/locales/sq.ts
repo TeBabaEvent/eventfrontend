@@ -197,9 +197,27 @@ export default {
       title: 'Rezervimi',
       limitedSeats: 'Vende të kufizuara',
       popular: 'Popullor',
+      standard: 'Standard',
+      premium: 'Premium',
+      vipTable: 'Tavolinë VIP',
+      perTable: '/ tavolinë për 6',
       choose: 'Zgjidh',
       soldOut: 'I shitur',
-      noPacks: 'Nuk ka paketa të disponueshme për këtë event'
+      noPacks: 'Nuk ka paketa të disponueshme për këtë event',
+      features: {
+        access: 'Hyrje e përgjithshme',
+        cloakroom: 'Garderobë e përfshirë',
+        drink: '1 pije falas',
+        priorityAccess: 'Hyrje prioritare',
+        vipArea: 'Zonë VIP',
+        drinks: '3 pije falas',
+        snacks: 'Snacks të përfshirë',
+        privateTable: 'Tavolinë private',
+        bottleService: 'Shërbim shishesh',
+        bestView: 'Pamje më e mirë',
+        dedicatedHost: 'Pritës i dedikuar',
+        freeParking: 'Parking falas'
+      }
     },
     info: {
       title: 'Informacione praktike',

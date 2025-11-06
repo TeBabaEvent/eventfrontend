@@ -197,9 +197,27 @@ export default {
       title: 'Booking',
       limitedSeats: 'Limited seats',
       popular: 'Popular',
+      standard: 'Standard',
+      premium: 'Premium',
+      vipTable: 'VIP Table',
+      perTable: '/ table of 6',
       choose: 'Choose',
       soldOut: 'Sold out',
-      noPacks: 'No packages available for this event'
+      noPacks: 'No packages available for this event',
+      features: {
+        access: 'General access',
+        cloakroom: 'Cloakroom included',
+        drink: '1 complimentary drink',
+        priorityAccess: 'Priority access',
+        vipArea: 'VIP area',
+        drinks: '3 complimentary drinks',
+        snacks: 'Snacks included',
+        privateTable: 'Private table',
+        bottleService: 'Bottle service',
+        bestView: 'Best view',
+        dedicatedHost: 'Dedicated host',
+        freeParking: 'Free parking'
+      }
     },
     info: {
       title: 'Practical information',

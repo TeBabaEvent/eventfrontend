@@ -197,9 +197,27 @@ export default {
       title: 'Reservering',
       limitedSeats: 'Beperkte plaatsen',
       popular: 'Populair',
+      standard: 'Standard',
+      premium: 'Premium',
+      vipTable: 'VIP Tafel',
+      perTable: '/ tafel van 6',
       choose: 'Kiezen',
       soldOut: 'Uitverkocht',
-      noPacks: 'Geen pakketten beschikbaar voor dit evenement'
+      noPacks: 'Geen pakketten beschikbaar voor dit evenement',
+      features: {
+        access: 'Algemene toegang',
+        cloakroom: 'Garderobe inbegrepen',
+        drink: '1 gratis drankje',
+        priorityAccess: 'Prioriteitstoegang',
+        vipArea: 'VIP ruimte',
+        drinks: '3 gratis drankjes',
+        snacks: 'Snacks inbegrepen',
+        privateTable: 'Privétafel',
+        bottleService: 'Flessenservice',
+        bestView: 'Beste uitzicht',
+        dedicatedHost: 'Toegewijde gastheer',
+        freeParking: 'Gratis parkeren'
+      }
     },
     info: {
       title: 'Praktische informatie',
