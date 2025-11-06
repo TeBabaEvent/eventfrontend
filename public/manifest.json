@@ -1,0 +1,21 @@
+{
+  "name": "Baba Event - Événements Culturels Albanais",
+  "short_name": "Baba Event",
+  "description": "Créateur d'expériences culturelles albanaises inoubliables",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
+  "orientation": "portrait-primary",
+  "categories": ["entertainment", "music", "lifestyle"],
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

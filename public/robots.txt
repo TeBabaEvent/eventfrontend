@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://babaevent.com/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow admin areas (if any in the future)
+Disallow: /admin/
+Disallow: /api/auth/
+Disallow: /*.json$
+
+# Allow important pages
+Allow: /events
+Allow: /gallery
+Allow: /contact
+Allow: /team
