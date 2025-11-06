@@ -51,6 +51,7 @@ export default {
     label: 'Ekipi Ynë',
     title: 'Artistët Tanë',
     description: 'Talente të jashtëzakonshme që bëjnë eventet tuaja të vibrrojnë',
+    noArtists: 'Nuk ka artistë për të shfaqur në këtë moment',
     stats: {
       events: 'Evente',
       experience: 'Vite përvojë'

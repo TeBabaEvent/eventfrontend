@@ -51,6 +51,7 @@ export default {
     label: 'Ons Team',
     title: 'Onze Artiesten',
     description: 'Uitzonderlijke talenten die uw evenementen laten vibreren',
+    noArtists: 'Momenteel geen artiesten om weer te geven',
     stats: {
       events: 'Evenementen',
       experience: 'Jaar exp.'

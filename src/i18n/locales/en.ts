@@ -51,6 +51,7 @@ export default {
     label: 'Our Team',
     title: 'Our Artists',
     description: 'Exceptional talents that make your events vibrate',
+    noArtists: 'No artists to display at the moment',
     stats: {
       events: 'Events',
       experience: 'Years exp.'
