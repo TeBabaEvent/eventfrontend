@@ -96,11 +96,6 @@ export default {
     party: 'Exclusive Party',
     vip: 'VIP Experience'
   },
-  common: {
-    loading: 'Loading...',
-    error: 'An error occurred',
-    retry: 'Retry'
-  },
   stats: {
     participants: 'Participants',
     experience: 'Years of experience',
@@ -266,6 +261,8 @@ export default {
     nav: {
       dashboard: 'Dashboard',
       events: 'Events',
+      artists: 'Artists',
+      packs: 'Packs',
       analytics: 'Analytics',
       settings: 'Settings'
     },
@@ -289,7 +286,111 @@ export default {
       manageEventsDesc: 'View and edit all events',
       viewSettings: 'Settings',
       viewSettingsDesc: 'Configure system settings'
+    },
+    events: {
+      title: 'Events',
+      createNew: 'New event',
+      editEvent: 'Edit event',
+      list: 'Event list',
+      count: 'event(s)',
+      noEvents: 'No events',
+      noEventsDesc: 'Start by creating your first event',
+      createFirst: 'Create my first event',
+      confirmDelete: 'Are you sure you want to delete this event?',
+      table: {
+        event: 'Event',
+        category: 'Category',
+        date: 'Date',
+        location: 'Location',
+        price: 'Price',
+        status: 'Status',
+        actions: 'Actions'
+      },
+      status: {
+        upcoming: 'Upcoming',
+        past: 'Past'
+      },
+      actions: {
+        view: 'View',
+        edit: 'Edit',
+        delete: 'Delete'
+      },
+      form: {
+        title: 'Title',
+        titlePlaceholder: 'Ex: Nata Shqiptare 2025',
+        category: 'Category',
+        selectCategory: 'Select a category',
+        date: 'Date',
+        time: 'Time',
+        location: 'Location',
+        city: 'City',
+        price: 'Price (€)',
+        capacity: 'Capacity',
+        description: 'Description',
+        descriptionPlaceholder: 'Describe your event...',
+        imageUrl: 'Image URL',
+        mapsEmbedUrl: 'Google Maps embed URL',
+        mapsEmbedUrlPlaceholder: 'Paste the complete Google Maps iframe here...',
+        mapsEmbedUrlHelp: 'Optional: Paste directly the complete Google Maps iframe - URL will be extracted automatically! Leave empty for automatic generation.'
+      }
+    },
+    artists: {
+      title: 'Artists',
+      createNew: 'New artist',
+      editArtist: 'Edit artist',
+      noArtists: 'No artists',
+      noArtistsDesc: 'Start by creating your first artist',
+      createFirst: 'Create my first artist',
+      confirmDelete: 'Are you sure you want to delete this artist?',
+      visibleOnWebsite: 'Visible on website',
+      hiddenFromWebsite: 'Hidden from website',
+      active: 'Active',
+      inactive: 'Inactive',
+      form: {
+        name: 'Name',
+        role: 'Role',
+        description: 'Description',
+        imageUrl: 'Image URL',
+        noBadge: 'No badge',
+        eventsCount: 'Number of events',
+        showOnWebsite: 'Display on website',
+        showOnWebsiteHelp: 'If checked, this artist will appear in the "Our team" section of the website'
+      }
+    },
+    packs: {
+      title: 'Booking packs',
+      createNew: 'New pack',
+      editPack: 'Edit pack',
+      noPacks: 'No packs',
+      noPacksDesc: 'Create your first booking packs',
+      createFirst: 'Create my first pack',
+      confirmDelete: 'Are you sure you want to delete this pack?',
+      active: 'Active',
+      inactive: 'Inactive',
+      form: {
+        name: 'Pack name',
+        type: 'Type',
+        description: 'Description',
+        price: 'Price',
+        unit: 'Unit',
+        features: 'Included benefits',
+        addFeature: 'Add a benefit',
+        isActive: 'Active pack'
+      }
     }
+  },
+  common: {
+    cancel: 'Cancel',
+    save: 'Save',
+    create: 'Create',
+    delete: 'Delete',
+    edit: 'Edit',
+    view: 'View',
+    loading: 'Loading...',
+    error: 'An error occurred',
+    retry: 'Retry',
+    confirm: 'Confirm',
+    close: 'Close'
   }
 }
 

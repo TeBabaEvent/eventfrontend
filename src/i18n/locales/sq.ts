@@ -96,11 +96,6 @@ export default {
     party: 'Festë Ekskluzive',
     vip: 'Përvojë VIP'
   },
-  common: {
-    loading: 'Duke ngarkuar...',
-    error: 'Ndodhi një gabim',
-    retry: 'Provo përsëri'
-  },
   stats: {
     participants: 'Pjesëmarrës',
     experience: 'Vite përvojë',
@@ -266,6 +261,8 @@ export default {
     nav: {
       dashboard: 'Paneli',
       events: 'Evente',
+      artists: 'Artistë',
+      packs: 'Paketa',
       analytics: 'Statistika',
       settings: 'Cilësimet'
     },
@@ -289,7 +286,111 @@ export default {
       manageEventsDesc: 'Shiko dhe modifiko të gjitha eventet',
       viewSettings: 'Cilësimet',
       viewSettingsDesc: 'Konfiguro cilësimet e sistemit'
+    },
+    events: {
+      title: 'Evente',
+      createNew: 'Event i ri',
+      editEvent: 'Modifiko eventin',
+      list: 'Lista e eventeve',
+      count: 'event(e)',
+      noEvents: 'Nuk ka evente',
+      noEventsDesc: 'Fillo duke krijuar eventin tënd të parë',
+      createFirst: 'Krijo eventin tim të parë',
+      confirmDelete: 'Jeni i sigurt që dëshironi të fshini këtë event?',
+      table: {
+        event: 'Eventi',
+        category: 'Kategoria',
+        date: 'Data',
+        location: 'Vendndodhja',
+        price: 'Çmimi',
+        status: 'Statusi',
+        actions: 'Veprime'
+      },
+      status: {
+        upcoming: 'Së shpejti',
+        past: 'I kaluar'
+      },
+      actions: {
+        view: 'Shiko',
+        edit: 'Modifiko',
+        delete: 'Fshij'
+      },
+      form: {
+        title: 'Titulli',
+        titlePlaceholder: 'Shembull: Nata Shqiptare 2025',
+        category: 'Kategoria',
+        selectCategory: 'Zgjidh një kategori',
+        date: 'Data',
+        time: 'Ora',
+        location: 'Vendndodhja',
+        city: 'Qyteti',
+        price: 'Çmimi (€)',
+        capacity: 'Kapaciteti',
+        description: 'Përshkrimi',
+        descriptionPlaceholder: 'Përshkruani eventin tuaj...',
+        imageUrl: 'URL e imazhit',
+        mapsEmbedUrl: 'Google Maps embed URL',
+        mapsEmbedUrlPlaceholder: 'Ngjit iframe-in e plotë të Google Maps këtu...',
+        mapsEmbedUrlHelp: 'Opsionale: Ngjit direkt iframe-in e plotë të Google Maps - URL-ja do të ekstrahohet automatikisht! Lër bosh për gjenerim automatik.'
+      }
+    },
+    artists: {
+      title: 'Artistë',
+      createNew: 'Artist i ri',
+      editArtist: 'Modifiko artistin',
+      noArtists: 'Nuk ka artistë',
+      noArtistsDesc: 'Fillo duke krijuar artistin tënd të parë',
+      createFirst: 'Krijo artistin tim të parë',
+      confirmDelete: 'Jeni i sigurt që dëshironi të fshini këtë artist?',
+      visibleOnWebsite: 'I dukshëm në faqen web',
+      hiddenFromWebsite: 'I fshehur nga faqja web',
+      active: 'Aktiv',
+      inactive: 'Jo aktiv',
+      form: {
+        name: 'Emri',
+        role: 'Roli',
+        description: 'Përshkrimi',
+        imageUrl: 'URL e imazhit',
+        noBadge: 'Pa shenjë',
+        eventsCount: 'Numri i eventeve',
+        showOnWebsite: 'Shfaq në faqen web',
+        showOnWebsiteHelp: 'Nëse shënohet, ky artist do të shfaqet në seksionin "Ekipi ynë" të faqes web'
+      }
+    },
+    packs: {
+      title: 'Paketa rezervimi',
+      createNew: 'Paketë e re',
+      editPack: 'Modifiko paketën',
+      noPacks: 'Nuk ka paketa',
+      noPacksDesc: 'Krijo paketa të para rezervimi',
+      createFirst: 'Krijo paketën time të parë',
+      confirmDelete: 'Jeni i sigurt që dëshironi të fshini këtë paketë?',
+      active: 'Aktive',
+      inactive: 'Jo aktive',
+      form: {
+        name: 'Emri i paketës',
+        type: 'Lloji',
+        description: 'Përshkrimi',
+        price: 'Çmimi',
+        unit: 'Njësia',
+        features: 'Përfitimet e përfshira',
+        addFeature: 'Shto përfitim',
+        isActive: 'Paketë aktive'
+      }
     }
+  },
+  common: {
+    cancel: 'Anulo',
+    save: 'Ruaj',
+    create: 'Krijo',
+    delete: 'Fshij',
+    edit: 'Modifiko',
+    view: 'Shiko',
+    loading: 'Duke ngarkuar...',
+    error: 'Ndodhi një gabim',
+    retry: 'Provo përsëri',
+    confirm: 'Konfirmo',
+    close: 'Mbyll'
   }
 }
 

@@ -96,11 +96,6 @@ export default {
     party: 'Exclusief Feest',
     vip: 'VIP Ervaring'
   },
-  common: {
-    loading: 'Laden...',
-    error: 'Er is een fout opgetreden',
-    retry: 'Opnieuw proberen'
-  },
   stats: {
     participants: 'Deelnemers',
     experience: 'Jaar ervaring',
@@ -266,6 +261,8 @@ export default {
     nav: {
       dashboard: 'Dashboard',
       events: 'Evenementen',
+      artists: 'Artiesten',
+      packs: 'Pakketten',
       analytics: 'Statistieken',
       settings: 'Instellingen'
     },
@@ -289,7 +286,111 @@ export default {
       manageEventsDesc: 'Bekijk en bewerk alle evenementen',
       viewSettings: 'Instellingen',
       viewSettingsDesc: 'Configureer systeeminstellingen'
+    },
+    events: {
+      title: 'Evenementen',
+      createNew: 'Nieuw evenement',
+      editEvent: 'Evenement bewerken',
+      list: 'Evenementenlijst',
+      count: 'evenement(en)',
+      noEvents: 'Geen evenementen',
+      noEventsDesc: 'Begin met het maken van je eerste evenement',
+      createFirst: 'Maak mijn eerste evenement',
+      confirmDelete: 'Weet je zeker dat je dit evenement wilt verwijderen?',
+      table: {
+        event: 'Evenement',
+        category: 'Categorie',
+        date: 'Datum',
+        location: 'Locatie',
+        price: 'Prijs',
+        status: 'Status',
+        actions: 'Acties'
+      },
+      status: {
+        upcoming: 'Binnenkort',
+        past: 'Afgelopen'
+      },
+      actions: {
+        view: 'Bekijken',
+        edit: 'Bewerken',
+        delete: 'Verwijderen'
+      },
+      form: {
+        title: 'Titel',
+        titlePlaceholder: 'Bijv: Nata Shqiptare 2025',
+        category: 'Categorie',
+        selectCategory: 'Selecteer een categorie',
+        date: 'Datum',
+        time: 'Tijd',
+        location: 'Locatie',
+        city: 'Stad',
+        price: 'Prijs (€)',
+        capacity: 'Capaciteit',
+        description: 'Beschrijving',
+        descriptionPlaceholder: 'Beschrijf je evenement...',
+        imageUrl: 'Afbeelding URL',
+        mapsEmbedUrl: 'Google Maps embed URL',
+        mapsEmbedUrlPlaceholder: 'Plak de volledige Google Maps iframe hier...',
+        mapsEmbedUrlHelp: 'Optioneel: Plak direct de volledige Google Maps iframe - URL wordt automatisch geëxtraheerd! Laat leeg voor automatische generatie.'
+      }
+    },
+    artists: {
+      title: 'Artiesten',
+      createNew: 'Nieuwe artiest',
+      editArtist: 'Artiest bewerken',
+      noArtists: 'Geen artiesten',
+      noArtistsDesc: 'Begin met het maken van je eerste artiest',
+      createFirst: 'Maak mijn eerste artiest',
+      confirmDelete: 'Weet je zeker dat je deze artiest wilt verwijderen?',
+      visibleOnWebsite: 'Zichtbaar op website',
+      hiddenFromWebsite: 'Verborgen van website',
+      active: 'Actief',
+      inactive: 'Inactief',
+      form: {
+        name: 'Naam',
+        role: 'Rol',
+        description: 'Beschrijving',
+        imageUrl: 'Afbeelding URL',
+        noBadge: 'Geen badge',
+        eventsCount: 'Aantal evenementen',
+        showOnWebsite: 'Tonen op website',
+        showOnWebsiteHelp: 'Indien aangevinkt, verschijnt deze artiest in de "Ons team" sectie van de website'
+      }
+    },
+    packs: {
+      title: 'Boekingspakketten',
+      createNew: 'Nieuw pakket',
+      editPack: 'Pakket bewerken',
+      noPacks: 'Geen pakketten',
+      noPacksDesc: 'Maak je eerste boekingspakketten',
+      createFirst: 'Maak mijn eerste pakket',
+      confirmDelete: 'Weet je zeker dat je dit pakket wilt verwijderen?',
+      active: 'Actief',
+      inactive: 'Inactief',
+      form: {
+        name: 'Pakketnaam',
+        type: 'Type',
+        description: 'Beschrijving',
+        price: 'Prijs',
+        unit: 'Eenheid',
+        features: 'Inbegrepen voordelen',
+        addFeature: 'Voordeel toevoegen',
+        isActive: 'Actief pakket'
+      }
     }
+  },
+  common: {
+    cancel: 'Annuleren',
+    save: 'Opslaan',
+    create: 'Aanmaken',
+    delete: 'Verwijderen',
+    edit: 'Bewerken',
+    view: 'Bekijken',
+    loading: 'Laden...',
+    error: 'Er is een fout opgetreden',
+    retry: 'Opnieuw proberen',
+    confirm: 'Bevestigen',
+    close: 'Sluiten'
   }
 }
 
