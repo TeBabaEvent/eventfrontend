@@ -171,28 +171,28 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .countdown {
-    gap: 0.75rem;
-    margin: 2rem 0;
+    gap: 0.625rem;
+    margin: 1.375rem 0;
   }
   
   .countdown__item {
-    min-width: 75px;
-    width: 75px;
-    max-width: 75px;
-    padding: 1rem 0.75rem;
+    min-width: 70px;
+    width: 70px;
+    max-width: 70px;
+    padding: 0.875rem 0.625rem;
   }
   
   .countdown__number {
-    font-size: 2rem;
+    font-size: 1.875rem;
   }
   
   .countdown__label {
-    font-size: 0.6875rem;
-    letter-spacing: 1px;
+    font-size: 0.625rem;
+    letter-spacing: 0.75px;
   }
   
   .countdown__separator {
-    font-size: 1.5rem;
+    font-size: 1.375rem;
     margin: 0 -0.375rem;
   }
 }
@@ -200,21 +200,22 @@ onUnmounted(() => {
 @media (max-width: 480px) {
   .countdown {
     gap: 0.5rem;
+    margin: 1.125rem 0;
   }
   
   .countdown__item {
-    min-width: 70px;
-    width: 70px;
-    max-width: 70px;
-    padding: 0.875rem 0.5rem;
+    min-width: 65px;
+    width: 65px;
+    max-width: 65px;
+    padding: 0.75rem 0.5rem;
   }
   
   .countdown__number {
-    font-size: 1.75rem;
+    font-size: 1.625rem;
   }
   
   .countdown__label {
-    font-size: 0.625rem;
+    font-size: 0.5625rem;
     letter-spacing: 0.5px;
     white-space: nowrap;
     overflow: hidden;

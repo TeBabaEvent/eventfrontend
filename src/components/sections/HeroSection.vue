@@ -917,8 +917,9 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .hero {
-    padding: 90px 0 50px;
+    padding: 75px 0 30px;
     min-height: auto;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -938,22 +939,22 @@ onMounted(async () => {
   }
 
   .hero__badge {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.8125rem;
-    margin-bottom: 1.75rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    margin-bottom: 1.25rem;
     display: inline-flex;
     margin-left: auto;
     margin-right: auto;
   }
 
   .hero__badge-text {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     letter-spacing: 1.2px;
   }
 
   .hero__title {
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
+    font-size: 2.25rem;
+    margin-bottom: 1rem;
     line-height: 1.15;
     max-width: 95%;
     margin-left: auto;
@@ -961,9 +962,9 @@ onMounted(async () => {
   }
 
   .hero__subtitle {
-    font-size: 1rem;
-    margin-bottom: 2rem;
-    line-height: 1.6;
+    font-size: 0.9375rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
     max-width: 90%;
     margin-left: auto;
     margin-right: auto;
@@ -971,22 +972,22 @@ onMounted(async () => {
   }
 
   .hero__features {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
     grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    gap: 0.625rem;
   }
 
   .hero__feature {
-    padding: 0.875rem 1rem;
+    padding: 0.75rem 0.875rem;
     font-size: 0.8125rem;
   }
 
   .hero__cta {
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.875rem;
     max-width: 100%;
     margin: 0 auto;
     padding: 0 1rem;
@@ -1011,8 +1012,9 @@ onMounted(async () => {
 
 @media (max-width: 480px) {
   .hero {
-    padding: 85px 0 40px;
+    padding: 70px 0 30px;
     min-height: auto;
+    height: auto;
   }
 
   .hero__main {
@@ -1022,53 +1024,53 @@ onMounted(async () => {
   .hero__badge {
     padding: 0.5rem 1rem;
     gap: 0.375rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.6875rem;
   }
 
   .hero__badge-text {
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
     letter-spacing: 1px;
   }
 
   .hero__badge-icon {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
 
   .hero__title {
-    font-size: 2rem;
-    margin-bottom: 1.25rem;
+    font-size: 1.875rem;
+    margin-bottom: 0.875rem;
     line-height: 1.2;
     max-width: 100%;
   }
 
   .hero__subtitle {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     line-height: 1.5;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     max-width: 95%;
   }
 
   .hero__features {
     grid-template-columns: 1fr;
-    gap: 0.625rem;
-    margin-bottom: 1.75rem;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
     max-width: 100%;
   }
 
   .hero__feature {
-    padding: 0.75rem 1rem;
+    padding: 0.625rem 0.875rem;
     font-size: 0.8125rem;
   }
 
   .hero__cta {
-    gap: 0.875rem;
+    gap: 0.75rem;
     max-width: 100%;
     padding: 0 0.5rem;
   }
 
   .hero__cta .btn {
-    padding: 1rem 1.25rem;
+    padding: 0.875rem 1.25rem;
     font-size: 0.875rem;
   }
 }
