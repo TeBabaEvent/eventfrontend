@@ -58,6 +58,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import ErrorMessage from '@/components/ui/ErrorMessage.vue'
 import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/services/logger'
 import type { Event } from '@/types'
 
 const { t } = useI18n()
@@ -77,7 +78,7 @@ const loadEvents = async () => {
   try {
     await dataStore.fetchEvents()
   } catch (err) {
-    console.error('Error loading events:', err)
+    logger.error('Error loading events:', err)
   } finally {
     emit('loaded')
   }

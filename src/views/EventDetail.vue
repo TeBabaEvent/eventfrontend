@@ -28,13 +28,13 @@
           </nav>
 
           <!-- Event Badge -->
-          <div v-if="event?.featured" class="event-hero__badge" data-aos="zoom-in" data-aos-delay="100" data-aos-duration="600">
+          <div v-if="event?.featured" class="event-hero__badge" data-aos="zoom-in" data-aos-delay="100" data-aos-duration="500">
             <i class="fas fa-fire"></i>
             <span>{{ t('eventDetail.badge.popular') }}</span>
           </div>
 
           <!-- Event Title -->
-          <h1 class="event-hero__title" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
+          <h1 class="event-hero__title" data-aos="fade-up" data-aos-delay="150" data-aos-duration="700">
             {{ displayTitle }}
           </h1>
 
@@ -43,12 +43,12 @@
             v-if="event?.date"
             :eventDate="event.date" 
             data-aos="zoom-in" 
-            data-aos-delay="350"
-            data-aos-duration="700"
+            data-aos-delay="250"
+            data-aos-duration="600"
           />
 
           <!-- Event Meta -->
-          <div class="event-hero__meta" data-aos="fade-up" data-aos-delay="450" data-aos-duration="800">
+          <div class="event-hero__meta" data-aos="fade-up" data-aos-delay="350" data-aos-duration="700">
             <div class="event-hero__meta-item">
               <i class="fas fa-calendar-alt"></i>
               <div>
@@ -73,7 +73,7 @@
           </div>
 
           <!-- Event CTA -->
-          <div class="event-hero__cta" data-aos="fade-up" data-aos-delay="600" data-aos-duration="700">
+          <div class="event-hero__cta" data-aos="fade-up" data-aos-delay="450" data-aos-duration="700">
             <BaseButton
               variant="primary"
               size="large"
@@ -334,6 +334,7 @@ import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
 import { useToast } from '@/composables/useToast'
 import AOS from 'aos'
+import { logger } from '@/services/logger'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import EventCountdown from '@/components/ui/EventCountdown.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
@@ -427,11 +428,11 @@ async function fetchEventData(eventId: string) {
   } catch (error: any) {
     // Ignorer les erreurs d'annulation
     if (error?.name === 'AbortError') {
-      console.log('Request cancelled')
+      logger.log('Request cancelled')
       return
     }
     
-    console.error('Error fetching event:', error)
+    logger.error('Error fetching event:', error)
     toast.error('Impossible de charger l\'événement')
     router.push('/')
   } finally {
@@ -617,7 +618,7 @@ const copyEventLink = async () => {
       document.body.removeChild(textArea)
     }
   } catch (err) {
-    console.error('Erreur lors de la copie:', err)
+    logger.error('Erreur lors de la copie:', err)
     toast.error(t('eventDetail.share.copyError'))
   }
 }

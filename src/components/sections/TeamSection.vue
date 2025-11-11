@@ -49,6 +49,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import ErrorMessage from '@/components/ui/ErrorMessage.vue'
 import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/services/logger'
 
 const { t } = useI18n()
 
@@ -68,7 +69,7 @@ const loadArtists = async () => {
   try {
     await dataStore.fetchArtists()
   } catch (err) {
-    console.error('Error loading artists:', err)
+    logger.error('Error loading artists:', err)
   } finally {
     emit('loaded')
   }

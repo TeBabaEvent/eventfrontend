@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import type { Toast } from '@/components/ui/ToastNotification.vue'
+import { logger } from '@/services/logger'
 
 // Instance globale du toast
 const toastInstance = ref<any>(null)
@@ -17,7 +18,7 @@ export function useToast() {
     if (toastInstance.value) {
       return toastInstance.value.addToast(message, type, duration)
     } else {
-      console.warn('Toast instance not initialized')
+      logger.warn('Toast instance not initialized')
       // Fallback vers alert en cas d'erreur
       if (type === 'error') {
         alert(message)

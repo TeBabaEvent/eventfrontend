@@ -56,7 +56,9 @@ const router = createRouter({
         {
           path: 'settings',
           name: 'dashboard-settings',
-          component: () => import('@/views/dashboard/DashboardView.vue') // TODO: Créer SettingsView
+          // Temporairement redirigé vers le dashboard principal
+          // Une page de paramètres dédiée peut être créée ultérieurement
+          component: () => import('@/views/dashboard/DashboardView.vue')
         }
       ]
     }

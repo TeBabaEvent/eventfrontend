@@ -375,6 +375,7 @@ import { ref, computed, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { logger } from '@/services/logger'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 
 const authStore = useAuthStore()
@@ -448,7 +449,7 @@ async function fetchEvents() {
     }
     events.value = await response.json()
   } catch (error) {
-    console.error('Erreur:', error)
+    logger.error('Erreur:', error)
     toast.error('Impossible de charger les événements')
   }
 }
@@ -461,7 +462,7 @@ async function fetchArtists() {
     }
     artists.value = await response.json()
   } catch (error) {
-    console.error('Erreur:', error)
+    logger.error('Erreur:', error)
     toast.error('Impossible de charger les artistes')
   }
 }
@@ -474,7 +475,7 @@ async function fetchPacks() {
     }
     packs.value = await response.json()
   } catch (error) {
-    console.error('Erreur:', error)
+    logger.error('Erreur:', error)
     toast.error('Impossible de charger les packs')
   }
 }
@@ -534,7 +535,7 @@ async function deleteEvent(event: any) {
     await fetchEvents()
     toast.success('Événement supprimé avec succès')
   } catch (error) {
-    console.error('Erreur:', error)
+    logger.error('Erreur:', error)
     const message = error instanceof Error ? error.message : 'Erreur lors de la suppression'
     toast.error(message)
   }
@@ -607,7 +608,7 @@ async function handleSubmit() {
     toast.success(editingEvent.value ? 'Événement modifié avec succès' : 'Événement créé avec succès')
     closeModal()
   } catch (error) {
-    console.error('Erreur:', error)
+    logger.error('Erreur:', error)
     const message = error instanceof Error ? error.message : 'Une erreur est survenue'
     submitError.value = message
     toast.error(message)
@@ -706,16 +707,13 @@ function handleMapsPaste(event: ClipboardEvent) {
   if (match && match[1]) {
     // URL trouvée dans l'iframe, l'utiliser
     formData.value.maps_embed_url = match[1]
-    console.log('✅ URL Google Maps extraite automatiquement:', match[1])
   } else {
     // Vérifier si c'est déjà une URL Google Maps directe
     if (pastedText.includes('google.com/maps/embed')) {
       formData.value.maps_embed_url = pastedText.trim()
-      console.log('✅ URL Google Maps directe détectée:', pastedText.trim())
     } else {
       // Coller le texte tel quel
       formData.value.maps_embed_url = pastedText
-      console.log('⚠️ Texte collé tel quel (pas d\'iframe Google Maps détectée)')
     }
   }
 }

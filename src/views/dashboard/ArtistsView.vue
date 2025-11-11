@@ -248,6 +248,7 @@ import { ref, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { logger } from '@/services/logger'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 
 const authStore = useAuthStore()
@@ -303,7 +304,7 @@ async function fetchArtists() {
     }
     artists.value = await response.json()
   } catch (error) {
-    console.error('Erreur lors de la récupération des artistes:', error)
+    logger.error('Erreur lors de la récupération des artistes:', error)
     toast.error('Impossible de charger les artistes')
   } finally {
     isPageLoading.value = false
@@ -356,7 +357,7 @@ async function handleSubmit() {
     toast.success(editingArtist.value ? 'Artiste modifié avec succès' : 'Artiste créé avec succès')
     closeModal()
   } catch (error) {
-    console.error('Erreur:', error)
+    logger.error('Erreur:', error)
     const message = error instanceof Error ? error.message : 'Une erreur est survenue'
     submitError.value = message
     toast.error(message)
@@ -401,7 +402,7 @@ async function deleteArtist(artist: any) {
     await fetchArtists()
     toast.success('Artiste supprimé avec succès')
   } catch (error) {
-    console.error('Erreur:', error)
+    logger.error('Erreur:', error)
     const message = error instanceof Error ? error.message : 'Erreur lors de la suppression'
     toast.error(message)
   }

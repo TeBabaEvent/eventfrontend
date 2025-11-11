@@ -42,9 +42,10 @@ const onBeforeLeave = () => {
 const onAfterEnter = () => {
   // Component has entered, safe to show
   // Refresh AOS after component enters to ensure animations play
-  setTimeout(() => {
+  // Utiliser requestAnimationFrame pour une meilleure synchronisation
+  requestAnimationFrame(() => {
     AOS.refresh()
-  }, 100)
+  })
 }
 
 // Initialize AOS (Animate On Scroll) when component mounts
@@ -54,16 +55,19 @@ onMounted(() => {
     setToastInstance(toastRef.value)
   }
   
+  // Configuration AOS adaptée pour mobile et desktop
+  const isMobile = window.innerWidth < 768
+  
   // Initialiser AOS - désactivé initialement si on est en train de charger
   AOS.init({
     duration: 900,
     easing: 'ease-out-quart', // Plus fluide que cubic
     once: false, // Allow animations to replay
-    offset: 120,
+    offset: isMobile ? 0 : 50, // Offset réduit, surtout sur mobile
     delay: 0,
     disable: isLoading.value, // Disable during initial loading
     startEvent: 'DOMContentLoaded',
-    anchorPlacement: 'top-bottom'
+    anchorPlacement: isMobile ? 'top-center' : 'top-bottom' // Meilleure détection sur mobile
   })
 })
 
@@ -71,6 +75,8 @@ onMounted(() => {
 watch(isLoading, (newValue, oldValue) => {
   if (oldValue === true && newValue === false) {
     // Loading just finished, enable and refresh AOS to trigger animations
+    const isMobile = window.innerWidth < 768
+    
     // ✅ Utiliser requestAnimationFrame pour éviter les délais artificiels
     requestAnimationFrame(() => {
       // Re-initialize to ensure it's enabled
@@ -78,9 +84,10 @@ watch(isLoading, (newValue, oldValue) => {
         duration: 900,
         easing: 'ease-out-quart',
         once: true, // Ne jouer qu'une seule fois
-        offset: 120,
+        offset: isMobile ? 0 : 50, // Offset réduit, surtout sur mobile
         delay: 0,
-        disable: false
+        disable: false,
+        anchorPlacement: isMobile ? 'top-center' : 'top-bottom'
       })
       // Hard refresh to recalculate and animate all elements
       AOS.refreshHard()

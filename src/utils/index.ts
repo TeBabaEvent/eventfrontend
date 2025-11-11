@@ -159,7 +159,10 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     await navigator.clipboard.writeText(text)
     return true
   } catch (error) {
-    console.error('Erreur lors de la copie:', error)
+    // Silencieux en production - l'utilisateur verra déjà l'erreur via le reject
+    if (import.meta.env.DEV) {
+      console.error('Erreur lors de la copie:', error)
+    }
     return false
   }
 }

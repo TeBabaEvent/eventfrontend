@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
+import { logger } from '@/services/logger'
 
 export interface User {
   id: string
@@ -15,7 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       return localStorage.getItem(key)
     } catch (error) {
-      console.error('localStorage access error:', error)
+      logger.error('localStorage access error:', error)
       return null
     }
   }
@@ -24,7 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       localStorage.setItem(key, value)
     } catch (error) {
-      console.error('localStorage write error:', error)
+      logger.error('localStorage write error:', error)
     }
   }
   
@@ -32,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       localStorage.removeItem(key)
     } catch (error) {
-      console.error('localStorage remove error:', error)
+      logger.error('localStorage remove error:', error)
     }
   }
   
@@ -106,7 +107,7 @@ export const useAuthStore = defineStore('auth', () => {
       
       return { success: true }
     } catch (error) {
-      console.error('Login error:', error)
+      logger.error('Login error:', error)
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'auth.loginError' 
@@ -126,7 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
         })
       } catch (error) {
         // Continuer même si l'appel échoue (token invalide, serveur down, etc.)
-        console.error('Logout backend error:', error)
+        logger.error('Logout backend error:', error)
       }
     }
     
@@ -164,7 +165,7 @@ export const useAuthStore = defineStore('auth', () => {
       setInitialized(true)
       return true
     } catch (error) {
-      console.error('Auth check error:', error)
+      logger.error('Auth check error:', error)
       logout()
       setInitialized(true)
       return false

@@ -14,8 +14,8 @@
           <div 
             class="hero__badge" 
             data-aos="fade-down" 
-            data-aos-delay="300"
-            data-aos-duration="800"
+            data-aos-delay="100"
+            data-aos-duration="600"
             data-aos-easing="ease-out-cubic"
           >
             <span class="hero__badge-icon">
@@ -28,8 +28,8 @@
           <h1 
             class="hero__title" 
             data-aos="fade-up" 
-            data-aos-delay="500" 
-            data-aos-duration="1000"
+            data-aos-delay="200" 
+            data-aos-duration="800"
             data-aos-easing="ease-out-cubic"
           >
             {{ t('hero.title.line1') }}
@@ -41,8 +41,8 @@
           <p 
             class="hero__subtitle" 
             data-aos="fade-up" 
-            data-aos-delay="700" 
-            data-aos-duration="900"
+            data-aos-delay="300" 
+            data-aos-duration="700"
             data-aos-easing="ease-out-cubic"
           >
             {{ t('hero.subtitle') }}
@@ -52,15 +52,15 @@
           <div 
             class="hero__features" 
             data-aos="fade-up" 
-            data-aos-delay="900"
-            data-aos-duration="800"
+            data-aos-delay="400"
+            data-aos-duration="700"
             data-aos-easing="ease-out-cubic"
           >
             <div 
               v-for="(feature, index) in features" 
               :key="feature" 
               class="hero__feature"
-              :style="{ animationDelay: `${1.0 + index * 0.1}s` }"
+              :style="{ animationDelay: `${0.5 + index * 0.1}s` }"
             >
               <span>{{ feature }}</span>
             </div>
@@ -70,8 +70,8 @@
           <div 
             class="hero__cta" 
             data-aos="fade-up" 
-            data-aos-delay="1100" 
-            data-aos-duration="800"
+            data-aos-delay="500" 
+            data-aos-duration="700"
             data-aos-easing="ease-out-cubic"
           >
             <BaseButton 
@@ -167,8 +167,8 @@
       class="hero__scroll" 
       @click.prevent="scrollToEvents"
       data-aos="fade-up"
-      data-aos-delay="1400"
-      data-aos-duration="800"
+      data-aos-delay="600"
+      data-aos-duration="700"
       data-aos-easing="ease-out-cubic"
     >
       <span>{{ t('hero.scroll') }}</span>
@@ -188,6 +188,7 @@ import { WHATSAPP_MESSAGES, CONTACT_INFO } from '@/constants'
 import { useDataStore } from '@/stores/data'
 import { useAppStore } from '@/stores/app'
 import { useI18n } from 'vue-i18n'
+import { logger } from '@/services/logger'
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -317,7 +318,7 @@ onMounted(async () => {
   try {
     await dataStore.fetchEvents()
   } catch (error) {
-    console.error('Error loading events:', error)
+    logger.error('Error loading events:', error)
   } finally {
     // Emit loaded event
     emit('loaded')

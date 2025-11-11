@@ -252,6 +252,7 @@ import { ref, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { logger } from '@/services/logger'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 
 const authStore = useAuthStore()
@@ -314,7 +315,7 @@ async function fetchPacks() {
     }
     packs.value = await response.json()
   } catch (error) {
-    console.error('Erreur lors de la récupération des packs:', error)
+    logger.error('Erreur lors de la récupération des packs:', error)
     toast.error('Impossible de charger les packs')
   } finally {
     isPageLoading.value = false
@@ -379,7 +380,7 @@ async function handleSubmit() {
     toast.success(editingPack.value ? 'Pack modifié avec succès' : 'Pack créé avec succès')
     closeModal()
   } catch (error) {
-    console.error('Erreur:', error)
+    logger.error('Erreur:', error)
     const message = error instanceof Error ? error.message : 'Une erreur est survenue'
     submitError.value = message
     toast.error(message)
@@ -425,7 +426,7 @@ async function deletePack(pack: any) {
     await fetchPacks()
     toast.success('Pack supprimé avec succès')
   } catch (error) {
-    console.error('Erreur:', error)
+    logger.error('Erreur:', error)
     const message = error instanceof Error ? error.message : 'Erreur lors de la suppression'
     toast.error(message)
   }

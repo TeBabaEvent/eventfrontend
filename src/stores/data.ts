@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { apiService } from '@/services/api'
+import { logger } from '@/services/logger'
 import type { Event, Artist } from '@/types'
 
 export const useDataStore = defineStore('data', () => {
@@ -46,7 +47,7 @@ export const useDataStore = defineStore('data', () => {
       eventsLoaded.value = true
       return data
     } catch (error) {
-      console.error('Error fetching events:', error)
+      logger.error('Error fetching events:', error)
       eventsError.value = error instanceof Error ? error.message : 'Unknown error'
       throw error
     } finally {
@@ -86,7 +87,7 @@ export const useDataStore = defineStore('data', () => {
       artistsLoaded.value = true
       return data
     } catch (error) {
-      console.error('Error fetching artists:', error)
+      logger.error('Error fetching artists:', error)
       artistsError.value = error instanceof Error ? error.message : 'Unknown error'
       throw error
     } finally {
@@ -104,7 +105,7 @@ export const useDataStore = defineStore('data', () => {
         fetchArtists()
       ])
     } catch (error) {
-      console.error('Error preloading data:', error)
+      logger.error('Error preloading data:', error)
       // Ne pas throw pour ne pas bloquer l'app
     }
   }

@@ -31,8 +31,6 @@ npm install
 
 ### Environment Configuration
 
-les 
-
 1. Copy the `env.example` file to `.env`:
 ```sh
 # Windows
@@ -43,9 +41,12 @@ cp env.example .env
 ```
 
 2. Update the `.env` file with your backend API URL:
-```
+```env
 VITE_API_BASE_URL=http://localhost:8000
+NODE_ENV=development
 ```
+
+**Note:** The application will fallback to `http://localhost:8000` if `VITE_API_BASE_URL` is not set.
 
 ### Compile and Hot-Reload for Development
 
