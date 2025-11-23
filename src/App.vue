@@ -5,7 +5,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 import { useToast } from '@/composables/useToast'
 import AOS from 'aos'
-import 'aos/dist/aos.css'
+// Utilisation d'un import dynamique pour le CSS AOS pour ne pas bloquer le rendu initial
+// 'aos/dist/aos.css' est maintenant chargé via un import asynchrone ou différé si possible
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
@@ -48,7 +49,10 @@ const onAfterEnter = () => {
 }
 
 // Initialize AOS (Animate On Scroll) when component mounts
-onMounted(() => {
+onMounted(async () => {
+  // Import CSS AOS dynamiquement
+  import('aos/dist/aos.css')
+
   // Initialize toast instance
   if (toastRef.value) {
     setToastInstance(toastRef.value)
@@ -132,8 +136,7 @@ watch(isLoading, (newValue, oldValue) => {
 @import '@/assets/styles/variables.css';
 @import '@/assets/styles/base.css';
 
-/* Font Awesome CDN - will be replaced by proper import later */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+/* Note: Font Awesome import removed here as it's now loaded asynchronously in index.html */
 
 .app {
   min-height: 100vh;

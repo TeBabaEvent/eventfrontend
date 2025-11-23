@@ -1,0 +1,37 @@
+:{$PORT} {
+    root * ./dist
+    file_server
+
+    # Compression gzip/zstd
+    encode gzip zstd
+
+    # Cache Long (Immutable) pour les assets hashés par Vite
+    @immutable {
+        path /assets/*
+    }
+    header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+    # Cache Moyen (1 semaine) pour les images statiques
+    @static {
+        path *.jpg *.jpeg *.png *.gif *.ico *.svg *.webp
+    }
+    header @static Cache-Control "public, max-age=604800"
+
+    # Cache Court (no-cache) pour HTML/JSON
+    @nocache {
+        path *.html *.json
+    }
+    header @nocache Cache-Control "no-cache"
+
+    # Sécurité
+    header {
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Content-Security-Policy "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' https: data: blob:; connect-src 'self' https:;"
+    }
+
+    # SPA routing (Redirection vers index.html pour les routes Vue)
+    try_files {path} /index.html
+}
+
