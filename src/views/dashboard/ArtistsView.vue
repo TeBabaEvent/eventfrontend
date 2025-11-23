@@ -250,6 +250,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import type { Artist } from '@/types'
 
 const authStore = useAuthStore()
 const toast = useToast()
@@ -263,9 +264,9 @@ const languages = [
 ]
 
 // State
-const artists = ref<any[]>([])
+const artists = ref<Artist[]>([])
 const isModalOpen = ref(false)
-const editingArtist = ref<any>(null)
+const editingArtist = ref<Artist | null>(null)
 const isSubmitting = ref(false) // Renommé pour plus de clarté
 const isPageLoading = ref(true)
 const submitError = ref<string | null>(null)
@@ -367,7 +368,7 @@ async function handleSubmit() {
 }
 
 // Edit artist
-function editArtist(artist: any) {
+function editArtist(artist: Artist) {
   editingArtist.value = artist
   formData.value = {
     name: artist.name,
@@ -385,7 +386,7 @@ function editArtist(artist: any) {
 }
 
 // Delete artist
-async function deleteArtist(artist: any) {
+async function deleteArtist(artist: Artist) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer cet artiste ?')) return
   
   try {

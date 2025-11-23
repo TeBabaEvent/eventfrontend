@@ -183,7 +183,6 @@ import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { scrollToElement, formatPrice, generateWhatsAppLink, formatDay, formatMonth } from '@/utils'
 import { getEventTitle, getEventDescription } from '@/utils/translations'
-import type { Event } from '@/types'
 import { WHATSAPP_MESSAGES, CONTACT_INFO } from '@/constants'
 import { useDataStore } from '@/stores/data'
 import { useAppStore } from '@/stores/app'
@@ -265,7 +264,7 @@ const minPrice = computed(() => {
   if (!featuredEvent.value) return null
   
   if (featuredEvent.value.packs && featuredEvent.value.packs.length > 0) {
-    const prices = featuredEvent.value.packs.map((pack: any) => pack.price)
+    const prices = featuredEvent.value.packs.map((pack) => pack.price)
     const min = Math.min(...prices)
     const currency = featuredEvent.value.packs[0]?.currency || '€'
     return { value: min, currency }

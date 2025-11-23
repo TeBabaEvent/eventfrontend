@@ -254,6 +254,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import type { Pack } from '@/types'
 
 const authStore = useAuthStore()
 const toast = useToast()
@@ -267,9 +268,9 @@ const languages = [
 ]
 
 // State
-const packs = ref<any[]>([])
+const packs = ref<Pack[]>([])
 const isModalOpen = ref(false)
-const editingPack = ref<any>(null)
+const editingPack = ref<Pack | null>(null)
 const isSubmitting = ref(false) // Renommé pour plus de clarté
 const isPageLoading = ref(true)
 const submitError = ref<string | null>(null)
@@ -390,7 +391,7 @@ async function handleSubmit() {
 }
 
 // Edit pack
-function editPack(pack: any) {
+function editPack(pack: Pack) {
   editingPack.value = pack
   formData.value = {
     name: pack.name,
@@ -409,7 +410,7 @@ function editPack(pack: any) {
 }
 
 // Delete pack
-async function deletePack(pack: any) {
+async function deletePack(pack: Pack) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer ce pack ?')) return
   
   try {
@@ -477,16 +478,16 @@ function resetForm() {
   currentFeaturesLang.value = 'fr'
 }
 
-function addFeature() {
-  formData.value.features.push('')
-}
+// function addFeature() {
+//   formData.value.features.push('')
+// }
 
-function removeFeature(idx: number) {
-  formData.value.features.splice(idx, 1)
-  if (formData.value.features.length === 0) {
-    formData.value.features = ['']
-  }
-}
+// function removeFeature(idx: number) {
+//   formData.value.features.splice(idx, 1)
+//   if (formData.value.features.length === 0) {
+//     formData.value.features = ['']
+//   }
+// }
 
 function addFeatureTranslation(lang: string) {
   const langKey = lang as keyof typeof formData.value.features_translations

@@ -52,14 +52,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import EventCard from '@/components/common/EventCard.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import ErrorMessage from '@/components/ui/ErrorMessage.vue'
 import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
 import { logger } from '@/services/logger'
-import type { Event } from '@/types'
 
 const { t } = useI18n()
 

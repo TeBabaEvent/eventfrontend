@@ -65,7 +65,6 @@ import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { formatPrice, formatDay, formatMonth } from '@/utils'
 import { getEventTitle, getEventDescription } from '@/utils/translations'
-import { EVENT_CATEGORIES } from '@/constants'
 import type { Event } from '@/types'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
@@ -114,7 +113,7 @@ const displayDescription = computed(() => {
 const minPrice = computed(() => {
   // Check if event has packs
   if (props.event.packs && props.event.packs.length > 0) {
-    const prices = props.event.packs.map((pack: any) => pack.price)
+    const prices = props.event.packs.map((pack) => pack.price)
     const min = Math.min(...prices)
     const currency = props.event.packs[0]?.currency || '€'
     return formatPrice(min, currency)
@@ -128,7 +127,7 @@ const minPrice = computed(() => {
 
 const minPriceValue = computed(() => {
   if (props.event.packs && props.event.packs.length > 0) {
-    const prices = props.event.packs.map((pack: any) => pack.price)
+    const prices = props.event.packs.map((pack) => pack.price)
     return Math.min(...prices)
   }
   return props.event.price?.from || 0

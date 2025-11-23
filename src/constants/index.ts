@@ -5,7 +5,7 @@ export const APP_CONFIG = {
   description: 'Créateur d\'expériences culturelles albanaises inoubliables',
   version: '1.0.0',
   author: 'Baba Event Team',
-  website: 'https://babaevent.com'
+  website: 'https://www.baba.events'
 } as const
 
 export const CONTACT_INFO = {

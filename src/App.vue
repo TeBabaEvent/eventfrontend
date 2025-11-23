@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, computed, watch, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 import { useToast } from '@/composables/useToast'
@@ -12,7 +12,6 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
 
 const route = useRoute()
-const router = useRouter()
 const authStore = useAuthStore()
 const appStore = useAppStore()
 const { setToastInstance } = useToast()

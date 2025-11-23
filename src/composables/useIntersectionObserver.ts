@@ -30,7 +30,7 @@
  * @param options - Options de l'IntersectionObserver
  * @returns Object avec isIntersecting, target, observe, unobserve
  */
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 export function useIntersectionObserver(
   options: IntersectionObserverInit = {}

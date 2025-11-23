@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://babaevent.com/sitemap.xml
+Sitemap: https://www.baba.events/sitemap.xml
 
 # Crawl-delay for respectful crawling
 Crawl-delay: 1

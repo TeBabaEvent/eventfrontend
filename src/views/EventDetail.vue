@@ -328,10 +328,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useAppStore } from '@/stores/app'
 import { useToast } from '@/composables/useToast'
 import AOS from 'aos'
 import { logger } from '@/services/logger'
@@ -340,13 +339,12 @@ import EventCountdown from '@/components/ui/EventCountdown.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import { api } from '@/services/api'
 import { formatPrice, scrollToElement } from '@/utils'
-import { getEventTitle, getEventDescription, getArtistRole, getArtistDescription, getPackName, getPackFeatures } from '@/utils/translations'
-import type { Event } from '@/types'
+import { getEventTitle, getEventDescription, getArtistRole, getPackName, getPackFeatures } from '@/utils/translations'
+import type { Event, Pack } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
-const appStore = useAppStore()
 const toast = useToast()
 
 const event = ref<Event | null>(null)
@@ -425,9 +423,9 @@ async function fetchEventData(eventId: string) {
     setTimeout(() => {
       AOS.refresh()
     }, 100)
-  } catch (error: any) {
+  } catch (error) {
     // Ignorer les erreurs d'annulation
-    if (error?.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       logger.log('Request cancelled')
       return
     }
@@ -469,17 +467,17 @@ const formatFullDate = (dateString: string) => {
   return new Intl.DateTimeFormat(locale.value, options).format(date)
 }
 
-// Scroll to info section
-const scrollToInfo = () => {
-  scrollToElement('#event-info')
-}
+// Scroll to info section (unused)
+// const scrollToInfo = () => {
+//   scrollToElement('#event-info')
+// }
 
 const scrollToBooking = () => {
   scrollToElement('#booking', 100)
 }
 
 // Check if pack unit should be displayed (only for multiple persons/table)
-const shouldShowUnit = (pack: any): boolean => {
+const shouldShowUnit = (pack: Pack): boolean => {
   if (!pack.unit) return false
   
   // If unit is already a formatted text (contains "/"), use it as is
@@ -497,7 +495,7 @@ const shouldShowUnit = (pack: any): boolean => {
 }
 
 // Get formatted unit text
-const getPackUnitText = (pack: any): string => {
+const getPackUnitText = (pack: Pack): string => {
   if (!pack.unit) return ''
   
   // If unit already contains formatting (like "/ table de 6"), return as is
@@ -525,7 +523,7 @@ const getPackUnitText = (pack: any): string => {
 }
 
 // Generate WhatsApp link for tickets
-const getWhatsAppLink = (pack: any) => {
+const getWhatsAppLink = (pack: Pack) => {
   const phone = '32495526656' // Numéro WhatsApp Baba Event
   
   // Récupérer toutes les informations de l'événement
@@ -612,7 +610,7 @@ const copyEventLink = async () => {
       try {
         document.execCommand('copy')
         toast.success(t('eventDetail.share.copied'))
-      } catch (err) {
+      } catch {
         toast.error(t('eventDetail.share.copyError'))
       }
       document.body.removeChild(textArea)

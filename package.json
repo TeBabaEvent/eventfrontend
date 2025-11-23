@@ -14,11 +14,12 @@
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write src/",
-    "start": "vite preview --port $PORT --host 0.0.0.0"
+    "start": "serve -s dist -l $PORT"
   },
   "dependencies": {
     "aos": "^2.3.4",
     "pinia": "^3.0.3",
+    "serve": "^14.2.5",
     "vue": "^3.5.22",
     "vue-i18n": "^9.14.5",
     "vue-router": "^4.6.3"

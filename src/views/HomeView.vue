@@ -16,13 +16,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useAppStore } from '@/stores/app'
 import { useDataStore } from '@/stores/data'
 import HeroSection from '@/components/sections/HeroSection.vue'
 import EventsSection from '@/components/sections/EventsSection.vue'
 import TeamSection from '@/components/sections/TeamSection.vue'
 
-const appStore = useAppStore()
 const dataStore = useDataStore()
 
 // Track loading state of each section

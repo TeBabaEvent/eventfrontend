@@ -377,6 +377,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import type { Event, Artist } from '@/types'
 
 const authStore = useAuthStore()
 const toast = useToast()
@@ -390,11 +391,11 @@ const languages = [
 ]
 
 // State
-const events = ref<any[]>([])
-const artists = ref<any[]>([])
+const events = ref<Event[]>([])
+const artists = ref<Artist[]>([])
 const packs = ref<any[]>([])
 const isModalOpen = ref(false)
-const editingEvent = ref<any>(null)
+const editingEvent = ref<Event | null>(null)
 const isSubmitting = ref(false) // Renommé pour plus de clarté
 const isPageLoading = ref(true)
 const submitError = ref<string | null>(null)
@@ -488,7 +489,7 @@ async function showCreateModal() {
   isModalOpen.value = true
 }
 
-async function editEvent(event: any) {
+async function editEvent(event: Event) {
   editingEvent.value = event
   // ✅ Pas de refetch - utiliser les données en cache
   
@@ -514,11 +515,11 @@ async function editEvent(event: any) {
   isModalOpen.value = true
 }
 
-function viewEvent(event: any) {
+function viewEvent(event: Event) {
   alert(`Événement: ${event.title}\nDate: ${event.date}\nLieu: ${event.location}, ${event.city}`)
 }
 
-async function deleteEvent(event: any) {
+async function deleteEvent(event: Event) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return
   
   try {
@@ -746,13 +747,13 @@ function getCategoryLabel(category: string): string {
   return labels[category] || category
 }
 
-function getStatusClass(event: any): string {
+function getStatusClass(event: Event): string {
   const eventDate = new Date(event.date)
   const now = new Date()
   return eventDate > now ? 'event-status--upcoming' : 'event-status--past'
 }
 
-function getStatusLabel(event: any): string {
+function getStatusLabel(event: Event): string {
   const eventDate = new Date(event.date)
   const now = new Date()
   return eventDate > now ? 'À venir' : 'Passé'

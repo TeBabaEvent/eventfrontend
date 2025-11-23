@@ -122,7 +122,7 @@ export const useDataStore = defineStore('data', () => {
    * Getter pour les événements à venir uniquement
    */
   function getUpcomingEvents(): Event[] {
-    return events.value.filter((event: any) => 
+    return events.value.filter((event) => 
       !event.status || event.status === 'upcoming'
     )
   }

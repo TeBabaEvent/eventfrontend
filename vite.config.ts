@@ -57,7 +57,9 @@ export default defineConfig({
     host: true,
     allowedHosts: [
       'eventfrontend-production.up.railway.app',
-      '.railway.app' // Permet tous les sous-domaines Railway
+      '.railway.app', // Permet tous les sous-domaines Railway
+      'www.baba.events',
+      'baba.events'
     ]
   }
 })

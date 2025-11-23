@@ -2,11 +2,15 @@ import { ref } from 'vue'
 import type { Toast } from '@/components/ui/ToastNotification.vue'
 import { logger } from '@/services/logger'
 
+interface ToastInstance {
+  addToast: (message: string, type: Toast['type'], duration: number) => void
+}
+
 // Instance globale du toast
-const toastInstance = ref<any>(null)
+const toastInstance = ref<ToastInstance | null>(null)
 
 export function useToast() {
-  function setToastInstance(instance: any) {
+  function setToastInstance(instance: ToastInstance) {
     toastInstance.value = instance
   }
 

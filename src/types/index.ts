@@ -36,9 +36,42 @@ export interface Event {
   availableTickets?: number
   whatsappLink?: string
   artists?: any[]
-  packs?: any[]
+  packs?: Pack[]
   created_at?: string
   updated_at?: string
+}
+
+export interface Pack {
+  id: string
+  name: string
+  name_translations?: {
+    fr?: string
+    en?: string
+    nl?: string
+    sq?: string
+  }
+  type: 'standard' | 'premium' | 'vip'
+  description?: string
+  description_translations?: {
+    fr?: string
+    en?: string
+    nl?: string
+    sq?: string
+  }
+  price: number
+  currency: string
+  unit?: string
+  features: string[]
+  features_translations?: {
+    fr?: string[]
+    en?: string[]
+    nl?: string[]
+    sq?: string[]
+  }
+  is_active: boolean
+  created_at?: string
+  updated_at?: string
+  is_soldout?: boolean
 }
 
 export interface Artist {

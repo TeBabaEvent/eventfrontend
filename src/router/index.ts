@@ -63,7 +63,7 @@ const router = createRouter({
       ]
     }
   ],
-  scrollBehavior(to, from, savedPosition) {
+  scrollBehavior(to, _from, savedPosition) {
     if (to.hash) {
       // Si on vient d'une autre route, ajouter un délai pour laisser le temps au DOM de se charger
       return new Promise((resolve) => {
@@ -153,7 +153,7 @@ router.beforeEach(async (to, from, next) => {
   next()
 })
 
-router.afterEach((to) => {
+router.afterEach(() => {
   const appStore = useAppStore()
   
   // ✅ Toujours stopper le loading après navigation
