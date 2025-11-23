@@ -85,12 +85,14 @@ onMounted(() => {
 .team {
   background: var(--color-black);
   position: relative;
+  min-height: 600px; /* ✅ Prevent CLS by reserving space */
 }
 
 .team__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-lg);
+  min-height: 400px; /* ✅ Reserve space for grid */
 }
 
 .team__empty {
@@ -115,4 +117,3 @@ onMounted(() => {
   }
 }
 </style>
-

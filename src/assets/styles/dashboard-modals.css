@@ -19,7 +19,7 @@
 /* Modal Content Container */
 .modal-content {
   background: #1a1a1a;
-  border: 1px solid rgba(220, 20, 60, 0.3);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.3);
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   max-width: 750px;
@@ -37,7 +37,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 1.75rem;
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
+  border-bottom: 1px solid rgba(var(--color-primary-rgb), 0.2);
   background: rgba(0, 0, 0, 0.3);
   flex-shrink: 0;
 }
@@ -95,12 +95,12 @@
 }
 
 .modal-content form::-webkit-scrollbar-thumb {
-  background: rgba(220, 20, 60, 0.3);
+  background: rgba(var(--color-primary-rgb), 0.3);
   border-radius: 3px;
 }
 
 .modal-content form::-webkit-scrollbar-thumb:hover {
-  background: rgba(220, 20, 60, 0.5);
+  background: rgba(var(--color-primary-rgb), 0.5);
 }
 
 /* Form Sections */
@@ -119,7 +119,7 @@
   color: var(--color-white);
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
+  border-bottom: 1px solid rgba(var(--color-primary-rgb), 0.2);
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -168,7 +168,7 @@
 }
 
 .form-label i {
-  color: rgba(220, 20, 60, 0.8);
+  color: rgba(var(--color-primary-rgb), 0.8);
   font-size: 0.85rem;
   width: 14px;
 }
@@ -248,7 +248,7 @@
 
 .checkbox-label:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(220, 20, 60, 0.3);
+  border-color: rgba(var(--color-primary-rgb), 0.3);
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -292,7 +292,7 @@
 .language-tab.active {
   background: var(--color-primary);
   color: var(--color-white);
-  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.3);
+  box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.3);
 }
 
 /* Language Inputs Container */
@@ -307,7 +307,7 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1.25rem 1.75rem;
-  border-top: 1px solid rgba(220, 20, 60, 0.2);
+  border-top: 1px solid rgba(var(--color-primary-rgb), 0.2);
   background: rgba(0, 0, 0, 0.3);
   margin-top: auto;
   flex-shrink: 0;
@@ -407,7 +407,7 @@
 
 .selector-item:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(220, 20, 60, 0.3);
+  border-color: rgba(var(--color-primary-rgb), 0.3);
 }
 
 .selector-checkbox {
@@ -564,8 +564,8 @@
 .add-feature-btn {
   width: 100%;
   padding: 0.625rem;
-  background: rgba(220, 20, 60, 0.1);
-  border: 1px dashed rgba(220, 20, 60, 0.3);
+  background: rgba(var(--color-primary-rgb), 0.1);
+  border: 1px dashed rgba(var(--color-primary-rgb), 0.3);
   border-radius: 6px;
   color: var(--color-primary);
   font-size: 0.875rem;
@@ -580,7 +580,7 @@
 }
 
 .add-feature-btn:hover {
-  background: rgba(220, 20, 60, 0.15);
+  background: rgba(var(--color-primary-rgb), 0.15);
   border-color: var(--color-primary);
   border-style: solid;
 }
@@ -858,4 +858,3 @@
     font-size: 0.7rem;
   }
 }
-

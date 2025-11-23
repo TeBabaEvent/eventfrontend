@@ -99,12 +99,28 @@
 
         <!-- Featured Event Card -->
         <div 
-          v-if="featuredEvent" 
           class="hero__featured"
         >
-          <article class="hero__event-card" @click="goToEventDetail">
+          <!-- Skeleton Loader -->
+          <div v-if="!featuredEvent" class="hero__event-skeleton">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-content">
+              <div class="skeleton-line title"></div>
+              <div class="skeleton-line text"></div>
+              <div class="skeleton-line text"></div>
+            </div>
+          </div>
+
+          <article v-else class="hero__event-card" @click="goToEventDetail">
             <div class="hero__event-image">
-              <img :src="featuredEvent.image_url || featuredEvent.image" :alt="featuredEvent.title">
+              <img 
+                :src="optimizedHeroImage" 
+                :alt="featuredEvent.title"
+                fetchpriority="high"
+                loading="eager"
+                width="600"
+                height="300"
+              >
               <div class="hero__event-badge">
                 <i class="fas fa-fire"></i>
                 {{ t('hero.eventBadge') }}
@@ -182,6 +198,7 @@ import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { scrollToElement, formatPrice, generateWhatsAppLink, formatDay, formatMonth } from '@/utils'
+import { getOptimizedImageUrl } from '@/utils/image'
 import { getEventTitle, getEventDescription } from '@/utils/translations'
 import { WHATSAPP_MESSAGES, CONTACT_INFO } from '@/constants'
 import { useDataStore } from '@/stores/data'
@@ -242,6 +259,12 @@ const featuredEvent = computed(() => {
   })
   
   return upcomingEvent || sortedEvents[0] || null
+})
+
+const optimizedHeroImage = computed(() => {
+  if (!featuredEvent.value) return ''
+  const url = featuredEvent.value.image_url || featuredEvent.value.image || ''
+  return getOptimizedImageUrl(url, 1200) // Larger width for hero
 })
 
 const featuredEventCategoryLabel = computed(() => {
@@ -537,6 +560,50 @@ onMounted(async () => {
   width: 100%;
   animation: card-entrance 1s ease-out;
   cursor: pointer;
+}
+
+/* Skeleton */
+.hero__event-skeleton {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  width: 100%;
+  height: 550px;
+  overflow: hidden;
+}
+
+.skeleton-image {
+  height: 300px;
+  background: rgba(255, 255, 255, 0.05);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-content {
+  padding: var(--spacing-md);
+}
+
+.skeleton-line {
+  height: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-line.title {
+  height: 40px;
+  width: 80%;
+}
+
+.skeleton-line.text {
+  width: 100%;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
 }
 
 @keyframes card-entrance {

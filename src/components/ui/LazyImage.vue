@@ -16,9 +16,13 @@
     <!-- Actual Image -->
     <img
       v-else
-      :src="src"
+      :src="optimizedSrc"
+      :srcset="srcSet"
       :alt="alt"
       :class="imageClass"
+      :loading="loading"
+      :width="width"
+      :height="height"
       @load="onLoad"
       @error="onError"
       v-show="!isLoading && !hasError"
@@ -27,25 +31,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
+import { getOptimizedImageUrl, generateSrcSet } from '@/utils/image'
 
 interface Props {
   src: string
   alt?: string
   imageClass?: string
   errorMessage?: string
-  lazy?: boolean
+  loading?: 'lazy' | 'eager'
+  width?: number | string
+  height?: number | string
+  resizeWidth?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   alt: '',
   imageClass: '',
   errorMessage: '',
-  lazy: true
+  loading: 'lazy',
+  resizeWidth: 800
 })
 
 const isLoading = ref(true)
 const hasError = ref(false)
+
+const optimizedSrc = computed(() => {
+  return getOptimizedImageUrl(props.src, props.resizeWidth)
+})
+
+const srcSet = computed(() => {
+  return generateSrcSet(props.src)
+})
 
 const onLoad = () => {
   isLoading.value = false

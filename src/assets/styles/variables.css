@@ -6,6 +6,7 @@
   --color-primary-rgb: 220, 20, 60;
   --color-primary-dark: #8B0000;
   --color-primary-light: #FF1744;
+  --color-primary-lighter: #ff4466; /* Variation plus claire pour les dégradés */
   
   --color-secondary: #161616;
   --color-secondary-dark: #0F0F0F;
@@ -16,6 +17,11 @@
   --color-accent-dark: #660000;
   --color-accent-light: #B71C1C;
   
+  /* Couleurs Réseaux Sociaux */
+  --color-facebook: #1877F2;
+  --color-twitter: #1DA1F2;
+  --color-whatsapp: #25D366;
+
   /* Couleurs neutres */
   --color-white: #ffffff;
   --color-black: #000000;

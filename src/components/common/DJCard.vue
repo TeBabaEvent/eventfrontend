@@ -4,8 +4,11 @@
     <div class="dj-card__image-wrapper">
       <img 
         v-if="dj.image_url || dj.image" 
-        :src="dj.image_url || dj.image" 
+        :src="optimizedImage" 
         :alt="dj.name"
+        loading="lazy"
+        width="400"
+        height="400"
         @error="onImageError"
       >
       <div v-else class="dj-card__placeholder">
@@ -54,6 +57,7 @@ import { DJ_BADGES } from '@/constants'
 import type { DJ } from '@/types'
 import { useI18n } from 'vue-i18n'
 import { getArtistRole, getArtistDescription } from '@/utils/translations'
+import { getOptimizedImageUrl } from '@/utils/image'
 
 const { t, locale } = useI18n()
 
@@ -62,6 +66,11 @@ const props = defineProps({
     type: Object as PropType<DJ>,
     required: true
   }
+})
+
+const optimizedImage = computed(() => {
+  const url = props.dj.image_url || props.dj.image || ''
+  return getOptimizedImageUrl(url, 400)
 })
 
 // Computed properties
@@ -414,4 +423,3 @@ const onImageError = (event: Event) => {
   }
 }
 </style>
-

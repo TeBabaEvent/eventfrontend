@@ -3,9 +3,12 @@
     <div class="event-card__image-wrapper">
       <img 
         v-if="!isComingSoon"
-        :src="event.image_url || event.image" 
+        :src="optimizedImage" 
         :alt="event.title" 
         class="event-card__image"
+        loading="lazy"
+        width="400"
+        height="300"
       >
       <div v-else class="event-card__image event-card__image--placeholder">
         <div class="coming-soon-overlay">
@@ -64,6 +67,7 @@ import { computed, nextTick, type PropType } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { formatPrice, formatDay, formatMonth } from '@/utils'
+import { getOptimizedImageUrl } from '@/utils/image'
 import { getEventTitle, getEventDescription } from '@/utils/translations'
 import type { Event } from '@/types'
 import { useI18n } from 'vue-i18n'
@@ -107,6 +111,13 @@ const displayTitle = computed(() => {
 
 const displayDescription = computed(() => {
   return getEventDescription(props.event, locale.value)
+})
+
+const optimizedImage = computed(() => {
+  const url = props.event.image_url || props.event.image || ''
+  // Large variant needs bigger image
+  const width = props.variant === 'large' ? 800 : 600
+  return getOptimizedImageUrl(url, width)
 })
 
 // Calculate minimum price from packs
