@@ -395,15 +395,30 @@ function editPack(pack: Pack) {
   editingPack.value = pack
   formData.value = {
     name: pack.name,
-    name_translations: pack.name_translations || { fr: '', en: '', nl: '', sq: '' },
+    name_translations: {
+      fr: pack.name_translations?.fr || '',
+      en: pack.name_translations?.en || '',
+      nl: pack.name_translations?.nl || '',
+      sq: pack.name_translations?.sq || ''
+    },
     type: pack.type,
     description: pack.description || '',
-    description_translations: pack.description_translations || { fr: '', en: '', nl: '', sq: '' },
+    description_translations: {
+      fr: pack.description_translations?.fr || '',
+      en: pack.description_translations?.en || '',
+      nl: pack.description_translations?.nl || '',
+      sq: pack.description_translations?.sq || ''
+    },
     price: pack.price,
     currency: pack.currency || '€',
     unit: pack.unit || '',
     features: pack.features && pack.features.length > 0 ? [...pack.features] : [''],
-    features_translations: pack.features_translations || { fr: [''], en: [''], nl: [''], sq: [''] },
+    features_translations: {
+      fr: pack.features_translations?.fr || [''],
+      en: pack.features_translations?.en || [''],
+      nl: pack.features_translations?.nl || [''],
+      sq: pack.features_translations?.sq || ['']
+    },
     is_active: pack.is_active
   }
   isModalOpen.value = true

@@ -373,9 +373,19 @@ function editArtist(artist: Artist) {
   formData.value = {
     name: artist.name,
     role: artist.role || '',
-    role_translations: artist.role_translations || { fr: '', en: '', nl: '', sq: '' },
+    role_translations: {
+      fr: artist.role_translations?.fr || '',
+      en: artist.role_translations?.en || '',
+      nl: artist.role_translations?.nl || '',
+      sq: artist.role_translations?.sq || ''
+    },
     description: artist.description || '',
-    description_translations: artist.description_translations || { fr: '', en: '', nl: '', sq: '' },
+    description_translations: {
+      fr: artist.description_translations?.fr || '',
+      en: artist.description_translations?.en || '',
+      nl: artist.description_translations?.nl || '',
+      sq: artist.description_translations?.sq || ''
+    },
     image_url: artist.image_url || '',
     instagram: artist.instagram || '',
     badge: artist.badge || '',

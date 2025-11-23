@@ -495,7 +495,12 @@ async function editEvent(event: Event) {
   
   formData.value = {
     title: event.title,
-    title_translations: event.title_translations || { fr: '', en: '', nl: '', sq: '' },
+    title_translations: {
+      fr: event.title_translations?.fr || '',
+      en: event.title_translations?.en || '',
+      nl: event.title_translations?.nl || '',
+      sq: event.title_translations?.sq || ''
+    },
     category: event.category,
     date: event.date,
     time: event.time,
@@ -504,7 +509,12 @@ async function editEvent(event: Event) {
     address: event.address || '',
     capacity: event.capacity || 0,
     description: event.description,
-    description_translations: event.description_translations || { fr: '', en: '', nl: '', sq: '' },
+    description_translations: {
+      fr: event.description_translations?.fr || '',
+      en: event.description_translations?.en || '',
+      nl: event.description_translations?.nl || '',
+      sq: event.description_translations?.sq || ''
+    },
     image_url: event.image_url || event.image || '',
     maps_embed_url: event.maps_embed_url || '',
     featured: event.featured || false,
