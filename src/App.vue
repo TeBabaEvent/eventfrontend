@@ -70,7 +70,11 @@ onMounted(async () => {
     delay: 0,
     disable: isLoading.value, // Disable during initial loading
     startEvent: 'DOMContentLoaded',
-    anchorPlacement: isMobile ? 'top-center' : 'top-bottom' // Meilleure détection sur mobile
+    anchorPlacement: isMobile ? 'top-center' : 'top-bottom', // Meilleure détection sur mobile
+    // Optimisations de performance
+    disableMutationObserver: false, // On garde true par défaut, mais on peut le désactiver si trop coûteux
+    throttleDelay: 99, // Délai de throttle (défaut 99)
+    debounceDelay: 50  // Délai de debounce (défaut 50)
   })
 })
 
@@ -92,8 +96,11 @@ watch(isLoading, (newValue, oldValue) => {
         disable: false,
         anchorPlacement: isMobile ? 'top-center' : 'top-bottom'
       })
-      // Hard refresh to recalculate and animate all elements
-      AOS.refreshHard()
+      
+      // Petit délai pour laisser le temps au DOM de se stabiliser complètement
+      setTimeout(() => {
+        AOS.refreshHard()
+      }, 100)
     })
   }
 })
