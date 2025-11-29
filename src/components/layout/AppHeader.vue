@@ -239,6 +239,9 @@ onUnmounted(() => {
   width: 100%;
   z-index: var(--z-fixed);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Force GPU layer for stable positioning */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* Blur Background - Initially transparent */
@@ -772,6 +775,16 @@ onUnmounted(() => {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Extra stability for mobile scroll */
+  .header {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+  }
+  
+  .nav {
+    transform: translateZ(0);
   }
 }
 

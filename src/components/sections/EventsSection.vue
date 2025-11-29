@@ -237,7 +237,8 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
   position: relative;
   padding: 120px 0;
   background: transparent;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 /* Background is now handled by GlobalBackground component */
@@ -302,8 +303,11 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
   margin: 0 auto;
 }
 
-.events__grid-container :deep(.event-card) {
-  will-change: transform, opacity;
+/* Desktop only: Enable will-change for smooth animations */
+@media (min-width: 769px) {
+  .events__grid-container :deep(.event-card) {
+    will-change: transform, opacity;
+  }
 }
 
 /* ===== RESPONSIVE ===== */
@@ -324,6 +328,7 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
 @media (max-width: 768px) {
   .events {
     padding: 80px 0;
+    overscroll-behavior: none;
   }
 
   .events__grid-container {
@@ -395,10 +400,16 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
     animation: none !important;
   }
   
-  /* Optimize Cards */
+  /* Optimize Cards - Disable will-change and heavy transitions */
   .events__grid-container :deep(.event-card) {
     will-change: auto !important;
-    transition: opacity 0.3s ease, transform 0.3s ease !important;
+    /* Remove transitions during scroll for better performance */
+    transition: none !important;
+  }
+  
+  /* Only enable simple transitions on tap/touch */
+  .events__grid-container :deep(.event-card:active) {
+    transition: transform 0.2s ease !important;
   }
 }
 </style>

@@ -432,7 +432,8 @@ onUnmounted(() => {
   padding-bottom: 80px;
   box-sizing: border-box;
   background: transparent;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 /* Background is now handled by GlobalBackground component */
@@ -516,12 +517,10 @@ onUnmounted(() => {
   line-height: 1.08;
   margin: 0 0 24px 0;
   letter-spacing: -0.03em;
-  perspective: 1000px;
 }
 
 .hero__title-line {
   display: block;
-  transform-style: preserve-3d;
 }
 
 .hero__title-accent {
@@ -529,7 +528,6 @@ onUnmounted(() => {
   color: var(--color-primary);
   position: relative;
   text-shadow: 0 0 60px rgba(220, 20, 60, 0.4);
-  transform-style: preserve-3d;
 }
 
 /* Subtitle */
@@ -596,8 +594,6 @@ onUnmounted(() => {
   max-width: 420px;
   width: 100%;
   margin-left: auto;
-  perspective: 1000px;
-  transform-style: preserve-3d;
 }
 
 /* Event Card - Immersive Full-Image Design */
@@ -841,7 +837,6 @@ onUnmounted(() => {
   .hero__title-line,
   .hero__title-accent {
     opacity: 0;
-    transform-style: preserve-3d;
   }
 }
 
@@ -857,17 +852,24 @@ onUnmounted(() => {
   }
 }
 
-.hero__layout {
-  perspective: 1500px;
-}
+/* Desktop only: 3D perspective for animations */
+@media (min-width: 769px) {
+  .hero__layout {
+    perspective: 1500px;
+  }
 
-/* Smooth transitions */
-.hero__badge,
-.hero__title,
-.hero__subtitle,
-.hero__cta,
-.hero__featured {
-  will-change: transform, opacity;
+  .hero__title {
+    perspective: 1000px;
+  }
+
+  /* Smooth transitions - desktop only */
+  .hero__badge,
+  .hero__title,
+  .hero__subtitle,
+  .hero__cta,
+  .hero__featured {
+    will-change: transform, opacity;
+  }
 }
 
 /* ===== ANIMATIONS ===== */
@@ -1020,7 +1022,9 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
+    overscroll-behavior: none;
   }
 
   .hero__layout {
@@ -1220,6 +1224,21 @@ onUnmounted(() => {
   /* Disable pulse animation */
   .hero__badge-icon {
     animation: none !important;
+  }
+
+  /* Disable all will-change on mobile */
+  .hero__badge,
+  .hero__title,
+  .hero__subtitle,
+  .hero__cta,
+  .hero__featured {
+    will-change: auto !important;
+  }
+
+  /* Remove 3D transforms completely on mobile */
+  .hero__title,
+  .hero__layout {
+    perspective: none !important;
   }
 }
 </style>

@@ -209,7 +209,7 @@ const goToDetail = () => {
   cursor: pointer;
   aspect-ratio: 4 / 5;
   background: #0a0a0a;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
@@ -697,6 +697,14 @@ const goToDetail = () => {
   .event-card {
     aspect-ratio: 4 / 5;
     border-radius: 16px;
+    /* Disable transitions during scroll - only on :active (tap) */
+    transition: none;
+  }
+  
+  /* Only animate on tap/touch */
+  .event-card:active {
+    transition: transform 0.2s ease;
+    transform: scale(0.98);
   }
 
   .event-card::before {
@@ -724,12 +732,9 @@ const goToDetail = () => {
     justify-content: space-between;
   }
 
-  .event-card__top {
-    /* Badge reste en haut */
-  }
-
   .event-card__bottom {
-    /* Contenu poussé vers le bas comme sur desktop */
+    /* Contenu reste en bas comme sur desktop */
+    gap: 8px;
   }
 
   .event-card__category-badge {
@@ -816,9 +821,9 @@ const goToDetail = () => {
     display: none;
   }
 
-  .event-card__cta:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(220, 20, 60, 0.35);
+  /* Disable hover on mobile - use :active for touch feedback */
+  .event-card__cta:active {
+    transform: scale(0.95);
   }
 
   /* Coming Soon responsive - même structure que event card */
@@ -881,6 +886,31 @@ const goToDetail = () => {
   .event-card__cs-hint i {
     color: var(--color-primary);
     font-size: 12px;
+  }
+  
+  /* Mobile performance: disable all GPU hints */
+  .event-card,
+  .event-card__image,
+  .event-card__overlay,
+  .event-card__content {
+    will-change: auto !important;
+  }
+  
+  /* Disable hover effects - mobile uses :active */
+  .event-card:hover {
+    transform: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+  
+  .event-card:hover::before,
+  .event-card:hover .event-card__glow,
+  .event-card:hover .event-card__border-glow,
+  .event-card:hover .event-card__overlay,
+  .event-card:hover .event-card__image {
+    /* Disable all hover effects on mobile */
+    opacity: initial;
+    transform: none;
+    background: initial;
   }
 }
 
