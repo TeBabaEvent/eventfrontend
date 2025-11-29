@@ -94,12 +94,8 @@ const loadEvents = async () => {
 // ANIMATIONS - Desktop only for performance
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection - disable animations on mobile for performance
-const isMobile = () => {
-  return window.matchMedia('(max-width: 768px)').matches ||
-         'ontouchstart' in window ||
-         navigator.maxTouchPoints > 0
-}
+// Mobile detection - disable animations on mobile (based on screen width only)
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches
 
 const initScrollAnimations = () => {
   // SKIP all animations on mobile for better scroll performance

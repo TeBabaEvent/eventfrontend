@@ -251,139 +251,113 @@ const goToEventDetail = () => {
   router.push({ name: 'event-detail', params: { id: featuredEvent.value.id } })
 }
 
-// Animate stats on mount (optimized for mobile)
+// Animate stats on mount (disabled on mobile)
 const animateStats = () => {
-  const mobile = isMobile()
-
-  stats.value.forEach(stat => {
-    if (mobile) {
-      // On mobile, just set the final value immediately (no animation)
+  // On mobile, just set final values immediately (no animation)
+  if (isMobile()) {
+    stats.value.forEach(stat => {
       animatedStats.value[stat.label] = stat.value
-    } else {
-      // On desktop, animate with requestAnimationFrame for better performance
-      let current = 0
-      const increment = stat.value / 60 // 60 frames total (~1 second at 60fps)
-      const animate = () => {
-        current += increment
-        if (current >= stat.value) {
-          animatedStats.value[stat.label] = stat.value
-        } else {
-          animatedStats.value[stat.label] = Math.floor(current)
-          requestAnimationFrame(animate)
-        }
+    })
+    return
+  }
+
+  // On desktop, animate with requestAnimationFrame
+  stats.value.forEach(stat => {
+    let current = 0
+    const increment = stat.value / 60
+    const animate = () => {
+      current += increment
+      if (current >= stat.value) {
+        animatedStats.value[stat.label] = stat.value
+      } else {
+        animatedStats.value[stat.label] = Math.floor(current)
+        requestAnimationFrame(animate)
       }
-      requestAnimationFrame(animate)
     }
+    requestAnimationFrame(animate)
   })
 }
 
-// GSAP Hero entrance animation - AWWWARDS EDITION 🏆
 // ═══════════════════════════════════════════════════════════════
-// AWWWARDS-WORTHY HERO ANIMATIONS - Synced with background
+// HERO ANIMATIONS - Desktop only for performance
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection for performance optimization
-const isMobile = () => {
-  return window.matchMedia('(max-width: 768px)').matches ||
-         'ontouchstart' in window ||
-         navigator.maxTouchPoints > 0
-}
+// Mobile detection - disable ALL GSAP animations on mobile (based on screen width only)
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches
 
 const initHeroAnimations = () => {
   if (animationsInitialized) return
   animationsInitialized = true
 
-  const mobile = isMobile()
+  // SKIP all GSAP animations on mobile for smooth scroll performance
+  if (isMobile()) {
+    return
+  }
 
   gsapContext = gsap.context(() => {
     const titleLines = titleRef.value?.querySelectorAll('.hero__title-line, .hero__title-accent')
 
     // ─────────────────────────────────────────────────────────────
-    // MASTER TIMELINE - Faster on mobile for better perceived performance
+    // MASTER TIMELINE - Desktop only
     // ─────────────────────────────────────────────────────────────
     const masterTL = gsap.timeline({
       defaults: { ease: 'power2.out' },
-      delay: mobile ? 0.3 : 0.8  // Shorter delay on mobile
+      delay: 0.8
     })
 
     // Badge - Smooth fade
     masterTL.fromTo(badgeRef.value,
-      { opacity: 0, y: mobile ? 15 : 25 },
-      { opacity: 1, y: 0, duration: mobile ? 0.5 : 0.8 }
+      { opacity: 0, y: 25 },
+      { opacity: 1, y: 0, duration: 0.8 }
     )
 
-    // Title Lines - Simple fade on mobile (clipPath is expensive)
+    // Title Lines - Clip-path reveal
     if (titleLines && titleLines.length > 0) {
-      if (mobile) {
-        // Simple fade + translate on mobile (no clipPath)
-        masterTL.fromTo(titleLines,
-          { opacity: 0, y: 20 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            stagger: 0.1,
-            ease: 'power2.out'
-          },
-          '-=0.3'
-        )
-      } else {
-        // Full clip-path animation on desktop
-        masterTL.fromTo(titleLines,
-          { opacity: 0, y: 40, clipPath: 'inset(0 0 100% 0)' },
-          {
-            opacity: 1,
-            y: 0,
-            clipPath: 'inset(0 0 0% 0)',
-            duration: 1,
-            stagger: 0.15,
-            ease: 'power3.out'
-          },
-          '-=0.5'
-        )
-      }
+      masterTL.fromTo(titleLines,
+        { opacity: 0, y: 40, clipPath: 'inset(0 0 100% 0)' },
+        {
+          opacity: 1,
+          y: 0,
+          clipPath: 'inset(0 0 0% 0)',
+          duration: 1,
+          stagger: 0.15,
+          ease: 'power3.out'
+        },
+        '-=0.5'
+      )
     }
 
     // Subtitle - Soft emergence
     masterTL.fromTo(subtitleRef.value,
-      { opacity: 0, y: mobile ? 15 : 25 },
-      { opacity: 1, y: 0, duration: mobile ? 0.5 : 0.8 },
-      '-=0.4'
+      { opacity: 0, y: 25 },
+      { opacity: 1, y: 0, duration: 0.8 },
+      '-=0.6'
     )
 
     // CTA Buttons
     if (ctaRef.value) {
       masterTL.fromTo(ctaRef.value,
-        { opacity: 0, y: mobile ? 15 : 25 },
-        { opacity: 1, y: 0, duration: mobile ? 0.5 : 0.8 },
-        '-=0.3'
+        { opacity: 0, y: 25 },
+        { opacity: 1, y: 0, duration: 0.8 },
+        '-=0.5'
       )
     }
 
     // ─────────────────────────────────────────────────────────────
-    // FEATURED CARD - Simpler animation on mobile
+    // FEATURED CARD - Elegant entrance
     // ─────────────────────────────────────────────────────────────
     if (featuredRef.value) {
-      if (mobile) {
-        // Simple fade on mobile (no scale/translate for performance)
-        masterTL.fromTo(featuredRef.value,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' },
-          '-=0.2'
-        )
-      } else {
-        masterTL.fromTo(featuredRef.value,
-          { opacity: 0, x: 80, scale: 0.95 },
-          { opacity: 1, x: 0, scale: 1, duration: 1.2, ease: 'power3.out' },
-          '-=0.4'
-        )
-      }
+      masterTL.fromTo(featuredRef.value,
+        { opacity: 0, x: 80, scale: 0.95 },
+        { opacity: 1, x: 0, scale: 1, duration: 1.2, ease: 'power3.out' },
+        '-=0.4'
+      )
     }
 
     // ─────────────────────────────────────────────────────────────
-    // HOVER EFFECT - Desktop only (no hover on mobile)
+    // HOVER EFFECT - Card lift (desktop only)
     // ─────────────────────────────────────────────────────────────
-    if (featuredRef.value && !mobile) {
+    if (featuredRef.value) {
       const card = featuredRef.value.querySelector('.hero__event-card')
       if (card) {
         card.addEventListener('mouseenter', () => {
@@ -854,21 +828,31 @@ onUnmounted(() => {
   transform: translateX(4px);
 }
 
-/* ===== GSAP ANIMATION SETUP - AWWWARDS EDITION ===== */
-/* Hide elements initially before GSAP takes over */
-.hero__animate {
-  opacity: 0;
-  will-change: transform, opacity;
+/* ===== GSAP ANIMATION SETUP ===== */
+/* Desktop: Hide elements initially for GSAP animation */
+@media (min-width: 769px) {
+  .hero__animate {
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .hero__title-line,
+  .hero__title-accent {
+    opacity: 0;
+    transform-style: preserve-3d;
+  }
 }
 
-.hero__title-line,
-.hero__title-accent {
-  opacity: 0;
-  transform-style: preserve-3d;
-}
+/* Mobile: All elements visible by default (no GSAP animations) */
+@media (max-width: 768px) {
+  .hero__animate {
+    opacity: 1 !important;
+  }
 
-.hero__featured.hero__animate {
-  opacity: 0;
+  .hero__title-line,
+  .hero__title-accent {
+    opacity: 1 !important;
+  }
 }
 
 .hero__layout {

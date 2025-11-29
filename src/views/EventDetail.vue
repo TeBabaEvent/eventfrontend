@@ -611,20 +611,19 @@ watch(() => event.value, () => {
 }, { immediate: true })
 
 // ============================================
-// GSAP ANIMATIONS
+// GSAP ANIMATIONS - Desktop only
 // ============================================
 
-// Detect if device is mobile/touch for performance optimization
-const isMobile = () => {
-  return window.matchMedia('(max-width: 768px)').matches ||
-         'ontouchstart' in window ||
-         navigator.maxTouchPoints > 0
-}
+// Mobile detection - disable ALL GSAP on mobile (based on screen width only)
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches
 
 function initHeroAnimations() {
   if (!heroContentRef.value) return
 
-  const mobile = isMobile()
+  // SKIP all GSAP animations on mobile for smooth scroll performance
+  if (isMobile()) {
+    return
+  }
 
   gsapContext = gsap.context(() => {
     // Set initial states for animated elements
@@ -632,7 +631,7 @@ function initHeroAnimations() {
     if (animatedElements) {
       gsap.set(animatedElements, {
         opacity: 0,
-        y: mobile ? 15 : 30 // Smaller movement on mobile
+        y: 30
       })
     }
 
@@ -649,7 +648,7 @@ function initHeroAnimations() {
       tl.to(breadcrumbRef.value, {
         opacity: 1,
         y: 0,
-        duration: mobile ? 0.4 : 0.6
+        duration: 0.6
       })
     }
 
@@ -658,7 +657,7 @@ function initHeroAnimations() {
       tl.to(badgeRef.value, {
         opacity: 1,
         y: 0,
-        duration: mobile ? 0.3 : 0.5
+        duration: 0.5
       }, '-=0.3')
     }
 
@@ -667,7 +666,7 @@ function initHeroAnimations() {
       tl.to(titleRef.value, {
         opacity: 1,
         y: 0,
-        duration: mobile ? 0.5 : 0.7
+        duration: 0.7
       }, '-=0.3')
     }
 
@@ -676,7 +675,7 @@ function initHeroAnimations() {
       tl.to(countdownRef.value, {
         opacity: 1,
         y: 0,
-        duration: mobile ? 0.3 : 0.5
+        duration: 0.5
       }, '-=0.4')
     }
 
@@ -685,20 +684,20 @@ function initHeroAnimations() {
       tl.to(metaRef.value, {
         opacity: 1,
         y: 0,
-        duration: mobile ? 0.4 : 0.6
+        duration: 0.6
       }, '-=0.3')
 
-      // Stagger meta items - simplified on mobile
+      // Stagger meta items
       const metaItems = metaRef.value.querySelectorAll('.event-hero__meta-item')
       if (metaItems.length) {
         tl.fromTo(metaItems,
-          { opacity: 0, y: mobile ? 10 : 20, scale: mobile ? 1 : 0.95 },
+          { opacity: 0, y: 20, scale: 0.95 },
           {
             opacity: 1,
             y: 0,
             scale: 1,
-            duration: mobile ? 0.3 : 0.5,
-            stagger: mobile ? 0.05 : 0.1
+            duration: 0.5,
+            stagger: 0.1
           },
           '-=0.4'
         )
@@ -710,26 +709,24 @@ function initHeroAnimations() {
       tl.to(ctaRef.value, {
         opacity: 1,
         y: 0,
-        duration: mobile ? 0.3 : 0.5
+        duration: 0.5
       }, '-=0.2')
     }
 
-    // Parallax + Fade effect on hero image - DISABLED on mobile for performance
-    if (heroImageRef.value && heroRef.value && !mobile) {
-      // Parallax movement + slight zoom (desktop only)
+    // Parallax + Fade effect on hero image (desktop only)
+    if (heroImageRef.value && heroRef.value) {
       gsap.to(heroImageRef.value, {
-        yPercent: 15, // Reduced from 25
-        scale: 1.02, // Reduced from 1.05
+        yPercent: 15,
+        scale: 1.02,
         ease: 'none',
         scrollTrigger: {
           trigger: heroRef.value,
           start: 'top top',
           end: 'bottom top',
-          scrub: 1 // Smoother scrub value
+          scrub: 1
         }
       })
 
-      // Simple opacity fade (NO blur animation - too expensive)
       gsap.to(heroImageRef.value, {
         opacity: 0.3,
         ease: 'power2.in',

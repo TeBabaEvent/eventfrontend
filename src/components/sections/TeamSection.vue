@@ -78,12 +78,8 @@ const error = computed(() => dataStore.artistsError)
 // AWWWARDS-WORTHY ANIMATIONS - Fluid and elegant
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection - disable animations on mobile for performance
-const isMobile = () => {
-  return window.matchMedia('(max-width: 768px)').matches ||
-         'ontouchstart' in window ||
-         navigator.maxTouchPoints > 0
-}
+// Mobile detection - disable animations on mobile (based on screen width only)
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches
 
 const initHeaderAnimations = () => {
   // SKIP animations on mobile for better scroll performance

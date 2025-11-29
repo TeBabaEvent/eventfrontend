@@ -66,13 +66,9 @@ const glowRef = ref<HTMLElement | null>(null)
 let gsapContext: gsap.Context | null = null
 
 // ═══════════════════════════════════════════════════════════════
-// MOBILE DETECTION
+// MOBILE DETECTION - based on screen width only
 // ═══════════════════════════════════════════════════════════════
-const isMobile = () => {
-  return window.matchMedia('(max-width: 768px)').matches ||
-         'ontouchstart' in window ||
-         navigator.maxTouchPoints > 0
-}
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches
 
 // ═══════════════════════════════════════════════════════════════
 // SUBTLE PARALLAX EFFECTS (Desktop only for performance)

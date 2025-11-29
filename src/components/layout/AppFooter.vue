@@ -192,12 +192,8 @@ const getSocialIcon = (platform: string): string => {
 // ANIMATIONS - Desktop only for performance
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection - disable animations on mobile for performance
-const isMobile = () => {
-  return window.matchMedia('(max-width: 768px)').matches ||
-         'ontouchstart' in window ||
-         navigator.maxTouchPoints > 0
-}
+// Mobile detection - disable animations on mobile (based on screen width only)
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches
 
 const initScrollAnimations = () => {
   // SKIP all animations on mobile for better scroll performance
@@ -311,10 +307,18 @@ onUnmounted(() => {
    ============================================ */
 
 /* ===== GSAP SCROLL ANIMATION ===== */
-/* Elements start visible - GSAP animates them when in viewport */
+/* Desktop: Elements start hidden for GSAP animation */
+@media (min-width: 769px) {
+  .gsap-grid-item {
+    opacity: 0;
+  }
+}
 
-.gsap-grid-item {
-  opacity: 0;
+/* Mobile: Elements visible by default (no GSAP animations) */
+@media (max-width: 768px) {
+  .gsap-grid-item {
+    opacity: 1 !important;
+  }
 }
 
 .footer {
