@@ -245,19 +245,12 @@
               </div>
               <div class="venue">
                 <div v-if="googleMapsEmbedUrl" class="venue__map">
-                  <div v-if="!isMapLoaded" class="venue__map-facade" @click="loadMap">
                     <div class="venue__map-overlay">
                       <div class="venue__map-button">
                         <i class="fas fa-map-marked-alt"></i>
                         <span>{{ t('eventDetail.venue.loadMap') }}</span>
                       </div>
                     </div>
-                    <img 
-                      src="/images/map-placeholder.jpg" 
-                      alt="Map Placeholder" 
-                      class="venue__map-image"
-                      loading="lazy"
-                    />
                   </div>
                   <iframe
                     v-else
