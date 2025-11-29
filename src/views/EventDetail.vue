@@ -733,16 +733,22 @@ function initHeroAnimations() {
         }
       })
 
-      gsap.to(heroImageRef.value, {
-        opacity: 0.3,
-        ease: 'power2.in',
-        scrollTrigger: {
-          trigger: heroRef.value,
-          start: '40% top',
-          end: 'bottom top',
-          scrub: 1
-        }
-      })
+      // 🚀 CRITICAL PERFORMANCE FIX: Animate overlay opacity instead of image
+      // - Animating opacity on overlay is cheaper than on large image
+      // - Eliminates repaint of 1920x1080 image on every frame
+      const heroOverlay = heroRef.value.querySelector('.event-hero__overlay')
+      if (heroOverlay) {
+        gsap.to(heroOverlay, {
+          opacity: 0.9, // Darken overlay as user scrolls down
+          ease: 'power2.in',
+          scrollTrigger: {
+            trigger: heroRef.value,
+            start: '40% top',
+            end: 'bottom top',
+            scrub: 1
+          }
+        })
+      }
     }
   }, heroRef.value || undefined)
 }
