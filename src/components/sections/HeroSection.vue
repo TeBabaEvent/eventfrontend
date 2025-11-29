@@ -78,8 +78,9 @@
                 :alt="featuredEvent.title"
                 fetchpriority="high"
                 loading="eager"
+                decoding="async"
                 width="600"
-                height="300"
+                height="720"
               >
               <div class="hero__event-overlay"></div>
             </div>

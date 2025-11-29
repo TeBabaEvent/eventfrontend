@@ -37,6 +37,11 @@
             :src="event?.image_url || event?.image"
             :alt="event?.title"
             class="event-hero__image"
+            width="1920"
+            height="1080"
+            fetchpriority="high"
+            loading="eager"
+            decoding="async"
           >
           <!-- Multi-layer overlay for depth -->
           <div class="event-hero__overlay"></div>

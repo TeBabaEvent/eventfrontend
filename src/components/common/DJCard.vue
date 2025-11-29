@@ -8,6 +8,7 @@
         :alt="dj.name"
         class="dj-card__image"
         loading="lazy"
+        decoding="async"
         width="400"
         height="500"
         @error="onImageError"
