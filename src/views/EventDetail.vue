@@ -34,7 +34,7 @@
         <div class="event-hero__background">
           <img
             ref="heroImageRef"
-            :src="event?.image_url || event?.image"
+            :src="optimizedHeroImage"
             :alt="event?.title"
             class="event-hero__image"
             width="1920"
@@ -423,6 +423,7 @@ import { useDataStore } from '@/stores/data'
 import { api } from '@/services/api'
 import { API_BASE_URL } from '@/config/api'
 import { formatPrice, scrollToElement } from '@/utils'
+import { getOptimizedImageUrl } from '@/utils/image'
 import { getEventTitle, getEventDescription, getArtistRole, getPackName, getPackFeatures } from '@/utils/translations'
 import { useMobile } from '@/composables/useMobile'
 import type { Event, Pack } from '@/types'
@@ -471,10 +472,19 @@ const displayTitle = computed(() => {
 
 const displayDescription = computed(() => {
   if (!event.value) return ''
-  return getEventDescription(event.value, locale.value)
+  // Try translation first, fallback to main description
+  const translations = event.value.description_translations as Record<string, string> | undefined
+  return translations?.[locale.value] || event.value.description || ''
 })
 
-// Google Maps URLs
+// 🚀 Optimize hero image with wsrv.nl
+const optimizedHeroImage = computed(() => {
+  if (!event.value) return ''
+  const url = event.value.image_url || event.value.image || ''
+  // 1920px width for hero, but compressed and WebP
+  return getOptimizedImageUrl(url, 1920)
+})
+
 const googleMapsUrl = computed(() => {
   if (!event.value) return ''
   const query = event.value.address
