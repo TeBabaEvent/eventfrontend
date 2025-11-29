@@ -1,0 +1,39 @@
+/* CSS Utility Classes - Baba Event */
+
+/* ============================================
+   GLASS MORPHISM EFFECTS
+   ============================================ */
+
+/* Glass Small - 8px blur */
+.glass-sm {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Glass Medium - 12px blur */
+.glass-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Glass Large - 20px blur */
+.glass-lg {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Mobile: Disable all backdrop-filter for performance */
+@media (max-width: 768px) {
+
+    .glass-sm,
+    .glass-md,
+    .glass-lg {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+}
+
+/* ============================================
+   FUTURE UTILITIES
+   (Add more as needed)
+   ============================================ */

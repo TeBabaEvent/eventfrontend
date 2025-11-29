@@ -34,12 +34,6 @@ export function formatDate(
   return dateObj.toLocaleDateString(locale, defaultOptions)
 }
 
-/**
- * Formate une heure en français
- */
-export function formatTime(time: string): string {
-  return time.replace(':', 'h')
-}
 
 /**
  * Génère un slug à partir d'un texte
@@ -62,18 +56,6 @@ export function formatPrice(amount: number, currency: string = '€'): string {
   return `${amount}${currency}`
 }
 
-/**
- * Vérifie si un élément est visible dans le viewport
- */
-export function isInViewport(element: Element): boolean {
-  const rect = element.getBoundingClientRect()
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  )
-}
 
 /**
  * Debounce une fonction
@@ -126,12 +108,6 @@ export function scrollToElement(
   }
 }
 
-/**
- * Génère un ID unique
- */
-export function generateId(): string {
-  return Math.random().toString(36).substr(2, 9)
-}
 
 /**
  * Valide une adresse email
@@ -169,31 +145,8 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-/**
- * Détecte si l'utilisateur est sur mobile
- */
-export function isMobile(): boolean {
-  return window.innerWidth < 768
-}
 
-/**
- * Charge une image de manière asynchrone
- */
-export function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => resolve(img)
-    img.onerror = reject
-    img.src = src
-  })
-}
 
-/**
- * Formate un nombre avec des séparateurs de milliers
- */
-export function formatNumber(num: number): string {
-  return num.toLocaleString('fr-FR')
-}
 
 /**
  * Formate le jour d'une date

@@ -10,9 +10,21 @@
 }
 
 /* Protection globale contre les débordements de texte */
-h1, h2, h3, h4, h5, h6,
-p, span, div, a, button,
-label, li, td, th {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+a,
+button,
+label,
+li,
+td,
+th {
   word-wrap: break-word;
   overflow-wrap: break-word;
   word-break: break-word;
@@ -64,7 +76,12 @@ body {
 }
 
 /* Typographie */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
@@ -124,7 +141,8 @@ a:focus {
 }
 
 /* Listes */
-ul, ol {
+ul,
+ol {
   margin-bottom: var(--spacing-4);
   padding-left: var(--spacing-6);
 }
@@ -162,6 +180,10 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+/* Import styles */
+@import './variables.css';
+@import './utilities.css';
 
 /* Formulaires */
 input,
@@ -218,8 +240,15 @@ textarea::placeholder {
 
 /* Badge Pulse Animation - Shared across sections */
 @keyframes badge-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
 }
 
 ::-moz-selection {
@@ -347,6 +376,7 @@ textarea::placeholder {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -357,6 +387,7 @@ textarea::placeholder {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -368,6 +399,7 @@ textarea::placeholder {
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -379,6 +411,7 @@ textarea::placeholder {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);

@@ -794,12 +794,8 @@ onUnmounted(() => {
   }
 })
 
-// Scroll to info section (unused)
-// const scrollToInfo = () => {
-//   scrollToElement('#event-info')
-// }
-
-const scrollToBooking = () => {
+// Scroll to booking section
+function scrollToBooking() {
   scrollToElement('#booking', 100)
 }
 
