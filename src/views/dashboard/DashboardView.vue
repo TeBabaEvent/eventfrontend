@@ -8,7 +8,7 @@
     
     <!-- Stats Cards -->
     <div class="stats-grid">
-      <div class="stat-card" data-aos="fade-up" data-aos-delay="0">
+      <div class="stat-card">
         <div class="stat-card__header">
           <span class="stat-card__title">Total Événements</span>
           <div class="stat-card__icon stat-card__icon--primary">
@@ -22,7 +22,7 @@
         </div>
       </div>
       
-      <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+      <div class="stat-card">
         <div class="stat-card__header">
           <span class="stat-card__title">Événements à venir</span>
           <div class="stat-card__icon stat-card__icon--info">
@@ -33,7 +33,7 @@
         <div class="stat-card__change">Prochainement</div>
       </div>
       
-      <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="stat-card">
         <div class="stat-card__header">
           <span class="stat-card__title">Événements passés</span>
           <div class="stat-card__icon stat-card__icon--secondary">
@@ -44,7 +44,7 @@
         <div class="stat-card__change">Terminés</div>
       </div>
       
-      <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+      <div class="stat-card">
         <div class="stat-card__header">
           <span class="stat-card__title">Revenus estimés</span>
           <div class="stat-card__icon stat-card__icon--success">
@@ -57,7 +57,7 @@
     </div>
 
     <!-- Quick Actions -->
-    <div class="quick-actions" data-aos="fade-up" data-aos-delay="400">
+    <div class="quick-actions">
       <h2 class="section-title">Actions rapides</h2>
       <div class="actions-grid">
         <router-link to="/dashboard/events" class="action-card">

@@ -35,7 +35,7 @@ export interface Event {
   capacity?: number
   availableTickets?: number
   whatsappLink?: string
-  artists?: any[]
+  artists?: Artist[]
   packs?: Pack[]
   created_at?: string
   updated_at?: string
@@ -98,6 +98,10 @@ export interface Artist {
   show_on_website?: boolean
   created_at?: string
   updated_at?: string
+  // Event-specific properties (from EventArtist relation)
+  start_time?: string
+  end_time?: string
+  order?: number
 }
 
 // Alias pour compatibilité (DJ est essentiellement un Artist)

@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { onMounted, computed, watch, ref } from 'vue'
+import { onMounted, onUnmounted, computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 import { useToast } from '@/composables/useToast'
-import AOS from 'aos'
-// Utilisation d'un import dynamique pour le CSS AOS pour ne pas bloquer le rendu initial
-// 'aos/dist/aos.css' est maintenant chargé via un import asynchrone ou différé si possible
+import Lenis from 'lenis'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
+import GlobalBackground from '@/components/layout/GlobalBackground.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
 
@@ -19,6 +18,9 @@ const { setToastInstance } = useToast()
 
 // Toast instance ref
 const toastRef = ref()
+
+// Lenis instance
+let lenis: Lenis | null = null
 
 // Check if current route should hide layout
 const hideLayout = computed(() => route.meta.hideLayout === true)
@@ -34,105 +36,74 @@ const loadingMessage = computed(() => {
   return ''
 })
 
-// Transition hooks to prevent flash
-const onBeforeLeave = () => {
-  // Component is about to leave
-}
-
-const onAfterEnter = () => {
-  // Component has entered, safe to show
-  // Refresh AOS after component enters to ensure animations play
-  // Utiliser requestAnimationFrame pour une meilleure synchronisation
-  requestAnimationFrame(() => {
-    AOS.refresh()
-  })
-}
-
-// Initialize AOS (Animate On Scroll) when component mounts
-onMounted(async () => {
-  // Import CSS AOS dynamiquement
-  import('aos/dist/aos.css')
-
+// Initialize Lenis smooth scroll
+onMounted(() => {
   // Initialize toast instance
   if (toastRef.value) {
     setToastInstance(toastRef.value)
   }
-  
-  // Configuration AOS adaptée pour mobile et desktop
-  const isMobile = window.innerWidth < 768
-  
-  // Initialiser AOS - désactivé initialement si on est en train de charger
-  AOS.init({
-    duration: 900,
-    easing: 'ease-out-quart', // Plus fluide que cubic
-    once: false, // Allow animations to replay
-    offset: isMobile ? 0 : 50, // Offset réduit, surtout sur mobile
-    delay: 0,
-    disable: isLoading.value, // Disable during initial loading
-    startEvent: 'DOMContentLoaded',
-    anchorPlacement: isMobile ? 'top-center' : 'top-bottom', // Meilleure détection sur mobile
-    // Optimisations de performance
-    disableMutationObserver: false, // On garde true par défaut, mais on peut le désactiver si trop coûteux
-    throttleDelay: 99, // Délai de throttle (défaut 99)
-    debounceDelay: 50  // Délai de debounce (défaut 50)
-  })
+
+  // Initialize Lenis for smooth scrolling
+  lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    orientation: 'vertical',
+    gestureOrientation: 'vertical',
+    smoothWheel: true,
+    touchMultiplier: 2
 })
 
-// Watch loading state and refresh AOS when loading finishes
-watch(isLoading, (newValue, oldValue) => {
-  if (oldValue === true && newValue === false) {
-    // Loading just finished, enable and refresh AOS to trigger animations
-    const isMobile = window.innerWidth < 768
-    
-    // ✅ Utiliser requestAnimationFrame pour éviter les délais artificiels
-    requestAnimationFrame(() => {
-      // Re-initialize to ensure it's enabled
-      AOS.init({
-        duration: 900,
-        easing: 'ease-out-quart',
-        once: true, // Ne jouer qu'une seule fois
-        offset: isMobile ? 0 : 50, // Offset réduit, surtout sur mobile
-        delay: 0,
-        disable: false,
-        anchorPlacement: isMobile ? 'top-center' : 'top-bottom'
-      })
-      
-      // Petit délai pour laisser le temps au DOM de se stabiliser complètement
-      setTimeout(() => {
-        AOS.refreshHard()
-      }, 100)
-    })
+  // Animation frame loop for Lenis
+  function raf(time: number) {
+    lenis?.raf(time)
+    requestAnimationFrame(raf)
   }
+  requestAnimationFrame(raf)
+})
+
+// Cleanup Lenis on unmount
+onUnmounted(() => {
+  lenis?.destroy()
+  lenis = null
 })
 </script>
 
 <template>
+  <!-- Global Background - Always visible -->
+  <GlobalBackground />
+
   <!-- Toast Notifications -->
   <ToastNotification ref="toastRef" />
-  
+
   <!-- Loader global -->
-  <LoadingSpinner 
-    v-if="isLoading" 
-    fullscreen 
+  <LoadingSpinner
+    v-if="isLoading"
+    fullscreen
     :message="loadingMessage"
   />
-  
+
   <!-- Contenu principal -->
-  <div v-if="!isLoading" id="app" class="app">
+  <div v-if="!isLoading" class="app">
     <!-- Header Navigation -->
     <AppHeader v-if="!hideLayout" />
-    
+
     <!-- Main Content -->
     <main class="main">
+      <router-view v-slot="{ Component }">
       <Suspense>
-        <router-view v-slot="{ Component }">
-          <Transition name="fade" mode="out-in" @before-leave="onBeforeLeave" @after-enter="onAfterEnter">
+          <template #default>
+            <Transition name="fade" mode="out-in">
             <component :is="Component" :key="route.path" />
           </Transition>
+          </template>
+          <template #fallback>
+            <!-- Pendant le chargement du composant lazy-loaded -->
+            <div class="suspense-fallback"></div>
+          </template>
+        </Suspense>
         </router-view>
-      </Suspense>
     </main>
-    
+
     <!-- Footer -->
     <AppFooter v-if="!hideLayout" />
   </div>
@@ -190,5 +161,11 @@ watch(isLoading, (newValue, oldValue) => {
   width: 100%;
   z-index: -1;
   pointer-events: none;
+}
+
+/* Suspense fallback - invisible placeholder during lazy load */
+.suspense-fallback {
+  min-height: 100vh;
+  background: transparent;
 }
 </style>

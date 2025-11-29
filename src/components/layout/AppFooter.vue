@@ -1,32 +1,43 @@
 <template>
-  <footer class="footer" id="contact">
-    <div class="footer__bg-grid"></div>
-    
+  <footer ref="sectionRef" class="footer" id="contact">
+    <!-- Background is now handled by GlobalBackground component -->
+
     <div class="container">
-      <!-- CTA Section -->
-      <div class="footer__cta" data-aos="fade-up">
-        <div class="footer__cta-content">
-          <h2 class="footer__cta-title">{{ t('footer.cta.title') }}</h2>
-          <p class="footer__cta-subtitle">{{ t('footer.cta.subtitle') }}</p>
+      <!-- CTA Section - Open Style like other sections -->
+      <div ref="ctaRef" class="footer__cta">
+        <!-- Badge -->
+        <div class="footer__cta-badge">
+          <span class="footer__cta-badge-icon">
+            <i class="fas fa-paper-plane"></i>
+          </span>
+          <span class="footer__cta-badge-text">{{ t('footer.sections.contact') }}</span>
         </div>
-        <BaseButton 
-          variant="primary" 
-          size="large" 
-          icon="fas fa-arrow-right"
-          tag="a"
+
+        <!-- Title with accent -->
+        <h2 class="footer__cta-title">
+          {{ t('footer.cta.title').split('?')[0] }}<span class="footer__cta-title-accent">?</span>
+        </h2>
+
+        <!-- Subtitle -->
+        <p class="footer__cta-subtitle">{{ t('footer.cta.subtitle') }}</p>
+
+        <!-- CTA Button - Primary Style -->
+        <a
           :href="contactLink"
           target="_blank"
           rel="noopener"
+          class="footer__cta-button"
         >
-          {{ t('footer.cta.button') }}
-        </BaseButton>
+          <span>{{ t('footer.cta.button') }}</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
       </div>
 
       <!-- Main Footer Content -->
-      <div class="footer__main">
+      <div ref="gridRef" class="footer__main">
         <div class="footer__grid">
           <!-- About -->
-          <div class="footer__column footer__column--large">
+          <div class="footer__column footer__column--large gsap-grid-item">
             <div class="footer__logo">
               <img src="/logo.svg" alt="Baba Event" class="logo-image">
             </div>
@@ -34,8 +45,8 @@
               {{ t('footer.about.description') }}
             </p>
             <div class="footer__social">
-              <a 
-                v-for="(link, platform) in socialLinks" 
+              <a
+                v-for="(link, platform) in socialLinks"
                 :key="platform"
                 :href="link"
                 class="footer__social-link"
@@ -49,8 +60,11 @@
           </div>
 
           <!-- Navigation -->
-          <div class="footer__column">
-            <h3 class="footer__title">{{ t('footer.sections.navigation') }}</h3>
+          <div class="footer__column gsap-grid-item">
+            <h3 class="footer__title">
+              <span class="footer__title-dot"></span>
+              {{ t('footer.sections.navigation') }}
+            </h3>
             <ul class="footer__links">
               <li v-for="item in navigationItems" :key="item.id">
                 <a :href="item.href" class="footer__link">{{ item.label }}</a>
@@ -59,8 +73,11 @@
           </div>
 
           <!-- Services -->
-          <div class="footer__column">
-            <h3 class="footer__title">{{ t('footer.sections.services') }}</h3>
+          <div class="footer__column gsap-grid-item">
+            <h3 class="footer__title">
+              <span class="footer__title-dot"></span>
+              {{ t('footer.sections.services') }}
+            </h3>
             <ul class="footer__links">
               <li v-for="service in services" :key="service">
                 <a href="#events" class="footer__link">{{ service }}</a>
@@ -69,8 +86,11 @@
           </div>
 
           <!-- Contact -->
-          <div class="footer__column">
-            <h3 class="footer__title">{{ t('footer.sections.contact') }}</h3>
+          <div class="footer__column gsap-grid-item">
+            <h3 class="footer__title">
+              <span class="footer__title-dot"></span>
+              {{ t('footer.sections.contact') }}
+            </h3>
             <ul class="footer__contact">
               <li>
                 <div class="footer__contact-icon">
@@ -102,9 +122,7 @@
         </p>
         <div class="footer__legal">
           <a href="#" class="footer__legal-link">{{ t('footer.legal.terms') }}</a>
-          <span class="footer__separator">•</span>
           <a href="#" class="footer__legal-link">{{ t('footer.legal.privacy') }}</a>
-          <span class="footer__separator">•</span>
           <a href="#" class="footer__legal-link">{{ t('footer.legal.cgv') }}</a>
         </div>
       </div>
@@ -113,13 +131,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import { APP_CONFIG, CONTACT_INFO, SOCIAL_LINKS, NAVIGATION_ITEMS, WHATSAPP_MESSAGES } from '@/constants'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { APP_CONFIG, CONTACT_INFO, SOCIAL_LINKS, NAVIGATION_ITEMS } from '@/constants'
 import { generateWhatsAppLink } from '@/utils'
 import { useI18n } from 'vue-i18n'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+// Register ScrollTrigger
+gsap.registerPlugin(ScrollTrigger)
 
 const { t } = useI18n()
+
+// Template refs for animations
+const sectionRef = ref<HTMLElement | null>(null)
+const ctaRef = ref<HTMLElement | null>(null)
+const gridRef = ref<HTMLElement | null>(null)
+
+// GSAP context
+let gsapContext: gsap.Context | null = null
 
 // Data
 const appName = APP_CONFIG.name
@@ -128,7 +158,7 @@ const socialLinks = SOCIAL_LINKS
 
 const currentYear = new Date().getFullYear()
 
-const navigationItems = computed(() => 
+const navigationItems = computed(() =>
   NAVIGATION_ITEMS.filter(item => item.id !== 'contact').map(item => ({
     ...item,
     label: t(`nav.${item.id}`)
@@ -144,7 +174,7 @@ const services = computed(() => [
 
 // Computed
 const contactLink = computed(() => {
-  return generateWhatsAppLink(WHATSAPP_MESSAGES.contact, CONTACT_INFO.whatsapp)
+  return generateWhatsAppLink(t('footer.cta.whatsappMessage'), CONTACT_INFO.whatsapp)
 })
 
 // Methods
@@ -157,222 +187,377 @@ const getSocialIcon = (platform: string): string => {
   }
   return icons[platform] || 'fas fa-link'
 }
+
+// ═══════════════════════════════════════════════════════════════
+// AWWWARDS-WORTHY ANIMATIONS - Fluid and elegant
+// ═══════════════════════════════════════════════════════════════
+
+const initScrollAnimations = () => {
+  gsapContext = gsap.context(() => {
+    // ─────────────────────────────────────────────────────────────
+    // CTA SECTION - Elegant staggered reveal
+    // ─────────────────────────────────────────────────────────────
+    const badge = ctaRef.value?.querySelector('.footer__cta-badge')
+    const title = ctaRef.value?.querySelector('.footer__cta-title')
+    const subtitle = ctaRef.value?.querySelector('.footer__cta-subtitle')
+    const button = ctaRef.value?.querySelector('.footer__cta-button')
+
+    const ctaTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ctaRef.value,
+        start: 'top 80%',
+        toggleActions: 'play none none none'
+      }
+    })
+
+    if (badge) {
+      gsap.set(badge, { opacity: 0, y: 25 })
+      ctaTl.to(badge, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'power2.out'
+      })
+    }
+
+    if (title) {
+      gsap.set(title, { opacity: 0, y: 35, clipPath: 'inset(0 0 100% 0)' })
+      ctaTl.to(title, {
+        opacity: 1,
+        y: 0,
+        clipPath: 'inset(0 0 0% 0)',
+        duration: 1,
+        ease: 'power3.out'
+      }, '-=0.5')
+    }
+
+    if (subtitle) {
+      gsap.set(subtitle, { opacity: 0, y: 25 })
+      ctaTl.to(subtitle, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'power2.out'
+      }, '-=0.6')
+    }
+
+    if (button) {
+      gsap.set(button, { opacity: 0, y: 25 })
+      ctaTl.to(button, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'power2.out'
+      }, '-=0.5')
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // FOOTER GRID - Smooth staggered reveal
+    // ─────────────────────────────────────────────────────────────
+    const gridItems = gridRef.value?.querySelectorAll('.gsap-grid-item')
+    if (gridItems && gridItems.length > 0) {
+      gsap.set(gridItems, { opacity: 0, y: 35 })
+      gsap.to(gridItems, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        stagger: {
+          amount: 0.5,
+          from: 'start'
+        },
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: gridRef.value,
+          start: 'top 85%',
+          toggleActions: 'play none none none'
+        }
+      })
+    }
+  }, sectionRef.value || undefined)
+}
+
+// Lifecycle
+onMounted(async () => {
+  await nextTick()
+  requestAnimationFrame(() => {
+    initScrollAnimations()
+  })
+})
+
+onUnmounted(() => {
+  if (gsapContext) {
+    gsapContext.revert()
+    gsapContext = null
+  }
+})
 </script>
 
 <style scoped>
+/* ============================================
+   FOOTER - PREMIUM DESIGN
+   Matching Hero, Events & Team Sections
+   ============================================ */
+
+/* ===== GSAP SCROLL ANIMATION ===== */
+/* Elements start visible - GSAP animates them when in viewport */
+
+.gsap-grid-item {
+  opacity: 0;
+}
+
 .footer {
   position: relative;
-  background: var(--color-dark);
-  color: var(--color-white);
-  padding: 0;
+  background: transparent;
+  color: #fff;
   overflow: hidden;
 }
 
-.footer__bg-grid {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    linear-gradient(rgba(220, 20, 60, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(220, 20, 60, 0.02) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-}
+/* Background is now handled by GlobalBackground component */
 
-/* CTA Section */
+/* ===== CTA SECTION - Open Style like other sections ===== */
 .footer__cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-xl) 0;
-  margin-bottom: var(--spacing-xl);
   position: relative;
-  flex-wrap: wrap;
+  z-index: 1;
+  padding: 100px 0 80px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.footer__cta::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(220, 20, 60, 0.3) 50%,
-    transparent 100%
-  );
+/* CTA Badge - Same as section badges */
+.footer__cta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50px;
+  margin-bottom: 24px;
 }
 
-.footer__cta-content {
-  flex: 1;
-  min-width: 300px;
+.footer__cta-badge-icon {
+  color: var(--color-primary);
+  font-size: 12px;
+  animation: footer-badge-pulse 2s ease-in-out infinite;
 }
 
+@keyframes footer-badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.footer__cta-badge-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* CTA Title - Same style as section titles */
 .footer__cta-title {
   font-family: var(--font-heading);
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: var(--color-white);
-  margin-bottom: 0.5rem;
-  line-height: 1.2;
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.03em;
 }
 
+.footer__cta-title-accent {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #ff4d6d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* CTA Subtitle */
 .footer__cta-subtitle {
-  font-size: 1.125rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 32px 0;
+  max-width: 450px;
+  line-height: 1.6;
 }
 
-/* Main Content */
-.footer__main {
-  padding: var(--spacing-xl) 0;
+/* CTA Button - Primary Gradient Style */
+.footer__cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 36px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #b01030 100%);
+  border: none;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
+}
+
+.footer__cta-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #ff4d6d 0%, var(--color-primary) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.footer__cta-button span,
+.footer__cta-button i {
+  position: relative;
+  z-index: 1;
+}
+
+.footer__cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(220, 20, 60, 0.5);
+}
+
+.footer__cta-button:hover::before {
+  opacity: 1;
+}
+
+.footer__cta-button i {
+  font-size: 11px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer__cta-button:hover i {
+  transform: translateX(4px);
+}
+
+/* ===== MAIN FOOTER ===== */
+.footer__main {
+  position: relative;
+  z-index: 1;
+  padding: 60px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .footer__grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: var(--spacing-xl);
+  gap: 48px;
 }
 
 .footer__column {
   position: relative;
 }
 
+/* Logo */
 .footer__logo {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  font-family: var(--font-heading);
-  font-size: 1.75rem;
+  margin-bottom: 20px;
 }
 
 .footer__logo .logo-image {
-  height: 100px;
+  height: 80px;
   width: auto;
-  margin-bottom: var(--spacing-md);
 }
 
+/* Description */
 .footer__description {
-  color: rgba(255, 255, 255, 0.75);
-  margin-bottom: var(--spacing-lg);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
   line-height: 1.8;
-  max-width: 400px;
+  margin-bottom: 24px;
+  max-width: 350px;
 }
 
-/* Social Links Premium */
+/* Social Links - Glass Style */
 .footer__social {
   display: flex;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 .footer__social-link {
-  width: 50px;
-  height: 50px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.125rem;
-  color: var(--color-white);
-  transition: all var(--transition-normal);
-  position: relative;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-}
-
-.footer__social-link::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-}
-
-.footer__social-link i {
-  position: relative;
-  z-index: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .footer__social-link:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(220, 20, 60, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(220, 20, 60, 0.3);
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-.footer__social-link:hover::before {
-  opacity: 1;
-}
-
+/* Column Titles */
 .footer__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-heading);
-  font-size: 1.125rem;
+  font-size: 13px;
   font-weight: 700;
-  margin-bottom: var(--spacing-md);
-  color: var(--color-white);
-  position: relative;
-  padding-bottom: 0.75rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
 }
 
-.footer__title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 40px;
-  height: 2px;
+.footer__title-dot {
+  width: 6px;
+  height: 6px;
   background: var(--color-primary);
-  border-radius: 2px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(220, 20, 60, 0.6);
 }
 
+/* Links */
 .footer__links {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 14px;
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
 .footer__link {
-  color: rgba(255, 255, 255, 0.7);
-  transition: all var(--transition-fast);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  position: relative;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
   text-decoration: none;
-}
-
-.footer__link::before {
-  content: '';
-  width: 0;
-  height: 2px;
-  background: var(--color-primary);
-  transition: width var(--transition-normal);
-  border-radius: 2px;
+  transition: all 0.3s ease;
+  display: inline-block;
 }
 
 .footer__link:hover {
-  color: var(--color-primary);
-  transform: translateX(4px);
-}
-
-.footer__link:hover::before {
-  width: 16px;
+  color: #fff;
+  transform: translateX(6px);
 }
 
 /* Contact Items */
 .footer__contact {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 16px;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -381,164 +566,99 @@ const getSocialIcon = (platform: string): string => {
 .footer__contact li {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  color: rgba(255, 255, 255, 0.75);
-  transition: all var(--transition-fast);
-}
-
-.footer__contact li:hover {
-  color: var(--color-white);
+  gap: 12px;
 }
 
 .footer__contact-icon {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  max-width: 40px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
   background: rgba(220, 20, 60, 0.1);
   border: 1px solid rgba(220, 20, 60, 0.2);
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  transition: all var(--transition-normal);
+  transition: all 0.3s ease;
 }
 
 .footer__contact-icon i {
   color: var(--color-primary);
-  font-size: 0.875rem;
-  width: 1em;
-  text-align: center;
-  display: inline-block;
+  font-size: 12px;
 }
 
 .footer__contact li:hover .footer__contact-icon {
   background: rgba(220, 20, 60, 0.15);
   border-color: var(--color-primary);
-  box-shadow: 0 0 20px rgba(220, 20, 60, 0.3);
+  box-shadow: 0 0 16px rgba(220, 20, 60, 0.25);
 }
 
-.footer__contact a {
-  color: inherit;
-  transition: color var(--transition-fast);
+.footer__contact a,
+.footer__contact span {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
   text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .footer__contact a:hover {
-  color: var(--color-primary);
+  color: #fff;
 }
 
-/* Footer Bottom */
+/* ===== FOOTER BOTTOM ===== */
 .footer__bottom {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg) 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-  position: relative;
+  padding: 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .footer__copyright {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
   margin: 0;
 }
 
 .footer__copyright strong {
-  color: var(--color-white);
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
 }
 
 .footer__legal {
   display: flex;
   align-items: center;
-  gap: 1rem;
-}
-
-.footer__separator {
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 0.875rem;
+  gap: 24px;
 }
 
 .footer__legal-link {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-  transition: color var(--transition-fast);
-  position: relative;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
   text-decoration: none;
-}
-
-.footer__legal-link::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: var(--color-primary);
-  transition: width var(--transition-normal);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color 0.3s ease;
 }
 
 .footer__legal-link:hover {
-  color: var(--color-white);
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.footer__legal-link:hover::after {
-  width: 100%;
-}
-
-/* Responsive - Tablette Landscape */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
+  .footer__cta {
+    padding: 80px 0 60px;
+  }
+
   .footer__grid {
     grid-template-columns: 1fr 1fr 1fr;
-    gap: var(--spacing-lg);
+    gap: 40px;
   }
 
   .footer__column--large {
     grid-column: span 3;
-    max-width: 100%;
-  }
-}
-
-/* Responsive - Tablette Portrait */
-@media (max-width: 768px) {
-  .footer__cta {
-    padding: 3rem 0;
-    margin-bottom: 3rem;
-    flex-direction: column;
-    text-align: center;
-    gap: 2rem;
-  }
-
-  .footer__cta-content {
-    min-width: auto;
-    width: 100%;
-  }
-
-  .footer__cta-title {
-    font-size: 2rem;
-  }
-
-  .footer__cta-subtitle {
-    font-size: 1rem;
-  }
-
-  .footer__main {
-    padding: 3rem 0;
-  }
-
-  .footer__grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem 2rem;
-  }
-
-  .footer__column--large {
-    grid-column: span 2;
-    max-width: 600px;
-    margin: 0 auto;
     text-align: center;
   }
 
@@ -546,71 +666,95 @@ const getSocialIcon = (platform: string): string => {
     justify-content: center;
   }
 
-  .footer__logo .logo-image {
-    height: 80px;
-  }
-
   .footer__description {
-    max-width: 100%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .footer__social {
     justify-content: center;
   }
-
-  .footer__social-link {
-    width: 44px;
-    height: 44px;
-    font-size: 1rem;
-  }
-
-  .footer__contact-icon {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    max-width: 36px;
-  }
-
-  .footer__title {
-    text-align: left;
-  }
-
-  .footer__title::after {
-    left: 0;
-  }
-
-  .footer__links {
-    align-items: flex-start;
-  }
-
-  .footer__bottom {
-    padding: 2rem 0;
-    gap: 1.5rem;
-  }
 }
 
-/* Responsive - Mobile */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .footer__cta {
-    padding: 2.5rem 0;
-    margin-bottom: 2.5rem;
+    padding: 60px 0 48px;
   }
 
-  .footer__cta-title {
-    font-size: 1.75rem;
+  .footer__cta-badge {
+    padding: 8px 16px;
+  }
+
+  .footer__cta-badge-text {
+    font-size: 10px;
   }
 
   .footer__cta-subtitle {
-    font-size: 0.9375rem;
+    font-size: 14px;
+    padding: 0 20px;
+  }
+
+  .footer__cta-button {
+    padding: 16px 32px;
+    font-size: 11px;
   }
 
   .footer__main {
-    padding: 2.5rem 0;
+    padding: 48px 0;
+  }
+
+  .footer__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .footer__column--large {
+    grid-column: span 2;
+  }
+
+  .footer__logo .logo-image {
+    height: 70px;
+  }
+
+  .footer__title {
+    justify-content: flex-start;
+  }
+
+  .footer__bottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer__cta {
+    padding: 48px 0 40px;
+  }
+
+  .footer__cta-title {
+    font-size: clamp(28px, 8vw, 36px);
+  }
+
+  .footer__cta-subtitle {
+    font-size: 13px;
+  }
+
+  .footer__cta-button {
+    padding: 14px 28px;
+    font-size: 10px;
+    width: calc(100% - 40px);
+    justify-content: center;
+  }
+
+  .footer__main {
+    padding: 40px 0;
   }
 
   .footer__grid {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 32px;
   }
 
   .footer__column--large {
@@ -618,46 +762,24 @@ const getSocialIcon = (platform: string): string => {
   }
 
   .footer__logo .logo-image {
-    height: 70px;
+    height: 60px;
   }
 
   .footer__social-link {
-    width: 42px;
-    height: 42px;
-  }
-
-  .footer__contact-icon {
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
-    max-width: 34px;
-  }
-
-  .footer__bottom {
-    flex-direction: column;
-    text-align: center;
-    padding: 1.5rem 0;
-    gap: 1rem;
-  }
-
-  .footer__copyright,
-  .footer__legal {
-    width: 100%;
-    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    border-radius: 8px;
   }
 
   .footer__legal {
     flex-wrap: wrap;
-    gap: 0.5rem 1rem;
+    justify-content: center;
+    gap: 16px;
   }
 
-  .footer__separator {
-    display: none;
-  }
-
-  .footer__legal-link {
-    font-size: 0.8125rem;
+  .footer__bottom {
+    padding: 20px 0;
   }
 }
 </style>
-

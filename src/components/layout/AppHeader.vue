@@ -4,17 +4,17 @@
     <div class="container">
       <nav class="nav">
         <!-- Logo -->
-        <div class="nav__logo">
+        <div ref="logoRef" class="nav__logo nav__animate">
           <router-link to="/" class="logo-container">
             <img src="/logo.svg" alt="Baba Event" class="logo-image">
           </router-link>
         </div>
-        
+
         <!-- Navigation Menu Desktop -->
-        <ul class="nav__menu nav__menu--desktop" id="navMenu">
-          <li v-for="item in navigationItems" :key="item.id" class="nav__item">
-            <a 
-              :href="item.href" 
+        <ul ref="navMenuRef" class="nav__menu nav__menu--desktop" id="navMenu">
+          <li v-for="item in navigationItems" :key="item.id" class="nav__item nav__animate">
+            <a
+              :href="item.href"
               class="nav__link"
               :class="{ 'active': activeSection === item.id }"
               @click="handleNavClick(item.href, $event)"
@@ -22,16 +22,17 @@
               <span :data-text="item.label">{{ item.label }}</span>
             </a>
           </li>
-          
+
           <!-- Language Selector -->
-          <li class="nav__item nav__item--language">
+          <li class="nav__item nav__item--language nav__animate">
             <LanguageSelector />
           </li>
         </ul>
 
         <!-- Mobile Menu Toggle -->
-        <button 
-          class="nav__toggle" 
+        <button
+          ref="toggleRef"
+          class="nav__toggle nav__animate"
           :class="{ 'nav__toggle--active': isMenuOpen }"
           @click="toggleMenu"
           aria-label="Toggle navigation menu"
@@ -42,12 +43,12 @@
         </button>
       </nav>
     </div>
-    
+
     <!-- Menu Mobile - En dehors du container -->
     <div class="nav__menu nav__menu--mobile" :class="{ 'nav__menu--open': isMenuOpen }">
       <!-- Close Button -->
-      <button 
-        class="nav__menu-close" 
+      <button
+        class="nav__menu-close"
         @click="closeMenu"
         aria-label="Fermer le menu"
       >
@@ -56,8 +57,8 @@
 
       <ul class="nav__menu-list">
         <li v-for="item in navigationItems" :key="item.id" class="nav__item">
-          <a 
-            :href="item.href" 
+          <a
+            :href="item.href"
             class="nav__link"
             :class="{ 'active': activeSection === item.id }"
             @click="handleNavClick(item.href, $event)"
@@ -65,17 +66,17 @@
             <span :data-text="item.label">{{ item.label }}</span>
           </a>
         </li>
-        
+
         <!-- Language Selector -->
         <li class="nav__item nav__item--language">
           <LanguageSelector />
         </li>
       </ul>
     </div>
-    
+
     <!-- Menu Overlay -->
-    <div 
-      class="nav__overlay" 
+    <div
+      class="nav__overlay"
       :class="{ 'nav__overlay--active': isMenuOpen }"
       @click="closeMenu"
     ></div>
@@ -83,13 +84,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useScrollSpy } from '@/composables/useScrollSpy'
 import { scrollToElement, throttle } from '@/utils'
 import { NAVIGATION_ITEMS } from '@/constants'
 import LanguageSelector from '@/components/ui/LanguageSelector.vue'
 import { useI18n } from 'vue-i18n'
+import gsap from 'gsap'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -98,8 +100,16 @@ const router = useRouter()
 const isMenuOpen = ref(false)
 const isScrolled = ref(false)
 
+// Template refs for GSAP
+const logoRef = ref<HTMLElement | null>(null)
+const navMenuRef = ref<HTMLElement | null>(null)
+const toggleRef = ref<HTMLElement | null>(null)
+
+// GSAP context
+let gsapContext: gsap.Context | null = null
+
 // Navigation items with translations
-const navigationItems = computed(() => 
+const navigationItems = computed(() =>
   NAVIGATION_ITEMS.map(item => ({
     ...item,
     label: t(`nav.${item.id}`)
@@ -127,7 +137,7 @@ const handleScroll = throttle(() => {
 const handleNavClick = async (href: string, event: Event) => {
   event.preventDefault()
   closeMenu()
-  
+
   if (href.startsWith('#')) {
     // Si on n'est pas sur la page d'accueil, naviguer d'abord vers la home
     if (route.name !== 'home') {
@@ -151,55 +161,117 @@ const closeMenu = () => {
   document.body.style.overflow = ''
 }
 
+// GSAP Nav entrance animation
+const initNavAnimations = () => {
+  gsapContext = gsap.context(() => {
+    const tl = gsap.timeline({
+      defaults: {
+        ease: 'power2.out'
+      }
+    })
+
+    // Logo - simple fade in
+    tl.to(logoRef.value, {
+      opacity: 1,
+      duration: 0.4
+    })
+
+    // Nav items - staggered fade in
+    const navItems = navMenuRef.value?.querySelectorAll('.nav__item')
+    if (navItems && navItems.length > 0) {
+      tl.to(navItems, {
+        opacity: 1,
+        duration: 0.3,
+        stagger: 0.05
+      }, '-=0.2')
+    }
+
+    // Mobile toggle - fade in
+    if (toggleRef.value) {
+      tl.to(toggleRef.value, {
+        opacity: 1,
+        duration: 0.3
+      }, '-=0.2')
+    }
+  })
+}
+
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
   handleScroll() // Initial check
+
+  // Initialize GSAP animations
+  await nextTick()
+  requestAnimationFrame(() => {
+    initNavAnimations()
+  })
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   document.body.style.overflow = ''
+
+  // Cleanup GSAP
+  if (gsapContext) {
+    gsapContext.revert()
+    gsapContext = null
+  }
 })
 </script>
 
 <style scoped>
+/* ========================================
+   HEADER - Premium Awwwards Quality
+   ======================================== */
+
 .header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: var(--z-fixed);
-  transition: all var(--transition-normal);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Blur Background - Initially transparent */
 .header__blur {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(15, 15, 15, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(220, 20, 60, 0.12);
+  background: transparent;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  border-bottom: 1px solid transparent;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Scrolled State - Glass Morphism */
 .header--scrolled .header__blur {
-  background: rgba(10, 10, 10, 0.95);
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
-  box-shadow: 0 1px 0 rgba(220, 20, 60, 0.05);
+  background: rgba(5, 5, 5, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(220, 20, 60, 0.1);
 }
 
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 90px;
+  height: clamp(70px, 9vh, 90px);
   position: relative;
   z-index: 1;
   width: 100%;
   max-width: 100%;
+}
+
+.header--scrolled .nav {
+  height: clamp(60px, 7vh, 70px);
 }
 
 /* Logo */
@@ -225,24 +297,41 @@ onUnmounted(() => {
 }
 
 .logo-image {
-  height: 80px;
+  height: clamp(55px, 7vh, 70px);
   width: auto;
   max-width: 100%;
   object-fit: contain;
-  transition: all var(--transition-normal);
-  filter: drop-shadow(0 2px 8px rgba(220, 20, 60, 0.3));
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 12px rgba(220, 20, 60, 0.25));
+}
+
+.header--scrolled .logo-image {
+  height: clamp(45px, 5.5vh, 55px);
 }
 
 .logo-container:hover .logo-image {
-  filter: drop-shadow(0 4px 16px rgba(220, 20, 60, 0.6));
-  transform: scale(1.05);
+  filter: drop-shadow(0 4px 20px rgba(220, 20, 60, 0.5));
+  transform: scale(1.03);
+}
+
+/* ===== GSAP ANIMATION SETUP ===== */
+.nav__logo.nav__animate {
+  opacity: 0;
+}
+
+.nav__item.nav__animate {
+  opacity: 0;
+}
+
+.nav__toggle.nav__animate {
+  opacity: 0;
 }
 
 /* Navigation Menu */
 .nav__menu {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 4px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -256,31 +345,35 @@ onUnmounted(() => {
 .nav__item--language {
   display: flex;
   align-items: center;
-  margin-left: var(--spacing-2);
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Navigation Links - Minimal & Elegant */
 .nav__link {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
   position: relative;
-  padding: 0.75rem 1.25rem;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-normal);
+  padding: 10px 18px;
+  border-radius: 50px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   display: inline-block;
+  letter-spacing: 0.3px;
 }
 
-/* Effet de fond au hover */
+/* Hover Background - Subtle Glass */
 .nav__link::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(220, 20, 60, 0.1);
-  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50px;
   opacity: 0;
-  transition: opacity var(--transition-normal);
-  border: 1px solid rgba(220, 20, 60, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .nav__link:hover::before {
@@ -290,97 +383,104 @@ onUnmounted(() => {
 .nav__link span {
   position: relative;
   z-index: 1;
-  transition: color var(--transition-fast);
+  transition: all 0.3s ease;
 }
 
-.nav__link:hover,
+.nav__link:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Active State - Primary Accent */
 .nav__link.active {
-  color: var(--color-white);
+  color: #fff;
 }
 
-/* Effet de texte gradient au hover/active */
-.nav__link.active span {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #FF1744 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.nav__link.active::before {
+  opacity: 1;
+  background: rgba(220, 20, 60, 0.12);
+  border-color: rgba(220, 20, 60, 0.25);
 }
 
-/* Indicateur actif sous le lien */
+/* Active Indicator Line */
 .nav__link::after {
   content: '';
   position: absolute;
-  bottom: 0.25rem;
+  bottom: 6px;
   left: 50%;
   transform: translateX(-50%) scaleX(0);
-  width: 20px;
-  height: 2px;
+  width: 4px;
+  height: 4px;
   background: var(--color-primary);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(220, 20, 60, 0.6);
-  transition: transform var(--transition-normal);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(220, 20, 60, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
 }
 
 .nav__link.active::after {
   transform: translateX(-50%) scaleX(1);
+  opacity: 1;
 }
 
-/* Toggle mobile premium */
+/* Toggle Mobile - Minimal Design */
 .nav__toggle {
   display: none;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   cursor: pointer;
   position: relative;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all var(--transition-normal);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav__toggle:hover {
-  background: rgba(220, 20, 60, 0.1);
+  background: rgba(220, 20, 60, 0.15);
   border-color: rgba(220, 20, 60, 0.3);
-  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.2);
+}
+
+.nav__toggle:hover span {
+  background: var(--color-primary);
 }
 
 .nav__toggle span {
   position: absolute;
-  width: 24px;
-  height: 2px;
-  background: var(--color-white);
+  width: 20px;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 2px;
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav__toggle span:nth-child(1) {
-  top: calc(50% - 8px);
+  top: calc(50% - 6px);
 }
 
 .nav__toggle span:nth-child(2) {
   top: 50%;
   transform: translateY(-50%);
+  width: 14px;
 }
 
 .nav__toggle span:nth-child(3) {
-  bottom: calc(50% - 8px);
+  bottom: calc(50% - 6px);
 }
 
-/* Animation toggle active - X Premium */
+/* Toggle Active State */
 .nav__toggle--active {
-  background: rgba(220, 20, 60, 0.15);
-  border-color: var(--color-primary);
-  box-shadow: 0 6px 24px rgba(220, 20, 60, 0.4);
+  background: rgba(220, 20, 60, 0.1);
+  border-color: rgba(220, 20, 60, 0.3);
 }
 
 .nav__toggle--active span {
   background: var(--color-primary);
+  width: 20px;
 }
 
 .nav__toggle--active span:nth-child(1) {
@@ -390,7 +490,7 @@ onUnmounted(() => {
 
 .nav__toggle--active span:nth-child(2) {
   opacity: 0;
-  transform: translateY(-50%) scale(0);
+  transform: translateY(-50%) scaleX(0);
 }
 
 .nav__toggle--active span:nth-child(3) {
@@ -405,10 +505,12 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   opacity: 0;
   visibility: hidden;
-  transition: all var(--transition-normal);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: var(--z-sticky);
 }
 
@@ -417,7 +519,7 @@ onUnmounted(() => {
   visibility: visible;
 }
 
-/* Menu mobile hidden par défaut */
+/* Menu mobile hidden by default */
 .nav__menu--mobile {
   display: none;
 }
@@ -425,107 +527,123 @@ onUnmounted(() => {
 /* Tablet Styles */
 @media (max-width: 1024px) {
   .nav__menu--desktop {
-    gap: 0.25rem;
+    gap: 2px;
   }
-  
+
   .nav__link {
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
+    padding: 8px 14px;
+    font-size: 12px;
   }
 }
 
-/* Mobile Styles - Optimisé pour la visibilité */
+/* Mobile Styles */
 @media (max-width: 768px) {
   .header {
     height: 70px;
   }
-  
+
   .nav {
     height: 70px;
   }
 
   .logo-image {
-    height: 60px;
+    height: 55px;
   }
-  
+
+  .header--scrolled .logo-image {
+    height: 48px;
+  }
+
   .nav__toggle {
     display: flex;
     z-index: var(--z-modal);
   }
-  
-  /* Cacher le menu desktop */
+
   .nav__menu--desktop {
     display: none;
   }
-  
-  /* Afficher le menu mobile */
+
+  /* Mobile Menu - Premium Glass Panel */
   .nav__menu--mobile {
     display: flex;
     position: fixed;
     top: 0;
     right: -100%;
-    width: min(85%, 400px);
+    width: min(85%, 360px);
     height: 100vh;
-    background: linear-gradient(180deg, rgba(8, 8, 8, 0.98) 0%, rgba(12, 12, 12, 0.98) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    height: 100dvh;
+    background: linear-gradient(
+      135deg,
+      rgba(10, 10, 10, 0.98) 0%,
+      rgba(15, 10, 12, 0.98) 100%
+    );
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
     padding: 0;
-    box-shadow: 
-      -4px 0 24px rgba(0, 0, 0, 0.5),
-      inset 1px 0 0 rgba(220, 20, 60, 0.2);
-    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+      -20px 0 80px rgba(0, 0, 0, 0.6),
+      -1px 0 0 rgba(220, 20, 60, 0.1);
+    transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
     overflow-x: hidden;
     z-index: var(--z-modal-backdrop);
     border-left: 1px solid rgba(220, 20, 60, 0.15);
   }
-  
+
+  .nav__menu--mobile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: radial-gradient(
+      ellipse at top right,
+      rgba(220, 20, 60, 0.08) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
   .nav__menu--mobile.nav__menu--open {
     right: 0;
   }
 
-  /* Close Button */
+  /* Close Button - Minimal */
   .nav__menu-close {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 48px;
-    height: 48px;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(220, 20, 60, 0.1);
-    border: 1px solid rgba(220, 20, 60, 0.3);
-    border-radius: var(--radius-sm);
-    color: var(--color-white);
-    font-size: 1.25rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
     cursor: pointer;
-    transition: all var(--transition-normal);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 2;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     opacity: 0;
-    transform: rotate(-90deg) scale(0.8);
+    transform: scale(0.8);
   }
 
   .nav__menu--open .nav__menu-close {
     opacity: 1;
-    transform: rotate(0) scale(1);
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.15s;
+    transform: scale(1);
+    transition-delay: 0.2s;
   }
 
   .nav__menu-close:hover {
-    background: rgba(220, 20, 60, 0.2);
-    border-color: var(--color-primary);
-    transform: rotate(90deg) scale(1.1);
-    box-shadow: 0 4px 16px rgba(220, 20, 60, 0.3);
-  }
-
-  .nav__menu-close:active {
-    transform: rotate(90deg) scale(0.95);
+    background: rgba(220, 20, 60, 0.15);
+    border-color: rgba(220, 20, 60, 0.3);
+    color: #fff;
   }
 
   /* Menu List */
@@ -534,171 +652,174 @@ onUnmounted(() => {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    padding: 5rem 1.5rem 2rem;
-    gap: 0.75rem;
+    padding: 90px 24px 40px;
+    gap: 8px;
     margin: 0;
     list-style: none;
   }
-  
+
   .nav__menu--mobile .nav__item {
     width: 100%;
-    max-width: 100%;
     opacity: 0;
-    transform: translateX(30px);
+    transform: translateX(20px);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
   }
-  
+
   .nav__menu--mobile.nav__menu--open .nav__item {
     opacity: 1;
     transform: translateX(0);
   }
-  
-  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(1) { transition-delay: 0.08s; }
-  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(2) { transition-delay: 0.12s; }
-  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(3) { transition-delay: 0.16s; }
-  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(4) { transition-delay: 0.2s; }
-  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(5) { transition-delay: 0.24s; }
-  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(6) { transition-delay: 0.28s; }
-  
+
+  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(1) { transition-delay: 0.1s; }
+  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(2) { transition-delay: 0.15s; }
+  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(3) { transition-delay: 0.2s; }
+  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(4) { transition-delay: 0.25s; }
+  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(5) { transition-delay: 0.3s; }
+  .nav__menu--mobile.nav__menu--open .nav__item:nth-child(6) { transition-delay: 0.35s; }
+
   .nav__menu--mobile .nav__link {
     display: block;
     width: 100%;
-    padding: 1.25rem 1.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
+    padding: 18px 24px;
+    font-size: 16px;
+    font-weight: 500;
     text-align: left;
-    border-radius: var(--radius-sm);
-    margin-bottom: 0;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
     position: relative;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   .nav__menu--mobile .nav__link span {
-    color: rgba(255, 255, 255, 0.9);
+    color: inherit;
     position: relative;
     display: block;
-    font-weight: 600;
-    letter-spacing: 0.3px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
   }
-  
+
   .nav__menu--mobile .nav__link:hover {
-    background: rgba(220, 20, 60, 0.12);
-    border-color: rgba(220, 20, 60, 0.35);
-    color: #ffffff;
-    transform: translateX(4px);
-    box-shadow: 
-      0 4px 16px rgba(220, 20, 60, 0.15),
-      0 2px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.04);
+    color: #fff;
+    padding-left: 28px;
   }
-  
-  .nav__menu--mobile .nav__link:hover span {
-    color: #ffffff;
-  }
-  
-  .nav__menu--mobile .nav__link::before {
-    display: none;
-  }
-  
+
+  .nav__menu--mobile .nav__link::before,
   .nav__menu--mobile .nav__link::after {
     display: none;
   }
-  
+
   .nav__menu--mobile .nav__link.active {
-    background: linear-gradient(135deg, rgba(220, 20, 60, 0.18) 0%, rgba(220, 20, 60, 0.12) 100%);
-    border-color: rgba(220, 20, 60, 0.5);
-    color: #ffffff;
-    box-shadow: 
-      0 4px 20px rgba(220, 20, 60, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    background: linear-gradient(
+      90deg,
+      rgba(220, 20, 60, 0.15) 0%,
+      rgba(220, 20, 60, 0.05) 100%
+    );
+    color: #fff;
   }
-  
+
   .nav__menu--mobile .nav__link.active::before {
     content: '';
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 3px;
-    height: 50%;
+    width: 4px;
+    height: 28px;
     background: var(--color-primary);
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 4px 4px 0;
     display: block;
+    box-shadow: 0 0 12px rgba(220, 20, 60, 0.5);
   }
-  
+
   .nav__menu--mobile .nav__link.active span {
-    color: #ffffff;
-    background: none;
-    -webkit-background-clip: unset;
-    -webkit-text-fill-color: #ffffff;
-    background-clip: unset;
-    font-weight: 700;
+    color: #fff;
+    font-weight: 600;
   }
-  
+
   .nav__menu--mobile .nav__item--language {
     width: 100%;
-    max-width: 100%;
     margin-left: 0;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(220, 20, 60, 0.2);
-    justify-content: stretch;
+    margin-top: auto;
+    padding: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: none;
+    justify-content: center;
     display: flex;
   }
-  
+
   .nav__overlay {
     z-index: var(--z-sticky);
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
   }
-  
-  /* Assurer que le logo et toggle restent visibles */
+
   .nav__logo {
     z-index: var(--z-modal);
     position: relative;
   }
-  
+
   .header {
     z-index: var(--z-fixed);
+  }
+
+  .header__blur {
+    background: rgba(5, 5, 5, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 }
 
 @media (max-width: 480px) {
   .logo-image {
-    height: 50px;
+    height: 48px;
   }
-  
+
+  .header--scrolled .logo-image {
+    height: 42px;
+  }
+
   .nav__menu--mobile {
-    width: 90%;
+    width: 100%;
+    border-left: none;
   }
 
   .nav__menu-list {
-    padding: 4.5rem 1.25rem 2rem;
+    padding: 80px 16px 24px;
   }
 
   .nav__menu-close {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+    top: 14px;
+    right: 14px;
+    border-radius: 12px;
+  }
+
+  .nav__menu--mobile .nav__link {
+    padding: 16px 20px;
+    font-size: 15px;
+    border-radius: 14px;
+  }
+
+  .nav__toggle {
     width: 44px;
     height: 44px;
-    font-size: 1.125rem;
+    border-radius: 12px;
   }
-  
-  .nav__menu--mobile .nav__link {
-    padding: 1.125rem 1.25rem;
-    font-size: 1.05rem;
-  }
-  
-  .nav__toggle {
-    width: 45px;
-    height: 45px;
-  }
-  
+
   .nav__toggle span {
-    width: 22px;
+    width: 18px;
+  }
+
+  .nav__toggle span:nth-child(2) {
+    width: 12px;
+  }
+
+  .nav__menu--mobile .nav__item--language {
+    padding: 20px 16px;
   }
 }
 </style>

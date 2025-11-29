@@ -2,7 +2,7 @@
   <div class="events-view">
     <!-- Loading State -->
     <LoadingSpinner v-if="isPageLoading" :message="'Chargement des événements...'" />
-    
+
     <!-- Content -->
     <template v-else>
       <!-- Page Header -->
@@ -41,7 +41,7 @@
           <!-- Event Content -->
           <div class="event-card__content">
             <h3 class="event-card__title">{{ event.title }}</h3>
-            
+
             <div class="event-card__info">
               <div class="info-item">
                 <i class="fas fa-calendar"></i>
@@ -97,11 +97,11 @@
                   Titre
                   <span class="required">*</span>
                 </label>
-                
+
                 <!-- Language Tabs -->
                 <div class="language-tabs">
-                  <button 
-                    v-for="lang in languages" 
+                  <button
+                    v-for="lang in languages"
                     :key="lang.code"
                     type="button"
                     :class="['language-tab', { active: currentTitleLang === lang.code }]"
@@ -110,23 +110,23 @@
                     {{ lang.label }}
                   </button>
                 </div>
-                
+
                 <!-- Title inputs for each language -->
                 <div class="language-inputs">
-                  <input 
-                    v-for="lang in languages" 
+                  <input
+                    v-for="lang in languages"
                     :key="lang.code"
                     v-show="currentTitleLang === lang.code"
-                    v-model="(formData.title_translations as any)[lang.code]" 
-                    type="text" 
-                    class="form-input" 
+                    v-model="(formData.title_translations as any)[lang.code]"
+                    type="text"
+                    class="form-input"
                     :placeholder="`Titre de l'événement (${lang.label})`"
                     :required="lang.code === 'fr'"
                   >
                 </div>
               </div>
             </div>
-            
+
             <!-- Category -->
             <div class="form-row">
               <div class="form-group">
@@ -211,11 +211,11 @@
                   Description
                   <span class="required">*</span>
                 </label>
-                
+
                 <!-- Language Tabs -->
                 <div class="language-tabs">
-                  <button 
-                    v-for="lang in languages" 
+                  <button
+                    v-for="lang in languages"
                     :key="lang.code"
                     type="button"
                     :class="['language-tab', { active: currentDescLang === lang.code }]"
@@ -224,15 +224,15 @@
                     {{ lang.label }}
                   </button>
                 </div>
-                
+
                 <!-- Description textareas for each language -->
                 <div class="language-inputs">
-                  <textarea 
-                    v-for="lang in languages" 
+                  <textarea
+                    v-for="lang in languages"
                     :key="lang.code"
                     v-show="currentDescLang === lang.code"
-                    v-model="(formData.description_translations as any)[lang.code]" 
-                    class="form-textarea" 
+                    v-model="(formData.description_translations as any)[lang.code]"
+                    class="form-textarea"
                     :placeholder="`Description de l'événement (${lang.label})`"
                     :required="lang.code === 'fr'"
                   ></textarea>
@@ -258,10 +258,10 @@
                   <i class="fas fa-map-marked-alt"></i>
                   URL d'embed Google Maps
                 </label>
-                <input 
-                  v-model="formData.maps_embed_url" 
-                  type="text" 
-                  class="form-input" 
+                <input
+                  v-model="formData.maps_embed_url"
+                  type="text"
+                  class="form-input"
                   placeholder="Collez l'iframe Google Maps complet ici..."
                   @paste="handleMapsPaste"
                 >
@@ -287,7 +287,7 @@
                   </label>
                 </div>
               </div>
-              
+
               <!-- Horaires des artistes sélectionnés -->
               <div v-if="formData.selectedArtists.length > 0" class="selected-artists-schedule">
                 <h4 class="schedule-title">Horaires de passage</h4>
@@ -299,9 +299,9 @@
                   <div class="schedule-item__times">
                     <div class="time-input-group">
                       <label>Début</label>
-                      <input 
-                        v-model="formData.selectedArtists[index].start_time" 
-                        type="time" 
+                      <input
+                        v-model="formData.selectedArtists[index].start_time"
+                        type="time"
                         class="form-input form-input--small"
                         placeholder="21:00"
                       >
@@ -309,9 +309,9 @@
                     <span class="time-separator">-</span>
                     <div class="time-input-group">
                       <label>Fin</label>
-                      <input 
-                        v-model="formData.selectedArtists[index].end_time" 
-                        type="time" 
+                      <input
+                        v-model="formData.selectedArtists[index].end_time"
+                        type="time"
                         class="form-input form-input--small"
                         placeholder="23:00"
                       >
@@ -371,6 +371,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
 import { useAuthStore } from '@/stores/auth'
@@ -492,7 +493,7 @@ async function showCreateModal() {
 async function editEvent(event: Event) {
   editingEvent.value = event
   // ✅ Pas de refetch - utiliser les données en cache
-  
+
   formData.value = {
     title: event.title,
     title_translations: {
@@ -531,18 +532,18 @@ function viewEvent(event: Event) {
 
 async function deleteEvent(event: Event) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return
-  
+
   try {
     const response = await fetch(buildApiUrl(API_ENDPOINTS.EVENT_BY_ID(event.id)), {
       method: 'DELETE',
       headers: getAuthHeaders(authStore.token)
     })
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || 'Erreur lors de la suppression')
     }
-    
+
     await fetchEvents()
     toast.success('Événement supprimé avec succès')
   } catch (error) {
@@ -555,21 +556,21 @@ async function deleteEvent(event: Event) {
 async function handleSubmit() {
   isSubmitting.value = true
   submitError.value = null
-  
+
   try {
     // Use FR as primary title/description, fallback to the first non-empty translation
-    const primaryTitle = formData.value.title_translations.fr || 
-                        formData.value.title_translations.en || 
-                        formData.value.title_translations.nl || 
-                        formData.value.title_translations.sq || 
+    const primaryTitle = formData.value.title_translations.fr ||
+                        formData.value.title_translations.en ||
+                        formData.value.title_translations.nl ||
+                        formData.value.title_translations.sq ||
                         formData.value.title
-    
-    const primaryDesc = formData.value.description_translations.fr || 
-                       formData.value.description_translations.en || 
-                       formData.value.description_translations.nl || 
-                       formData.value.description_translations.sq || 
+
+    const primaryDesc = formData.value.description_translations.fr ||
+                       formData.value.description_translations.en ||
+                       formData.value.description_translations.nl ||
+                       formData.value.description_translations.sq ||
                        formData.value.description
-    
+
     const data = {
       title: primaryTitle,
       title_translations: formData.value.title_translations,
@@ -597,24 +598,24 @@ async function handleSubmit() {
         is_soldout: p.is_soldout || false
       }))
     }
-    
-    const url = editingEvent.value 
+
+    const url = editingEvent.value
       ? buildApiUrl(API_ENDPOINTS.EVENT_BY_ID(editingEvent.value.id))
       : buildApiUrl(API_ENDPOINTS.EVENTS)
-    
+
     const method = editingEvent.value ? 'PUT' : 'POST'
-    
+
     const response = await fetch(url, {
       method,
       headers: getAuthHeaders(authStore.token),
       body: JSON.stringify(data)
     })
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || 'Erreur lors de la sauvegarde')
     }
-    
+
     await fetchEvents()
     toast.success(editingEvent.value ? 'Événement modifié avec succès' : 'Événement créé avec succès')
     closeModal()
@@ -668,21 +669,21 @@ function resetForm() {
 }
 
 function toggleArtist(artist: any) {
-  const index = formData.value.selectedArtists.findIndex((a: any) => 
+  const index = formData.value.selectedArtists.findIndex((a: any) =>
     (a.id || a.artist_id) === artist.id
   )
   if (index !== -1) {
     formData.value.selectedArtists.splice(index, 1)
   } else {
     // Check if artist already has time data (from editing existing event)
-    const existingArtist = editingEvent.value?.artists?.find((ea: any) => 
+    const existingArtist = editingEvent.value?.artists?.find((ea: any) =>
       (ea.id || ea.artist_id) === artist.id
     )
-    
-    formData.value.selectedArtists.push({ 
-      ...artist, 
-      start_time: existingArtist?.start_time || '', 
-      end_time: existingArtist?.end_time || '' 
+
+    formData.value.selectedArtists.push({
+      ...artist,
+      start_time: existingArtist?.start_time || '',
+      end_time: existingArtist?.end_time || ''
     })
   }
 }
@@ -697,7 +698,7 @@ function togglePack(pack: any) {
 }
 
 function isArtistSelected(artistId: string): boolean {
-  return formData.value.selectedArtists.some((a: any) => 
+  return formData.value.selectedArtists.some((a: any) =>
     (a.id || a.artist_id) === artistId
   )
 }
@@ -710,11 +711,11 @@ function isPackSelected(packId: string): boolean {
 function handleMapsPaste(event: ClipboardEvent) {
   event.preventDefault()
   const pastedText = event.clipboardData?.getData('text') || ''
-  
+
   // Regex pour extraire l'URL du src de l'iframe
   const iframeSrcRegex = /src="([^"]*google\.com\/maps\/embed[^"]*)"/i
   const match = pastedText.match(iframeSrcRegex)
-  
+
   if (match && match[1]) {
     // URL trouvée dans l'iframe, l'utiliser
     formData.value.maps_embed_url = match[1]

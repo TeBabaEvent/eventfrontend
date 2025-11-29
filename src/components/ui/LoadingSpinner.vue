@@ -33,7 +33,7 @@ withDefaults(defineProps<Props>(), {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #0a0a0a;
+  background: transparent;
   z-index: 9999;
 }
 

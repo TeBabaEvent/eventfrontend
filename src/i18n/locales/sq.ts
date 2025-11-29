@@ -2,17 +2,17 @@ export default {
   nav: {
     home: 'Ballina',
     events: 'Eventet',
-    team: 'DJs',
+    team: 'Artistët',
     contact: 'Kontakt'
   },
   hero: {
     badge: '+500 Evente të Suksesshme',
     title: {
-      line1: 'Jetoni Përvojën',
-      accent: 'Shqiptare',
-      line2: 'Autentike'
+      line1: 'BABA Events',
+      accent: 'Ku çdo natë',
+      line2: 'bëhet një histori'
     },
-    subtitle: 'Krijues të eventeve kulturore premium: koncerte, festivale, festa ekskluzive dhe dasma të jashtëzakonshme në të gjithë Evropën.',
+    subtitle: 'Krijues të eventeve kulturore premium: koncerte, festivale, festa ekskluzive në të gjithë Evropën.',
     features: {
       concerts: 'Koncerte Live',
       vip: 'Festa VIP',
@@ -24,11 +24,27 @@ export default {
       organize: 'Organizoni një event'
     },
     scroll: 'Zbuloni',
-    eventBadge: 'Mos e humbisni'
+    eventBadge: 'Mos e humbisni',
+    whatsappMessage: `KERKESE PER ORGANIZIM EVENTI
+----------------------------------------
+
+Përshëndetje,
+
+Dëshiroj të organizoj një event dhe do të doja të diskutoja projektin tim me ju.
+
+Lloji i eventit: [Koncert / Festë / Festival / Dasmë / Tjetër]
+Data e dëshiruar: [Për t'u specifikuar]
+Vendndodhja: [Për t'u specifikuar]
+Numri i mysafirëve të pritshëm: [Për t'u specifikuar]
+Buxheti i vlerësuar: [Për t'u specifikuar]
+
+Jam i disponueshëm për një telefonatë ose takim.
+
+Me respekt`
   },
   events: {
-    label: 'Së shpejti',
-    title: 'Eventet e Ardhshme',
+    label: 'Eventet',
+    title: 'Së Shpejti',
     description: 'Përvoja të thella që sjellin kulturën shqiptare në jetë',
     price: {
       from: 'Nga'
@@ -48,8 +64,8 @@ export default {
     }
   },
   team: {
-    label: 'Ekipi Ynë',
-    title: 'Artistët Tanë',
+    label: 'Artistët',
+    title: 'Talentet Tona',
     description: 'Talente të jashtëzakonshme që bëjnë eventet tuaja të vibrrojnë',
     noArtists: 'Nuk ka artistë për të shfaqur në këtë moment',
     stats: {
@@ -66,7 +82,22 @@ export default {
     cta: {
       title: 'Gati të krijoni eventin tuaj?',
       subtitle: 'Na kontaktoni për të diskutuar projektin tuaj',
-      button: 'Na kontaktoni'
+      button: 'Na kontaktoni',
+      whatsappMessage: `KERKESE KONTAKTI
+----------------------------------------
+
+Përshëndetje,
+
+Dëshiroj të kontaktoj në lidhje me një projekt eventi.
+
+Lloji i projektit: [Koncert / Festë / Festival / Dasmë / Tjetër]
+Data e dëshiruar: [Për t'u specifikuar]
+Vendndodhja: [Për t'u specifikuar]
+Numri i mysafirëve: [Për t'u specifikuar]
+
+Jam i disponueshëm për të diskutuar detajet.
+
+Me respekt`
     },
     about: {
       description: 'Krijues të përvojave kulturore shqiptare të paharrueshme që nga 2010. Specialistë në koncerte, festivale, festa VIP dhe dasma të jashtëzakonshme.'
@@ -167,23 +198,26 @@ export default {
       learnMore: 'Mëso më shumë'
     },
     about: {
-      title: 'Rreth eventit'
+      label: 'Rreth',
+      title: 'Rreth Eventit'
     },
     highlights: {
       title: 'Pikat kryesore',
       artists: 'Artistë Ndërkombëtarë',
-      artistsDesc: '{count} artistë kryesorë të skenës shqiptare',
+      artistsDesc: 'Artistë kryesorë të skenës shqiptare',
       bar: 'Bar Premium',
       barDesc: 'Kokteje ekskluzive dhe shampanjë',
-      production: 'Prodhim HD',
-      productionDesc: 'Ekrane të mëdha dhe efekte vizuale',
+      production: 'Pro Entertainment',
+      productionDesc: 'Tingull, drita dhe animacione live',
       vip: 'Atmosferë VIP',
       vipDesc: 'Zonë ekskluzive me shërbim premium'
     },
     lineup: {
-      title: 'Line-up'
+      label: 'Line-up',
+      title: 'Artistët'
     },
     venue: {
+      label: 'Vendi',
       title: 'Vendi',
       mapNotAvailable: 'Harta nuk është e disponueshme',
       getDirections: 'Merr udhëzimet'
@@ -215,12 +249,14 @@ export default {
       }
     },
     info: {
-      title: 'Informacione praktike',
-      smoking: 'Duhanpirja:',
-      smokingDesc: 'Zonë për duhanpirës jashtë',
-      accessibility: 'Aksesueshmëria:',
+      title: 'Info praktike',
+      dressing: 'Garderoba',
+      dressingDesc: 'Garderobë e sigurt në dispozicion',
+      smokingArea: 'Zona e duhanit',
+      smokingAreaDesc: 'Zonë e dedikuar në vend',
+      accessibility: 'Aksesueshmëria',
       accessibilityDesc: 'I aksesueshëm për karrige me rrota',
-      parking: 'Parkimi:',
+      parking: 'Parkimi',
       parkingDesc: 'Parking në afërsi'
     },
     share: {
@@ -230,7 +266,18 @@ export default {
       whatsapp: 'Shpërndaj në WhatsApp',
       copyLink: 'Kopjo linkun',
       copied: 'Linku u kopjua me sukses!',
-      copyError: 'Gabim gjatë kopjimit të linkut'
+      copyError: 'Gabim gjatë kopjimit të linkut',
+      message: {
+        header: 'FTESE PER EVENT',
+        discover: 'Shiko këtë event të jashtëzakonshëm',
+        event: 'Eventi',
+        date: 'Data',
+        time: 'Ora',
+        venue: 'Vendndodhja',
+        tickets: 'Bileta nga',
+        cta: 'Rezervo vendin tënd tani',
+        link: 'Linku'
+      }
     }
   },
   countdown: {
@@ -391,6 +438,36 @@ export default {
     retry: 'Provo përsëri',
     confirm: 'Konfirmo',
     close: 'Mbyll'
+  },
+  reservation: {
+    badge: 'Rezervim',
+    title: 'Rezervo vendin tim',
+    firstName: 'Emri',
+    firstNamePlaceholder: 'Emri juaj',
+    lastName: 'Mbiemri',
+    lastNamePlaceholder: 'Mbiemri juaj',
+    numberOfPeople: 'Numri i personave',
+    submit: 'Dërgo në WhatsApp',
+    note: 'Të dhënat tuaja nuk ruhen dhe përdoren vetëm për rezervimin tuaj.',
+    whatsapp: {
+      header: 'KERKESE REZERVIMI',
+      greeting: 'Përshëndetje,',
+      intro: 'Dëshiroj të bëj një rezervim për eventin e mëposhtëm:',
+      clientSection: 'INFORMACIONI I KLIENTIT',
+      name: 'Emri',
+      guests: 'Numri i personave',
+      eventSection: 'DETAJET E EVENTIT',
+      event: 'Eventi',
+      date: 'Data',
+      time: 'Ora',
+      venue: 'Vendndodhja',
+      packSection: 'PAKETA E ZGJEDHUR',
+      pack: 'Paketa',
+      price: 'Çmimi',
+      includes: 'Përfshin',
+      closing: 'Ju lutem konfirmoni disponueshmërinë dhe më jepni detajet e pagesës.',
+      signature: 'Me respekt'
+    }
   }
 }
 

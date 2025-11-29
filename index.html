@@ -39,7 +39,19 @@
     <link rel="manifest" href="/manifest.json">
     
     <!-- Theme -->
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Critical CSS - Prevents flash & matches GlobalBackground -->
+    <style>
+      html { background: #030303; min-height: 100vh; }
+      body, #app { background: transparent; min-height: 100vh; }
+      /* Scrollbar */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #1a1a1a; }
+      ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 9999px; }
+      ::-webkit-scrollbar-thumb:hover { background: #dc143c; }
+      * { scrollbar-width: thin; scrollbar-color: #4a4a4a #1a1a1a; }
+    </style>
     <meta name="msapplication-TileColor" content="#1a1a1a">
     <meta name="msapplication-config" content="/browserconfig.xml">
     

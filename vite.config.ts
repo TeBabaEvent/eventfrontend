@@ -37,7 +37,7 @@ export default defineConfig({
         manualChunks: {
           'vue-vendor': ['vue', 'vue-router', 'pinia'],
           'i18n': ['vue-i18n'],
-          'animations': ['aos']
+          'animations': ['gsap']
         }
       }
     },

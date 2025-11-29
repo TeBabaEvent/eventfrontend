@@ -2,17 +2,17 @@ export default {
   nav: {
     home: 'Accueil',
     events: 'Événements',
-    team: 'DJs',
+    team: 'Artistes',
     contact: 'Contact'
   },
   hero: {
     badge: '+500 Événements Réussis',
     title: {
-      line1: 'Vivez l\'Expérience',
-      accent: 'Albanaise',
-      line2: 'Authentique'
+      line1: 'BABA Events',
+      accent: 'Où chaque nuit',
+      line2: 'devient une histoire'
     },
-    subtitle: 'Créateurs d\'événements culturels premium : concerts, festivals, soirées exclusives et mariages d\'exception à travers l\'Europe.',
+    subtitle: 'Créateurs d\'événements culturels premium : concerts, festivals, soirées exclusives à travers l\'Europe.',
     features: {
       concerts: 'Concerts Live',
       vip: 'Soirées VIP',
@@ -24,11 +24,27 @@ export default {
       organize: 'Organiser un événement'
     },
     scroll: 'Découvrir',
-    eventBadge: 'À ne pas manquer'
+    eventBadge: 'À ne pas manquer',
+    whatsappMessage: `DEMANDE D'ORGANISATION D'EVENEMENT
+----------------------------------------
+
+Bonjour,
+
+Je souhaite organiser un événement et j'aimerais discuter de mon projet avec vous.
+
+Type d'événement : [Concert / Soirée / Festival / Mariage / Autre]
+Date souhaitée : [À préciser]
+Lieu envisagé : [À préciser]
+Nombre de personnes attendues : [À préciser]
+Budget estimé : [À préciser]
+
+Je reste disponible pour un échange téléphonique ou une rencontre.
+
+Cordialement`
   },
   events: {
-    label: 'Prochainement',
-    title: 'Événements à venir',
+    label: 'Événements',
+    title: 'Prochainement',
     description: 'Des expériences immersives qui font vibrer la culture albanaise',
     price: {
       from: 'À partir de'
@@ -48,8 +64,8 @@ export default {
     }
   },
   team: {
-    label: 'Notre Équipe',
-    title: 'Nos Artistes',
+    label: 'Artistes',
+    title: 'Nos Talents',
     description: 'Des talents exceptionnels qui font vibrer vos événements',
     noArtists: 'Aucun artiste à afficher pour le moment',
     stats: {
@@ -66,7 +82,22 @@ export default {
     cta: {
       title: 'Prêt à créer votre événement ?',
       subtitle: 'Contactez-nous pour discuter de votre projet',
-      button: 'Nous contacter'
+      button: 'Nous contacter',
+      whatsappMessage: `PRISE DE CONTACT
+----------------------------------------
+
+Bonjour,
+
+Je souhaite vous contacter au sujet d'un projet événementiel.
+
+Type de projet : [Concert / Soirée / Festival / Mariage / Autre]
+Date souhaitée : [À préciser]
+Lieu envisagé : [À préciser]
+Nombre de personnes : [À préciser]
+
+Je reste disponible pour échanger sur les détails.
+
+Cordialement`
     },
     about: {
       description: 'Créateurs d\'expériences culturelles albanaises inoubliables depuis 2010. Spécialistes en concerts, festivals, soirées VIP et mariages d\'exception.'
@@ -167,24 +198,27 @@ export default {
       learnMore: 'En savoir plus'
     },
     about: {
+      label: 'À propos',
       title: 'À propos de l\'événement'
     },
     highlights: {
       title: 'Points forts',
       artists: 'Artistes Internationaux',
-      artistsDesc: '{count} têtes d\'affiche de la scène albanaise',
+      artistsDesc: 'Têtes d\'affiche de la scène albanaise',
       bar: 'Bar Premium',
       barDesc: 'Cocktails signatures et champagne',
-      production: 'Production HD',
-      productionDesc: 'Écrans géants et effets visuels',
+      production: 'Pro Entertainment',
+      productionDesc: 'Son, lumières et animations live',
       vip: 'Ambiance VIP',
-      vipDesc: 'Espace exclusif avec service premium'
+      vipDesc: 'Espace exclusif et service premium'
     },
     lineup: {
-      title: 'Line-up'
+      label: 'Line-up',
+      title: 'Les Artistes'
     },
     venue: {
-      title: 'Le lieu',
+      label: 'Lieu',
+      title: 'Le Lieu',
       mapNotAvailable: 'Carte non disponible',
       getDirections: 'Obtenir l\'itinéraire'
     },
@@ -215,12 +249,14 @@ export default {
       }
     },
     info: {
-      title: 'Informations pratiques',
-      smoking: 'Fumeur :',
-      smokingDesc: 'Espace fumeur extérieur',
-      accessibility: 'Accessibilité :',
+      title: 'Infos pratiques',
+      dressing: 'Vestiaire',
+      dressingDesc: 'Dressing sécurisé disponible',
+      smokingArea: 'Espace fumeur',
+      smokingAreaDesc: 'Zone dédiée sur place',
+      accessibility: 'Accessibilité',
       accessibilityDesc: 'PMR accessible',
-      parking: 'Parking :',
+      parking: 'Parking',
       parkingDesc: 'Parking à proximité'
     },
     share: {
@@ -230,7 +266,18 @@ export default {
       whatsapp: 'Partager sur WhatsApp',
       copyLink: 'Copier le lien',
       copied: 'Lien copié avec succès !',
-      copyError: 'Erreur lors de la copie du lien'
+      copyError: 'Erreur lors de la copie du lien',
+      message: {
+        header: 'INVITATION EVENEMENT',
+        discover: 'Découvre cet événement exceptionnel',
+        event: 'Événement',
+        date: 'Date',
+        time: 'Heure',
+        venue: 'Lieu',
+        tickets: 'Billets à partir de',
+        cta: 'Réserve ta place maintenant',
+        link: 'Lien'
+      }
     }
   },
   countdown: {
@@ -391,6 +438,36 @@ export default {
     retry: 'Réessayer',
     confirm: 'Confirmer',
     close: 'Fermer'
+  },
+  reservation: {
+    badge: 'Réservation',
+    title: 'Réserver ma place',
+    firstName: 'Prénom',
+    firstNamePlaceholder: 'Votre prénom',
+    lastName: 'Nom',
+    lastNamePlaceholder: 'Votre nom de famille',
+    numberOfPeople: 'Nombre de personnes',
+    submit: 'Envoyer sur WhatsApp',
+    note: 'Vos données ne sont pas stockées et sont uniquement utilisées pour votre réservation.',
+    whatsapp: {
+      header: 'DEMANDE DE RESERVATION',
+      greeting: 'Bonjour,',
+      intro: 'Je souhaite effectuer une réservation pour l\'événement suivant :',
+      clientSection: 'INFORMATIONS CLIENT',
+      name: 'Nom',
+      guests: 'Nombre de personnes',
+      eventSection: 'DETAILS DE L\'EVENEMENT',
+      event: 'Événement',
+      date: 'Date',
+      time: 'Heure',
+      venue: 'Lieu',
+      packSection: 'FORMULE CHOISIE',
+      pack: 'Formule',
+      price: 'Prix',
+      includes: 'Inclus',
+      closing: 'Merci de confirmer la disponibilité et de me communiquer les modalités de paiement.',
+      signature: 'Cordialement'
+    }
   }
 }
 

@@ -2,13 +2,13 @@
   <div class="home">
     <!-- Hero Section -->
     <HeroSection @loaded="onHeroLoaded" />
-    
+
     <!-- Events Section -->
     <EventsSection @loaded="onEventsLoaded" />
-    
+
     <!-- Team Section -->
     <TeamSection @loaded="onTeamLoaded" />
-    
+
     <!-- Contact Section -->
     <!-- <ContactSection /> -->
   </div>
@@ -37,10 +37,10 @@ onMounted(async () => {
     events: false,
     team: false
   }
-  
+
   // Précharger les données en arrière-plan (non bloquant)
   dataStore.preloadAll()
-  
+
   // Le router gère déjà le stopLoading dans afterEach
   // On n'a plus besoin de le faire ici
 })

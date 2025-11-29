@@ -26,7 +26,7 @@ export const SOCIAL_LINKS = {
 export const NAVIGATION_ITEMS = [
   { id: 'home', label: 'Accueil', href: '#home' },
   { id: 'events', label: 'Événements', href: '#events' },
-  { id: 'team', label: 'DJs', href: '#team' },
+  { id: 'team', label: 'Artistes', href: '#team' },
   { id: 'contact', label: 'Contact', href: '#contact' }
 ] as const
 
@@ -39,9 +39,9 @@ export const EVENT_CATEGORIES = {
 } as const
 
 export const DJ_BADGES = {
-  star: { icon: 'fas fa-star', class: 'badge--star' },
-  fire: { icon: 'fas fa-fire', class: 'badge--fire' },
-  premium: { icon: 'fas fa-crown', class: 'badge--premium' }
+  star: { icon: 'fas fa-certificate', class: 'badge--star' },
+  fire: { icon: 'fas fa-bolt', class: 'badge--fire' },
+  premium: { icon: 'fas fa-gem', class: 'badge--premium' }
 } as const
 
 export const ANIMATION_DURATIONS = {

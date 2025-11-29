@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { apiService } from '@/services/api'
+import { api } from '@/services/api'
 import { logger } from '@/services/logger'
 import type { Event, Artist } from '@/types'
 
@@ -24,7 +24,7 @@ export const useDataStore = defineStore('data', () => {
     if (eventsLoaded.value && !force) {
       return events.value
     }
-    
+
     // Si un chargement est déjà en cours, attendre qu'il se termine
     if (isEventsLoading.value) {
       await new Promise<void>(resolve => {
@@ -37,12 +37,12 @@ export const useDataStore = defineStore('data', () => {
       })
       return events.value
     }
-    
+
     isEventsLoading.value = true
     eventsError.value = null
-    
+
     try {
-      const data = await apiService.getEvents()
+      const data = await api.getEvents()
       events.value = data
       eventsLoaded.value = true
       return data
@@ -64,7 +64,7 @@ export const useDataStore = defineStore('data', () => {
     if (artistsLoaded.value && !force) {
       return artists.value
     }
-    
+
     // Si un chargement est déjà en cours, attendre qu'il se termine
     if (isArtistsLoading.value) {
       await new Promise<void>(resolve => {
@@ -77,12 +77,12 @@ export const useDataStore = defineStore('data', () => {
       })
       return artists.value
     }
-    
+
     isArtistsLoading.value = true
     artistsError.value = null
-    
+
     try {
-      const data = await apiService.getWebsiteArtists()
+      const data = await api.getWebsiteArtists()
       artists.value = data
       artistsLoaded.value = true
       return data
@@ -122,9 +122,18 @@ export const useDataStore = defineStore('data', () => {
    * Getter pour les événements à venir uniquement
    */
   function getUpcomingEvents(): Event[] {
-    return events.value.filter((event) => 
+    return events.value.filter((event) =>
       !event.status || event.status === 'upcoming'
     )
+  }
+
+  /**
+   * Récupérer un événement par ID depuis le cache
+   * @param id - ID de l'événement
+   * @returns L'événement ou undefined si non trouvé
+   */
+  function getEventById(id: string): Event | undefined {
+    return events.value.find(e => e.id === id)
   }
 
   return {
@@ -137,15 +146,16 @@ export const useDataStore = defineStore('data', () => {
     artistsLoaded,
     eventsError,
     artistsError,
-    
+
     // Actions
     fetchEvents,
     fetchArtists,
     preloadAll,
     invalidateCache,
-    
+
     // Getters
-    getUpcomingEvents
+    getUpcomingEvents,
+    getEventById
   }
 })
 

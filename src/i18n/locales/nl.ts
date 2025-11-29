@@ -2,17 +2,17 @@ export default {
   nav: {
     home: 'Home',
     events: 'Evenementen',
-    team: 'DJs',
+    team: 'Artiesten',
     contact: 'Contact'
   },
   hero: {
     badge: '+500 Succesvolle Evenementen',
     title: {
-      line1: 'Beleef de',
-      accent: 'Albanese',
-      line2: 'Authenticiteit'
+      line1: 'BABA Events',
+      accent: 'Waar elke nacht',
+      line2: 'een verhaal wordt'
     },
-    subtitle: 'Premium culturele evenementenmakers: concerten, festivals, exclusieve feesten en uitzonderlijke bruiloften door heel Europa.',
+    subtitle: 'Premium culturele evenementenmakers: concerten, festivals, exclusieve feesten door heel Europa.',
     features: {
       concerts: 'Live Concerten',
       vip: 'VIP Feesten',
@@ -24,11 +24,27 @@ export default {
       organize: 'Evenement organiseren'
     },
     scroll: 'Ontdekken',
-    eventBadge: 'Niet te missen'
+    eventBadge: 'Niet te missen',
+    whatsappMessage: `AANVRAAG EVENEMENTORGANISATIE
+----------------------------------------
+
+Goedendag,
+
+Ik wil graag een evenement organiseren en mijn project met u bespreken.
+
+Type evenement: [Concert / Feest / Festival / Bruiloft / Anders]
+Gewenste datum: [Nader te bepalen]
+Locatie: [Nader te bepalen]
+Verwacht aantal gasten: [Nader te bepalen]
+Geschat budget: [Nader te bepalen]
+
+Ik ben beschikbaar voor een telefoongesprek of ontmoeting.
+
+Met vriendelijke groeten`
   },
   events: {
-    label: 'Binnenkort',
-    title: 'Aankomende Evenementen',
+    label: 'Evenementen',
+    title: 'Binnenkort',
     description: 'Meeslepende ervaringen die de Albanese cultuur tot leven brengen',
     price: {
       from: 'Vanaf'
@@ -48,8 +64,8 @@ export default {
     }
   },
   team: {
-    label: 'Ons Team',
-    title: 'Onze Artiesten',
+    label: 'Artiesten',
+    title: 'Onze Talenten',
     description: 'Uitzonderlijke talenten die uw evenementen laten vibreren',
     noArtists: 'Momenteel geen artiesten om weer te geven',
     stats: {
@@ -66,7 +82,22 @@ export default {
     cta: {
       title: 'Klaar om uw evenement te creëren?',
       subtitle: 'Neem contact met ons op om uw project te bespreken',
-      button: 'Contacteer ons'
+      button: 'Contacteer ons',
+      whatsappMessage: `CONTACTAANVRAAG
+----------------------------------------
+
+Goedendag,
+
+Ik wil graag contact opnemen over een evenementproject.
+
+Projecttype: [Concert / Feest / Festival / Bruiloft / Anders]
+Gewenste datum: [Nader te bepalen]
+Locatie: [Nader te bepalen]
+Aantal gasten: [Nader te bepalen]
+
+Ik ben beschikbaar om de details te bespreken.
+
+Met vriendelijke groeten`
     },
     about: {
       description: 'Makers van onvergetelijke Albanese culturele ervaringen sinds 2010. Specialisten in concerten, festivals, VIP-feesten en uitzonderlijke bruiloften.'
@@ -167,24 +198,27 @@ export default {
       learnMore: 'Meer weten'
     },
     about: {
-      title: 'Over het evenement'
+      label: 'Over',
+      title: 'Over het Evenement'
     },
     highlights: {
       title: 'Hoogtepunten',
       artists: 'Internationale Artiesten',
-      artistsDesc: '{count} headliners van de Albanese scene',
+      artistsDesc: 'Headliners van de Albanese scene',
       bar: 'Premium Bar',
       barDesc: 'Signature cocktails en champagne',
-      production: 'HD Productie',
-      productionDesc: 'Grote schermen en visuele effecten',
+      production: 'Pro Entertainment',
+      productionDesc: 'Geluid, licht en live animaties',
       vip: 'VIP Sfeer',
       vipDesc: 'Exclusieve ruimte met premium service'
     },
     lineup: {
-      title: 'Line-up'
+      label: 'Line-up',
+      title: 'De Artiesten'
     },
     venue: {
-      title: 'De locatie',
+      label: 'Locatie',
+      title: 'De Locatie',
       mapNotAvailable: 'Kaart niet beschikbaar',
       getDirections: 'Routebeschrijving'
     },
@@ -215,12 +249,14 @@ export default {
       }
     },
     info: {
-      title: 'Praktische informatie',
-      smoking: 'Roken:',
-      smokingDesc: 'Buitenruimte voor rokers',
-      accessibility: 'Toegankelijkheid:',
+      title: 'Praktische info',
+      dressing: 'Garderobe',
+      dressingDesc: 'Beveiligde garderobe beschikbaar',
+      smokingArea: 'Rookzone',
+      smokingAreaDesc: 'Toegewezen zone ter plaatse',
+      accessibility: 'Toegankelijkheid',
       accessibilityDesc: 'Rolstoeltoegankelijk',
-      parking: 'Parkeren:',
+      parking: 'Parkeren',
       parkingDesc: 'Parkeren in de buurt'
     },
     share: {
@@ -230,7 +266,18 @@ export default {
       whatsapp: 'Delen op WhatsApp',
       copyLink: 'Link kopiëren',
       copied: 'Link succesvol gekopieerd!',
-      copyError: 'Fout bij het kopiëren van de link'
+      copyError: 'Fout bij het kopiëren van de link',
+      message: {
+        header: 'EVENEMENT UITNODIGING',
+        discover: 'Ontdek dit geweldige evenement',
+        event: 'Evenement',
+        date: 'Datum',
+        time: 'Tijd',
+        venue: 'Locatie',
+        tickets: 'Tickets vanaf',
+        cta: 'Reserveer nu je plek',
+        link: 'Link'
+      }
     }
   },
   countdown: {
@@ -391,6 +438,36 @@ export default {
     retry: 'Opnieuw proberen',
     confirm: 'Bevestigen',
     close: 'Sluiten'
+  },
+  reservation: {
+    badge: 'Reservering',
+    title: 'Reserveer mijn plaats',
+    firstName: 'Voornaam',
+    firstNamePlaceholder: 'Uw voornaam',
+    lastName: 'Achternaam',
+    lastNamePlaceholder: 'Uw achternaam',
+    numberOfPeople: 'Aantal personen',
+    submit: 'Verstuur via WhatsApp',
+    note: 'Uw gegevens worden niet opgeslagen en worden alleen gebruikt voor uw reservering.',
+    whatsapp: {
+      header: 'RESERVERINGSAANVRAAG',
+      greeting: 'Goedendag,',
+      intro: 'Ik wil graag een reservering maken voor het volgende evenement:',
+      clientSection: 'KLANTGEGEVENS',
+      name: 'Naam',
+      guests: 'Aantal personen',
+      eventSection: 'EVENEMENTDETAILS',
+      event: 'Evenement',
+      date: 'Datum',
+      time: 'Tijd',
+      venue: 'Locatie',
+      packSection: 'GEKOZEN PAKKET',
+      pack: 'Pakket',
+      price: 'Prijs',
+      includes: 'Inclusief',
+      closing: 'Gelieve de beschikbaarheid te bevestigen en mij de betalingsgegevens door te geven.',
+      signature: 'Met vriendelijke groeten'
+    }
   }
 }
 

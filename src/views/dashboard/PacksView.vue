@@ -2,7 +2,7 @@
   <div class="packs-view">
     <!-- Loading State -->
     <LoadingSpinner v-if="isPageLoading" :message="'Chargement des packs...'" />
-    
+
     <!-- Content -->
     <template v-else>
       <!-- Page Header -->
@@ -32,16 +32,16 @@
             <span v-if="pack.unit" class="pack-card__unit">{{ pack.unit }}</span>
           </div>
         </div>
-        
+
         <p v-if="pack.description" class="pack-card__desc">{{ pack.description }}</p>
-        
+
         <div v-if="pack.features && pack.features.length" class="pack-card__features">
           <div v-for="(feature, idx) in pack.features" :key="idx" class="feature">
             <i class="fas fa-check"></i>
             <span>{{ feature }}</span>
           </div>
         </div>
-        
+
         <div class="pack-card__footer">
           <span :class="['pack-card__status', pack.is_active ? 'active' : 'inactive']">
             {{ pack.is_active ? 'Actif' : 'Inactif' }}
@@ -78,11 +78,11 @@
                   Nom du pack
                   <span class="required">*</span>
                 </label>
-                
+
                 <!-- Language Tabs -->
                 <div class="language-tabs">
-                  <button 
-                    v-for="lang in languages" 
+                  <button
+                    v-for="lang in languages"
                     :key="lang.code"
                     type="button"
                     :class="['language-tab', { active: currentNameLang === lang.code }]"
@@ -91,16 +91,16 @@
                     {{ lang.label }}
                   </button>
                 </div>
-                
+
                 <!-- Name inputs for each language -->
                 <div class="language-inputs">
-                  <input 
-                    v-for="lang in languages" 
+                  <input
+                    v-for="lang in languages"
                     :key="lang.code"
                     v-show="currentNameLang === lang.code"
-                    v-model="(formData.name_translations as any)[lang.code]" 
-                    type="text" 
-                    class="form-input" 
+                    v-model="(formData.name_translations as any)[lang.code]"
+                    type="text"
+                    class="form-input"
                     :placeholder="`Nom du pack (${lang.label})`"
                     :required="lang.code === 'fr'"
                   >
@@ -148,11 +148,11 @@
                   <i class="fas fa-align-left"></i>
                   Description
                 </label>
-                
+
                 <!-- Language Tabs -->
                 <div class="language-tabs">
-                  <button 
-                    v-for="lang in languages" 
+                  <button
+                    v-for="lang in languages"
                     :key="lang.code"
                     type="button"
                     :class="['language-tab', { active: currentDescLang === lang.code }]"
@@ -161,15 +161,15 @@
                     {{ lang.label }}
                   </button>
                 </div>
-                
+
                 <!-- Description textareas for each language -->
                 <div class="language-inputs">
-                  <textarea 
-                    v-for="lang in languages" 
+                  <textarea
+                    v-for="lang in languages"
                     :key="lang.code"
                     v-show="currentDescLang === lang.code"
-                    v-model="(formData.description_translations as any)[lang.code]" 
-                    class="form-textarea" 
+                    v-model="(formData.description_translations as any)[lang.code]"
+                    class="form-textarea"
                     :placeholder="`Description du pack (${lang.label})`"
                   ></textarea>
                 </div>
@@ -182,11 +182,11 @@
                 <i class="fas fa-list-check"></i>
                 Caractéristiques
               </label>
-              
+
               <!-- Language Tabs -->
               <div class="language-tabs">
-                <button 
-                  v-for="lang in languages" 
+                <button
+                  v-for="lang in languages"
                   :key="lang.code"
                   type="button"
                   :class="['language-tab', { active: currentFeaturesLang === lang.code }]"
@@ -195,16 +195,16 @@
                   {{ lang.label }}
                 </button>
               </div>
-              
+
               <!-- Features for each language -->
               <div class="language-inputs">
                 <div v-for="lang in languages" :key="lang.code" v-show="currentFeaturesLang === lang.code">
                   <div class="features-list">
                     <div v-for="(feature, idx) in (formData.features_translations as any)[lang.code]" :key="idx" class="feature-input">
-                      <input 
-                        v-model="(formData.features_translations as any)[lang.code][idx]" 
-                        type="text" 
-                        class="form-input" 
+                      <input
+                        v-model="(formData.features_translations as any)[lang.code][idx]"
+                        type="text"
+                        class="form-input"
                         :placeholder="`Caractéristique ${idx + 1} (${lang.label})`"
                       >
                       <button type="button" class="remove-feature-btn" @click="removeFeatureTranslation(lang.code, idx)">
@@ -248,6 +248,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
 import { useAuthStore } from '@/stores/auth'
@@ -327,31 +328,31 @@ async function fetchPacks() {
 async function handleSubmit() {
   isSubmitting.value = true
   submitError.value = null
-  
+
   try {
     // Filtrer les features vides
     const cleanedFeatures = formData.value.features.filter(f => f.trim())
-    
+
     // Nettoyer les features_translations
     const cleanedFeaturesTranslations: any = {}
     Object.keys(formData.value.features_translations).forEach(lang => {
       const langFeatures = formData.value.features_translations[lang as keyof typeof formData.value.features_translations]
       cleanedFeaturesTranslations[lang] = langFeatures.filter((f: string) => f.trim())
     })
-    
+
     // Utiliser FR comme titre/description principal, fallback aux autres langues
-    const primaryName = formData.value.name_translations.fr || 
-                       formData.value.name_translations.en || 
-                       formData.value.name_translations.nl || 
-                       formData.value.name_translations.sq || 
+    const primaryName = formData.value.name_translations.fr ||
+                       formData.value.name_translations.en ||
+                       formData.value.name_translations.nl ||
+                       formData.value.name_translations.sq ||
                        formData.value.name
-    
-    const primaryDesc = formData.value.description_translations.fr || 
-                       formData.value.description_translations.en || 
-                       formData.value.description_translations.nl || 
-                       formData.value.description_translations.sq || 
+
+    const primaryDesc = formData.value.description_translations.fr ||
+                       formData.value.description_translations.en ||
+                       formData.value.description_translations.nl ||
+                       formData.value.description_translations.sq ||
                        formData.value.description
-    
+
     const data = {
       ...formData.value,
       name: primaryName,
@@ -359,24 +360,24 @@ async function handleSubmit() {
       features: cleanedFeatures.length > 0 ? cleanedFeatures : null,
       features_translations: cleanedFeaturesTranslations
     }
-    
-    const url = editingPack.value 
+
+    const url = editingPack.value
       ? buildApiUrl(API_ENDPOINTS.PACK_BY_ID(editingPack.value.id))
       : buildApiUrl(API_ENDPOINTS.PACKS)
-    
+
     const method = editingPack.value ? 'PUT' : 'POST'
-    
+
     const response = await fetch(url, {
       method,
       headers: getAuthHeaders(authStore.token),
       body: JSON.stringify(data)
     })
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || 'Erreur lors de la sauvegarde')
     }
-    
+
     await fetchPacks()
     toast.success(editingPack.value ? 'Pack modifié avec succès' : 'Pack créé avec succès')
     closeModal()
@@ -427,18 +428,18 @@ function editPack(pack: Pack) {
 // Delete pack
 async function deletePack(pack: Pack) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer ce pack ?')) return
-  
+
   try {
     const response = await fetch(buildApiUrl(API_ENDPOINTS.PACK_BY_ID(pack.id)), {
       method: 'DELETE',
       headers: getAuthHeaders(authStore.token)
     })
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || 'Erreur lors de la suppression')
     }
-    
+
     await fetchPacks()
     toast.success('Pack supprimé avec succès')
   } catch (error) {

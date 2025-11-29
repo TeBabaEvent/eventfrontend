@@ -2,17 +2,17 @@ export default {
   nav: {
     home: 'Home',
     events: 'Events',
-    team: 'DJs',
+    team: 'Artists',
     contact: 'Contact'
   },
   hero: {
     badge: '+500 Successful Events',
     title: {
-      line1: 'Experience the',
-      accent: 'Albanian',
-      line2: 'Authenticity'
+      line1: 'BABA Events',
+      accent: 'Where every night',
+      line2: 'becomes a story'
     },
-    subtitle: 'Premium cultural event creators: concerts, festivals, exclusive parties and exceptional weddings across Europe.',
+    subtitle: 'Premium cultural event creators: concerts, festivals, exclusive parties across Europe.',
     features: {
       concerts: 'Live Concerts',
       vip: 'VIP Parties',
@@ -24,11 +24,27 @@ export default {
       organize: 'Organize an event'
     },
     scroll: 'Discover',
-    eventBadge: 'Don\'t miss it'
+    eventBadge: 'Don\'t miss it',
+    whatsappMessage: `EVENT ORGANIZATION REQUEST
+----------------------------------------
+
+Hello,
+
+I would like to organize an event and discuss my project with you.
+
+Event type: [Concert / Party / Festival / Wedding / Other]
+Desired date: [To be specified]
+Venue: [To be specified]
+Expected attendance: [To be specified]
+Estimated budget: [To be specified]
+
+I am available for a phone call or meeting.
+
+Best regards`
   },
   events: {
-    label: 'Coming Soon',
-    title: 'Upcoming Events',
+    label: 'Events',
+    title: 'Coming Soon',
     description: 'Immersive experiences that bring Albanian culture to life',
     price: {
       from: 'From'
@@ -48,8 +64,8 @@ export default {
     }
   },
   team: {
-    label: 'Our Team',
-    title: 'Our Artists',
+    label: 'Artists',
+    title: 'Our Talents',
     description: 'Exceptional talents that make your events vibrate',
     noArtists: 'No artists to display at the moment',
     stats: {
@@ -66,7 +82,22 @@ export default {
     cta: {
       title: 'Ready to create your event?',
       subtitle: 'Contact us to discuss your project',
-      button: 'Contact us'
+      button: 'Contact us',
+      whatsappMessage: `CONTACT REQUEST
+----------------------------------------
+
+Hello,
+
+I would like to get in touch regarding an event project.
+
+Project type: [Concert / Party / Festival / Wedding / Other]
+Desired date: [To be specified]
+Venue: [To be specified]
+Number of guests: [To be specified]
+
+I am available to discuss the details.
+
+Best regards`
     },
     about: {
       description: 'Creators of unforgettable Albanian cultural experiences since 2010. Specialists in concerts, festivals, VIP parties and exceptional weddings.'
@@ -167,24 +198,27 @@ export default {
       learnMore: 'Learn more'
     },
     about: {
-      title: 'About the event'
+      label: 'About',
+      title: 'About the Event'
     },
     highlights: {
       title: 'Highlights',
       artists: 'International Artists',
-      artistsDesc: '{count} headliners from the Albanian scene',
+      artistsDesc: 'Headliners from the Albanian scene',
       bar: 'Premium Bar',
       barDesc: 'Signature cocktails and champagne',
-      production: 'HD Production',
-      productionDesc: 'Giant screens and visual effects',
+      production: 'Pro Entertainment',
+      productionDesc: 'Sound, lights and live animations',
       vip: 'VIP Atmosphere',
       vipDesc: 'Exclusive area with premium service'
     },
     lineup: {
-      title: 'Line-up'
+      label: 'Line-up',
+      title: 'The Artists'
     },
     venue: {
-      title: 'The venue',
+      label: 'Venue',
+      title: 'The Venue',
       mapNotAvailable: 'Map not available',
       getDirections: 'Get directions'
     },
@@ -215,12 +249,14 @@ export default {
       }
     },
     info: {
-      title: 'Practical information',
-      smoking: 'Smoking:',
-      smokingDesc: 'Outdoor smoking area',
-      accessibility: 'Accessibility:',
+      title: 'Practical info',
+      dressing: 'Cloakroom',
+      dressingDesc: 'Secure cloakroom available',
+      smokingArea: 'Smoking area',
+      smokingAreaDesc: 'Dedicated area on site',
+      accessibility: 'Accessibility',
       accessibilityDesc: 'Wheelchair accessible',
-      parking: 'Parking:',
+      parking: 'Parking',
       parkingDesc: 'Parking nearby'
     },
     share: {
@@ -230,7 +266,18 @@ export default {
       whatsapp: 'Share on WhatsApp',
       copyLink: 'Copy link',
       copied: 'Link copied successfully!',
-      copyError: 'Error copying the link'
+      copyError: 'Error copying the link',
+      message: {
+        header: 'EVENT INVITATION',
+        discover: 'Check out this amazing event',
+        event: 'Event',
+        date: 'Date',
+        time: 'Time',
+        venue: 'Venue',
+        tickets: 'Tickets from',
+        cta: 'Book your spot now',
+        link: 'Link'
+      }
     }
   },
   countdown: {
@@ -391,6 +438,36 @@ export default {
     retry: 'Retry',
     confirm: 'Confirm',
     close: 'Close'
+  },
+  reservation: {
+    badge: 'Booking',
+    title: 'Book my spot',
+    firstName: 'First name',
+    firstNamePlaceholder: 'Your first name',
+    lastName: 'Last name',
+    lastNamePlaceholder: 'Your last name',
+    numberOfPeople: 'Number of people',
+    submit: 'Send on WhatsApp',
+    note: 'Your data is not stored and is only used for your booking.',
+    whatsapp: {
+      header: 'BOOKING REQUEST',
+      greeting: 'Hello,',
+      intro: 'I would like to make a reservation for the following event:',
+      clientSection: 'CLIENT INFORMATION',
+      name: 'Name',
+      guests: 'Number of guests',
+      eventSection: 'EVENT DETAILS',
+      event: 'Event',
+      date: 'Date',
+      time: 'Time',
+      venue: 'Venue',
+      packSection: 'SELECTED PACKAGE',
+      pack: 'Package',
+      price: 'Price',
+      includes: 'Includes',
+      closing: 'Please confirm availability and provide payment details.',
+      signature: 'Best regards'
+    }
   }
 }
 

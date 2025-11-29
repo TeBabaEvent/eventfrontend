@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { watchEffect } from 'vue'
-import HomeView from '@/views/HomeView.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 
@@ -10,7 +9,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: () => import('@/views/HomeView.vue')
     },
     {
       path: '/events/:id',
@@ -87,10 +86,10 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const appStore = useAppStore()
-  
+
   // Vérifier si la route nécessite l'authentification
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  
+
   // ✅ OPTIMISATION: Ne pas bloquer les routes publiques
   if (!requiresAuth) {
     // Lancer checkAuth en background pour les routes publiques (non bloquant)
@@ -99,27 +98,25 @@ router.beforeEach(async (to, from, next) => {
         // Ignorer les erreurs pour les routes publiques
       })
     }
-    
-    // Show loading seulement pour les transitions de pages (si pas déjà démarré)
-    if (from.name && to.name !== from.name && !appStore.isLoading) {
-      appStore.startLoading('Chargement...')
-    }
-  
+
+    // ❌ NE PAS déclencher startLoading() pour les routes publiques
+    // Chaque page gère son propre état de loading (EventDetail a son LoadingSpinner)
+    // Cela évite de démonter le contenu et de casser les contextes GSAP
+
     // Redirection si déjà authentifié et va vers login
     if (to.path === '/login' && authStore.isAuthenticated) {
       return next({ path: '/dashboard' })
     }
-    
+
     // ✅ Laisser passer immédiatement sans attendre
     return next()
   }
-  
+
   // ✅ Routes protégées - attendre l'auth (mais avec timeout réduit)
   if (!authStore.isInitialized) {
     appStore.startLoading('Vérification...')
-    
+
     await Promise.race([
-      // Attendre que isInitialized devienne true
       new Promise<void>((resolve) => {
         const stop = watchEffect(() => {
           if (authStore.isInitialized) {
@@ -128,39 +125,39 @@ router.beforeEach(async (to, from, next) => {
         }
     })
       }),
-      // ✅ Timeout réduit à 3 secondes au lieu de 5
       new Promise<void>((resolve) => setTimeout(resolve, 3000))
     ])
   }
-  
+
   // Vérifier l'authentification pour les routes protégées
     if (!authStore.isAuthenticated) {
-      // Non authentifié -> rediriger vers login
       return next({
         path: '/login',
         query: { redirect: to.fullPath }
       })
     }
-    
+
   // Vérifier les permissions admin
     if (!authStore.isAdmin && to.path.startsWith('/dashboard')) {
-      // Non admin essaie d'accéder au dashboard -> home
       return next({ path: '/' })
     }
-    
+
     // Authentifié et autorisé
   appStore.startLoading('Chargement...')
   next()
 })
 
-router.afterEach(() => {
+router.afterEach((to) => {
   const appStore = useAppStore()
-  
-  // ✅ Toujours stopper le loading après navigation
-  // Les composants peuvent redémarrer leur propre loading si nécessaire
+
+  // Stopper le loading seulement pour les routes protégées (dashboard)
+  // Les routes publiques ne déclenchent plus de loading global
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  if (requiresAuth && appStore.isLoading) {
   requestAnimationFrame(() => {
     appStore.stopLoading()
   })
+  }
 })
 
 export default router

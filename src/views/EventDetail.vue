@@ -1,91 +1,136 @@
 <template>
   <div class="event-detail-page">
-    <!-- Loading State -->
-    <LoadingSpinner 
-      v-if="!isInitialized || isLoading" 
-      fullscreen 
-      :message="t('common.loading')" 
-    />
-    
-    <!-- Event Content -->
-    <template v-else-if="isInitialized && event && !isLoading">
-      <!-- Event Hero -->
-      <section class="event-hero" id="event-hero">
-      <div class="event-hero__background">
-        <img :src="event?.image_url || event?.image" :alt="event?.title">
+    <!-- Loading Skeleton (accès direct via lien partagé) -->
+    <Transition name="skeleton-fade" mode="out-in">
+      <section v-if="!isInitialized || isLoading" key="skeleton" class="event-hero event-hero--skeleton">
+        <div class="event-hero__background event-hero__background--skeleton"></div>
         <div class="event-hero__overlay"></div>
-      </div>
-
-      <div class="container">
-        <div class="event-hero__content">
-          <!-- Breadcrumb -->
-          <nav class="breadcrumb" data-aos="fade-down" data-aos-duration="500">
-            <router-link to="/" class="breadcrumb__link">{{ t('nav.home') }}</router-link>
-            <span class="breadcrumb__separator">/</span>
-            <router-link to="/#events" class="breadcrumb__link">{{ t('nav.events') }}</router-link>
-            <span class="breadcrumb__separator">/</span>
-            <span class="breadcrumb__current">{{ displayTitle }}</span>
-          </nav>
-
-          <!-- Event Badge -->
-          <div v-if="event?.featured" class="event-hero__badge" data-aos="zoom-in" data-aos-delay="100" data-aos-duration="500">
-            <i class="fas fa-fire"></i>
-            <span>{{ t('eventDetail.badge.popular') }}</span>
-          </div>
-
-          <!-- Event Title -->
-          <h1 class="event-hero__title" data-aos="fade-up" data-aos-delay="150" data-aos-duration="700">
-            {{ displayTitle }}
-          </h1>
-
-          <!-- Countdown -->
-          <EventCountdown 
-            v-if="event?.date"
-            :eventDate="event.date" 
-            data-aos="zoom-in" 
-            data-aos-delay="250"
-            data-aos-duration="600"
-          />
-
-          <!-- Event Meta -->
-          <div class="event-hero__meta" data-aos="fade-up" data-aos-delay="350" data-aos-duration="700">
-            <div class="event-hero__meta-item">
-              <i class="fas fa-calendar-alt"></i>
-              <div>
-                <span class="label">{{ t('eventDetail.meta.date') }}</span>
-                <span class="value">{{ formatFullDate(event?.date || '') }}</span>
-              </div>
+        <div class="container">
+          <div class="event-hero__content">
+            <!-- Skeleton Breadcrumb -->
+            <div class="skeleton-breadcrumb">
+              <div class="skeleton-line skeleton-line--sm"></div>
             </div>
-            <div class="event-hero__meta-item">
-              <i class="fas fa-clock"></i>
-              <div>
-                <span class="label">{{ t('eventDetail.meta.time') }}</span>
-                <span class="value">{{ event?.time }}</span>
-              </div>
+            <!-- Skeleton Title -->
+            <div class="skeleton-title"></div>
+            <div class="skeleton-title skeleton-title--short"></div>
+            <!-- Skeleton Meta -->
+            <div class="skeleton-meta">
+              <div class="skeleton-meta-item"></div>
+              <div class="skeleton-meta-item"></div>
+              <div class="skeleton-meta-item"></div>
             </div>
-            <div class="event-hero__meta-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <div>
-                <span class="label">{{ t('eventDetail.meta.location') }}</span>
-                <span class="value">{{ event?.location }}, {{ event?.city }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Event CTA -->
-          <div class="event-hero__cta" data-aos="fade-up" data-aos-delay="450" data-aos-duration="700">
-            <BaseButton
-              variant="primary"
-              size="large"
-              icon="fas fa-arrow-down"
-              @click="scrollToBooking"
-            >
-              {{ t('eventDetail.cta.book') }}
-            </BaseButton>
+            <!-- Skeleton CTA -->
+            <div class="skeleton-cta"></div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <!-- Event Content -->
+      <div v-else-if="isInitialized && event && !isLoading" key="content" class="event-content-wrapper">
+      <!-- Event Hero -->
+      <section ref="heroRef" class="event-hero" id="event-hero">
+        <!-- Background Image with Parallax -->
+        <div class="event-hero__background">
+          <img
+            ref="heroImageRef"
+            :src="event?.image_url || event?.image"
+            :alt="event?.title"
+            class="event-hero__image"
+          >
+          <!-- Multi-layer overlay for depth -->
+          <div class="event-hero__overlay"></div>
+          <div class="event-hero__gradient"></div>
+        </div>
+
+        <div class="container">
+          <div ref="heroContentRef" class="event-hero__content">
+            <!-- Breadcrumb - Glass Style -->
+            <nav ref="breadcrumbRef" class="breadcrumb hero-animate">
+              <router-link to="/" class="breadcrumb__link">
+                <i class="fas fa-home"></i>
+                <span>{{ t('nav.home') }}</span>
+              </router-link>
+              <span class="breadcrumb__separator">
+                <i class="fas fa-chevron-right"></i>
+              </span>
+              <router-link to="/#events" class="breadcrumb__link">
+                <i class="fas fa-calendar"></i>
+                <span>{{ t('nav.events') }}</span>
+              </router-link>
+              <span class="breadcrumb__separator">
+                <i class="fas fa-chevron-right"></i>
+              </span>
+              <span class="breadcrumb__current">{{ displayTitle }}</span>
+            </nav>
+
+            <!-- Event Badge - Glass Premium Style -->
+            <div v-if="event?.featured" ref="badgeRef" class="event-hero__badge hero-animate">
+              <span class="event-hero__badge-icon">
+                <i class="fas fa-fire"></i>
+              </span>
+              <span class="event-hero__badge-text">{{ t('eventDetail.badge.popular') }}</span>
+            </div>
+
+            <!-- Event Title -->
+            <h1 ref="titleRef" class="event-hero__title hero-animate">
+              {{ displayTitle }}
+            </h1>
+
+            <!-- Countdown -->
+            <div ref="countdownRef" class="hero-animate">
+              <EventCountdown
+                v-if="event?.date"
+                :eventDate="event.date"
+              />
+            </div>
+
+            <!-- Event Meta - Glass Cards -->
+            <div ref="metaRef" class="event-hero__meta hero-animate">
+              <div class="event-hero__meta-item">
+                <div class="event-hero__meta-icon">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="event-hero__meta-content">
+                  <span class="event-hero__meta-label">{{ t('eventDetail.meta.date') }}</span>
+                  <span class="event-hero__meta-value">{{ formatFullDate(event?.date || '') }}</span>
+                </div>
+              </div>
+              <div class="event-hero__meta-item">
+                <div class="event-hero__meta-icon">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="event-hero__meta-content">
+                  <span class="event-hero__meta-label">{{ t('eventDetail.meta.time') }}</span>
+                  <span class="event-hero__meta-value">{{ event?.time }}</span>
+                </div>
+              </div>
+              <div class="event-hero__meta-item">
+                <div class="event-hero__meta-icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="event-hero__meta-content">
+                  <span class="event-hero__meta-label">{{ t('eventDetail.meta.location') }}</span>
+                  <span class="event-hero__meta-value">{{ event?.location }}, {{ event?.city }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Event CTA -->
+            <div ref="ctaRef" class="event-hero__cta hero-animate">
+              <BaseButton
+                variant="primary"
+                size="large"
+                icon="fas fa-ticket-alt"
+                @click="scrollToBooking"
+              >
+                {{ t('eventDetail.cta.book') }}
+              </BaseButton>
+            </div>
+          </div>
+        </div>
+
+      </section>
 
     <!-- Event Info -->
     <section class="event-info section" id="event-info">
@@ -94,8 +139,13 @@
           <!-- Main Content -->
           <div class="event-info__main">
             <!-- About Event -->
-            <div class="event-info__card" data-aos="fade-right" data-aos-duration="800">
-              <h2 class="event-info__title">{{ t('eventDetail.about.title') }}</h2>
+            <div class="event-info__card">
+              <div class="event-info__badge">
+                <span class="event-info__badge-icon">
+                  <i class="fas fa-info-circle"></i>
+                </span>
+                <span class="event-info__badge-text">{{ t('eventDetail.about.label') }}</span>
+              </div>
               <div class="event-info__text">
                 <p>
                   <strong>{{ displayTitle }}</strong> {{ displayDescription }}
@@ -104,7 +154,12 @@
 
               <!-- Event Highlights -->
               <div class="event-highlights">
-                <h3 class="event-highlights__title">{{ t('eventDetail.highlights.title') }}</h3>
+                <div class="event-info__badge event-info__badge--inline">
+                  <span class="event-info__badge-icon">
+                    <i class="fas fa-star"></i>
+                  </span>
+                  <span class="event-info__badge-text">{{ t('eventDetail.highlights.title') }}</span>
+                </div>
                 <div class="event-highlights__grid">
                   <div class="event-highlight">
                     <div class="event-highlight__icon">
@@ -112,7 +167,7 @@
                     </div>
                     <div class="event-highlight__content">
                       <h4>{{ t('eventDetail.highlights.artists') }}</h4>
-                      <p>{{ t('eventDetail.highlights.artistsDesc', { count: artistsCount }) }}</p>
+                      <p>{{ t('eventDetail.highlights.artistsDesc') }}</p>
                     </div>
                   </div>
                   <div class="event-highlight">
@@ -126,7 +181,7 @@
                   </div>
                   <div class="event-highlight">
                     <div class="event-highlight__icon">
-                      <i class="fas fa-video"></i>
+                      <i class="fas fa-bolt"></i>
                     </div>
                     <div class="event-highlight__content">
                       <h4>{{ t('eventDetail.highlights.production') }}</h4>
@@ -147,13 +202,18 @@
             </div>
 
             <!-- Lineup Section -->
-            <div v-if="event?.artists && event.artists.length > 0" class="event-info__card" data-aos="fade-right" data-aos-delay="150" data-aos-duration="800">
-              <h2 class="event-info__title">{{ t('eventDetail.lineup.title') }}</h2>
+            <div v-if="event?.artists && event.artists.length > 0" class="event-info__card">
+              <div class="event-info__badge">
+                <span class="event-info__badge-icon">
+                  <i class="fas fa-music"></i>
+                </span>
+                <span class="event-info__badge-text">{{ t('eventDetail.lineup.label') }}</span>
+              </div>
               <div class="lineup">
                 <div v-for="artist in event.artists" :key="artist.id" class="lineup-item">
-                    <img 
+                    <img
                     v-if="artist.image_url"
-                      :src="artist.image_url" 
+                      :src="artist.image_url"
                       :alt="artist.name"
                     />
                   <div v-else class="lineup-item__placeholder">
@@ -171,17 +231,22 @@
             </div>
 
             <!-- Venue Info -->
-            <div class="event-info__card" data-aos="fade-right" data-aos-delay="300" data-aos-duration="800">
-              <h2 class="event-info__title">{{ t('eventDetail.venue.title') }}</h2>
+            <div class="event-info__card">
+              <div class="event-info__badge">
+                <span class="event-info__badge-icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </span>
+                <span class="event-info__badge-text">{{ t('eventDetail.venue.label') }}</span>
+              </div>
               <div class="venue">
                 <div v-if="googleMapsEmbedUrl" class="venue__map">
-                  <iframe 
-                    :src="googleMapsEmbedUrl" 
-                    width="100%" 
-                    height="400" 
-                    style="border:0; border-radius: 16px;" 
-                    allowfullscreen 
-                    loading="lazy" 
+                  <iframe
+                    :src="googleMapsEmbedUrl"
+                    width="100%"
+                    height="400"
+                    style="border:0; border-radius: 16px;"
+                    allowfullscreen
+                    loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade">
                   </iframe>
                 </div>
@@ -198,11 +263,11 @@
                     <span v-if="event?.address">{{ event.address }}, {{ event?.city }}</span>
                     <span v-else>{{ event?.city }}</span>
                   </p>
-                  <a 
-                    v-if="googleMapsUrl" 
-                    :href="googleMapsUrl" 
-                    target="_blank" 
-                    rel="noopener" 
+                  <a
+                    v-if="googleMapsUrl"
+                    :href="googleMapsUrl"
+                    target="_blank"
+                    rel="noopener"
                     class="venue__directions"
                   >
                     <i class="fas fa-directions"></i>
@@ -216,7 +281,7 @@
           <!-- Sidebar -->
           <aside id="booking" class="event-info__sidebar">
             <!-- Booking Card -->
-            <div class="booking-card" data-aos="zoom-in-left" data-aos-duration="900">
+            <div class="booking-card">
               <div class="booking-card__header">
                 <h3>{{ t('eventDetail.booking.title') }}</h3>
                 <div v-if="event?.availableTickets && event.availableTickets < 50" class="booking-card__badge">
@@ -227,9 +292,9 @@
 
               <div v-if="event?.packs && event.packs.length > 0" class="booking-card__tickets">
                 <!-- Pack from DB -->
-                <div 
-                  v-for="pack in event.packs" 
-                  :key="pack.id" 
+                <div
+                  v-for="pack in event.packs"
+                  :key="pack.id"
                   class="ticket-option"
                 >
                   <div v-if="pack.is_soldout" class="ticket-option__soldout">
@@ -253,17 +318,14 @@
                     variant="outline"
                     size="small"
                     icon="fas fa-arrow-right"
-                    tag="a"
-                    :href="getWhatsAppLink(pack)"
-                    target="_blank"
-                    rel="noopener"
                     :disabled="pack.is_soldout"
+                    @click="openReservationModal(pack)"
                   >
                     {{ pack.is_soldout ? t('eventDetail.booking.soldOut') : t('eventDetail.booking.choose') }}
                   </BaseButton>
                 </div>
               </div>
-              
+
               <!-- Fallback message if no packs -->
               <div v-else class="booking-card__no-packs">
                 <p>{{ t('eventDetail.booking.noPacks') }}</p>
@@ -271,12 +333,16 @@
             </div>
 
             <!-- Info Card -->
-            <div class="info-card" data-aos="fade-left" data-aos-delay="150" data-aos-duration="800">
+            <div class="info-card">
               <h3 class="info-card__title">{{ t('eventDetail.info.title') }}</h3>
               <ul class="info-card__list">
                 <li>
-                  <i class="fas fa-smoking-ban"></i>
-                  <span><strong>{{ t('eventDetail.info.smoking') }}</strong> {{ t('eventDetail.info.smokingDesc') }}</span>
+                  <i class="fas fa-tshirt"></i>
+                  <span><strong>{{ t('eventDetail.info.dressing') }}</strong> {{ t('eventDetail.info.dressingDesc') }}</span>
+                </li>
+                <li>
+                  <i class="fas fa-smoking"></i>
+                  <span><strong>{{ t('eventDetail.info.smokingArea') }}</strong> {{ t('eventDetail.info.smokingAreaDesc') }}</span>
                 </li>
                 <li>
                   <i class="fas fa-wheelchair"></i>
@@ -290,7 +356,7 @@
             </div>
 
                     <!-- Share Card -->
-                    <div class="share-card" data-aos="fade-left" data-aos-delay="300" data-aos-duration="800">
+                    <div class="share-card">
                         <h3 class="share-card__title">{{ t('eventDetail.share.title') }}</h3>
                         <div class="share-card__buttons">
                             <a :href="shareLinks.facebook" class="share-btn share-btn--facebook" target="_blank" rel="noopener" :title="t('eventDetail.share.facebook')">
@@ -311,10 +377,11 @@
         </div>
       </div>
     </section>
-    </template>
-    
+      </div>
+    </Transition>
+
     <!-- Error State -->
-    <div v-else-if="isInitialized && !event && !isLoading" class="error-state">
+    <div v-if="isInitialized && !event && !isLoading" class="error-state">
       <div class="error-state__content">
         <i class="fas fa-exclamation-triangle"></i>
         <h2>{{ t('common.error') }}</h2>
@@ -324,35 +391,71 @@
         </router-link>
       </div>
     </div>
+
+    <!-- Reservation Modal -->
+    <ReservationModal
+      :is-open="isReservationModalOpen"
+      :pack-name="selectedPack ? getPackName(selectedPack, locale) : ''"
+      :pack-price="selectedPack ? formatPrice(selectedPack.price, selectedPack.currency) : ''"
+      :event-title="displayTitle"
+      :whatsapp-message="''"
+      @close="closeReservationModal"
+      @submit="handleReservationSubmit"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted, watch } from 'vue'
+import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useToast } from '@/composables/useToast'
-import AOS from 'aos'
 import { logger } from '@/services/logger'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import EventCountdown from '@/components/ui/EventCountdown.vue'
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import ReservationModal from '@/components/ui/ReservationModal.vue'
+import { useDataStore } from '@/stores/data'
 import { api } from '@/services/api'
+import { API_BASE_URL } from '@/config/api'
 import { formatPrice, scrollToElement } from '@/utils'
 import { getEventTitle, getEventDescription, getArtistRole, getPackName, getPackFeatures } from '@/utils/translations'
 import type { Event, Pack } from '@/types'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
 const toast = useToast()
+const dataStore = useDataStore()
 
-const event = ref<Event | null>(null)
-const isLoading = ref(true)
-const isInitialized = ref(false) // Empêche le flash initial
+// Refs for GSAP animations
+const heroRef = ref<HTMLElement | null>(null)
+const heroImageRef = ref<HTMLImageElement | null>(null)
+const heroContentRef = ref<HTMLElement | null>(null)
+const breadcrumbRef = ref<HTMLElement | null>(null)
+const badgeRef = ref<HTMLElement | null>(null)
+const titleRef = ref<HTMLElement | null>(null)
+const countdownRef = ref<HTMLElement | null>(null)
+const metaRef = ref<HTMLElement | null>(null)
+const ctaRef = ref<HTMLElement | null>(null)
 
-// AbortController pour annuler les requêtes en cours
-let abortController: AbortController | null = null
+let gsapContext: gsap.Context | null = null
+
+// ✅ Vérifier le cache IMMÉDIATEMENT (avant le premier rendu)
+const initialEventId = route.params.id as string
+const cachedEvent = initialEventId ? dataStore.getEventById(initialEventId) ?? null : null
+
+// Si on a un cache hit, initialiser avec les données immédiatement (pas de skeleton)
+const event = ref<Event | null>(cachedEvent)
+const isLoading = ref(!cachedEvent) // false si cache hit, true sinon
+const isInitialized = ref(!!cachedEvent) // true si cache hit, false sinon
+
+// Reservation Modal State
+const isReservationModalOpen = ref(false)
+const selectedPack = ref<Pack | null>(null)
 
 // Computed properties for translations
 const displayTitle = computed(() => {
@@ -365,16 +468,10 @@ const displayDescription = computed(() => {
   return getEventDescription(event.value, locale.value)
 })
 
-// Computed property for artists count
-const artistsCount = computed(() => {
-  if (!event.value?.artists) return 0
-  return event.value.artists.length
-})
-
 // Google Maps URLs
 const googleMapsUrl = computed(() => {
   if (!event.value) return ''
-  const query = event.value.address 
+  const query = event.value.address
     ? `${event.value.location}, ${event.value.address}, ${event.value.city}`
     : `${event.value.location}, ${event.value.city}`
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
@@ -382,54 +479,56 @@ const googleMapsUrl = computed(() => {
 
 const googleMapsEmbedUrl = computed(() => {
   if (!event.value) return ''
-  
+
   // Si l'événement a une URL d'embed personnalisée, l'utiliser
   if (event.value.maps_embed_url) {
     return event.value.maps_embed_url
   }
-  
+
   // Sinon, générer automatiquement l'URL
-  const query = event.value.address 
+  const query = event.value.address
     ? `${event.value.location}, ${event.value.address}, ${event.value.city}`
     : `${event.value.location}, ${event.value.city}`
   return `https://maps.google.com/maps?width=100%25&height=400&hl=fr&q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`
 })
 
-// Fetch event data
+// Fetch event data - Cache-first strategy for instant transitions
 async function fetchEventData(eventId: string) {
-  // Annuler la requête précédente si elle existe
-  if (abortController) {
-    abortController.abort()
-  }
-  
-  // Créer un nouveau controller
-  abortController = new AbortController()
-  
   try {
-    // Clear previous data and show loading immediately
-    event.value = null
-    isLoading.value = true
-    
-    // Fetch new event data
-    const newEvent = await api.getEventById(eventId)
-    
-    // Set the new event (suppression du délai artificiel)
-    event.value = newEvent
-    
-    // Marquer comme initialisé après le premier chargement
-    isInitialized.value = true
-    
-    // Refresh AOS to detect new elements after data loads
-    setTimeout(() => {
-      AOS.refresh()
-    }, 100)
-  } catch (error) {
-    // Ignorer les erreurs d'annulation
-    if (error instanceof Error && error.name === 'AbortError') {
-      logger.log('Request cancelled')
+    // 1. Si on a déjà les données (initialisation synchrone), juste rafraîchir en background
+    if (event.value && event.value.id === eventId && isInitialized.value) {
+      // Rafraîchir en arrière-plan pour avoir les données complètes
+      api.getEventById(eventId).then(freshEvent => {
+        if (freshEvent) {
+          event.value = freshEvent
+        }
+      }).catch(() => {})
       return
     }
-    
+
+    // 2. Chercher dans le cache
+    const cachedEvent = dataStore.getEventById(eventId)
+    if (cachedEvent) {
+      event.value = cachedEvent
+      isLoading.value = false
+      isInitialized.value = true
+
+      // Rafraîchir en arrière-plan
+      api.getEventById(eventId).then(freshEvent => {
+        if (freshEvent) {
+          event.value = freshEvent
+        }
+      }).catch(() => {})
+      return
+    }
+
+    // 3. Pas en cache - charger depuis l'API
+    isLoading.value = true
+    const newEvent = await api.getEventById(eventId)
+    event.value = newEvent
+    isInitialized.value = true
+
+  } catch (error) {
     logger.error('Error fetching event:', error)
     toast.error('Impossible de charger l\'événement')
     router.push('/')
@@ -438,13 +537,6 @@ async function fetchEventData(eventId: string) {
   }
 }
 
-// Cleanup au unmount
-onUnmounted(() => {
-  if (abortController) {
-    abortController.abort()
-  }
-})
-
 // Watch for route changes
 watch(() => route.params.id, (newId) => {
   if (newId) {
@@ -452,20 +544,212 @@ watch(() => route.params.id, (newId) => {
   }
 }, { immediate: true })
 
-
-
 // Format full date (e.g., "Lundi 15 Décembre 2025")
+// Defined early because updateMetaTags needs it
 const formatFullDate = (dateString: string) => {
   if (!dateString) return ''
   const date = new Date(dateString)
-  const options: Intl.DateTimeFormatOptions = { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   }
   return new Intl.DateTimeFormat(locale.value, options).format(date)
 }
+
+// ============================================
+// META TAGS FOR SOCIAL SHARING
+// ============================================
+const updateMetaTags = () => {
+  if (!event.value) return
+
+  const title = displayTitle.value
+  const description = displayDescription.value || `${title} - ${event.value.city || ''}`
+  const imageUrl = event.value.image_url || event.value.image || ''
+  const url = window.location.href
+  const date = event.value.date ? formatFullDate(event.value.date) : ''
+
+  // Update page title
+  document.title = `${title} | Baba Event`
+
+  // Helper to update or create meta tags
+  const setMetaTag = (property: string, content: string, isName = false) => {
+    const attr = isName ? 'name' : 'property'
+    let element = document.querySelector(`meta[${attr}="${property}"]`) as HTMLMetaElement
+    if (!element) {
+      element = document.createElement('meta')
+      element.setAttribute(attr, property)
+      document.head.appendChild(element)
+    }
+    element.content = content
+  }
+
+  // OpenGraph meta tags (no emojis for a professional look)
+  setMetaTag('og:title', title)
+  setMetaTag('og:description', `${date} | ${event.value.location || ''}, ${event.value.city || ''} | ${description}`)
+  setMetaTag('og:image', imageUrl)
+  setMetaTag('og:url', url)
+  setMetaTag('og:type', 'event')
+  setMetaTag('og:site_name', 'Baba Event')
+
+  // Twitter Card meta tags
+  setMetaTag('twitter:card', 'summary_large_image', true)
+  setMetaTag('twitter:title', title, true)
+  setMetaTag('twitter:description', `${date} | ${event.value.location || ''}, ${event.value.city || ''}`, true)
+  setMetaTag('twitter:image', imageUrl, true)
+
+  // Additional meta tags for better sharing
+  setMetaTag('description', description, true)
+}
+
+// Watch for event changes to update meta tags
+watch(() => event.value, () => {
+  if (event.value) {
+    updateMetaTags()
+  }
+}, { immediate: true })
+
+// ============================================
+// GSAP ANIMATIONS
+// ============================================
+function initHeroAnimations() {
+  if (!heroContentRef.value) return
+
+  gsapContext = gsap.context(() => {
+    // Set initial states for animated elements
+    const animatedElements = heroContentRef.value?.querySelectorAll('.hero-animate')
+    if (animatedElements) {
+      gsap.set(animatedElements, {
+        opacity: 0,
+        y: 30
+      })
+    }
+
+    // Create master timeline
+    const tl = gsap.timeline({
+      delay: 0.2,
+      defaults: {
+        ease: 'power2.out'
+      }
+    })
+
+    // Animate breadcrumb
+    if (breadcrumbRef.value) {
+      tl.to(breadcrumbRef.value, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6
+      })
+    }
+
+    // Animate badge (if exists)
+    if (badgeRef.value) {
+      tl.to(badgeRef.value, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5
+      }, '-=0.3')
+    }
+
+    // Animate title
+    if (titleRef.value) {
+      tl.to(titleRef.value, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7
+      }, '-=0.3')
+    }
+
+    // Animate countdown
+    if (countdownRef.value) {
+      tl.to(countdownRef.value, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5
+      }, '-=0.4')
+    }
+
+    // Animate meta section
+    if (metaRef.value) {
+      tl.to(metaRef.value, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6
+      }, '-=0.3')
+
+      // Stagger meta items
+      const metaItems = metaRef.value.querySelectorAll('.event-hero__meta-item')
+      if (metaItems.length) {
+        tl.fromTo(metaItems,
+          { opacity: 0, y: 20, scale: 0.95 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.5,
+            stagger: 0.1
+          },
+          '-=0.4'
+        )
+      }
+    }
+
+    // Animate CTA
+    if (ctaRef.value) {
+      tl.to(ctaRef.value, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5
+      }, '-=0.2')
+    }
+
+    // Parallax + Fade effect on hero image for smooth transition
+    if (heroImageRef.value && heroRef.value) {
+      // Parallax movement + slight zoom
+      gsap.to(heroImageRef.value, {
+        yPercent: 25,
+        scale: 1.05,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.value,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true
+        }
+      })
+
+      // Fade out effect as user scrolls - smooth transition to GlobalBackground
+      gsap.to(heroImageRef.value, {
+        opacity: 0.2,
+        filter: 'blur(6px)',
+        ease: 'power2.in',
+        scrollTrigger: {
+          trigger: heroRef.value,
+          start: '40% top',
+          end: 'bottom top',
+          scrub: 0.5
+        }
+      })
+    }
+  }, heroRef.value || undefined)
+}
+
+// Watch for content initialization to trigger animations
+watch(isInitialized, async (newValue) => {
+  if (newValue && event.value) {
+    await nextTick()
+    setTimeout(() => initHeroAnimations(), 50)
+  }
+})
+
+// Cleanup GSAP on unmount
+onUnmounted(() => {
+  if (gsapContext) {
+    gsapContext.revert()
+    gsapContext = null
+  }
+})
 
 // Scroll to info section (unused)
 // const scrollToInfo = () => {
@@ -479,122 +763,227 @@ const scrollToBooking = () => {
 // Check if pack unit should be displayed (only for multiple persons/table)
 const shouldShowUnit = (pack: Pack): boolean => {
   if (!pack.unit) return false
-  
+
   // If unit is already a formatted text (contains "/"), use it as is
   if (pack.unit.includes('/')) {
     return true
   }
-  
+
   // If unit is just a number
   const capacity = parseInt(pack.unit, 10)
   if (!isNaN(capacity)) {
     return capacity > 1
   }
-  
+
   return true
 }
 
 // Get formatted unit text
 const getPackUnitText = (pack: Pack): string => {
   if (!pack.unit) return ''
-  
+
   // If unit already contains formatting (like "/ table de 6"), return as is
   if (pack.unit.includes('/') || pack.unit.includes('table') || pack.unit.includes('groupe')) {
     return pack.unit
   }
-  
+
   // If unit is a number, format it based on pack type
   const capacity = parseInt(pack.unit, 10)
   if (!isNaN(capacity)) {
     // Check pack name to determine context
     const packName = getPackName(pack, locale.value).toLowerCase()
-    
+
     if (packName.includes('table') || packName.includes('vip')) {
       return `/ table de ${capacity}`
     }
-    
+
     if (capacity > 1) {
       return `/ ${capacity} personnes`
     }
   }
-  
+
   // Fallback: return as is
   return pack.unit
 }
 
-// Generate WhatsApp link for tickets
-const getWhatsAppLink = (pack: Pack) => {
-  const phone = '32495526656' // Numéro WhatsApp Baba Event
-  
-  // Récupérer toutes les informations de l'événement
+// Reservation Modal Methods
+const openReservationModal = (pack: Pack) => {
+  if (pack.is_soldout) return
+  selectedPack.value = pack
+  isReservationModalOpen.value = true
+}
+
+const closeReservationModal = () => {
+  isReservationModalOpen.value = false
+  selectedPack.value = null
+}
+
+const handleReservationSubmit = (data: { firstName: string; lastName: string; numberOfPeople: number }) => {
+  if (!selectedPack.value) return
+
+  const phone = '32495526656'
+  const pack = selectedPack.value
+
+  // Event info
   const eventTitle = displayTitle.value
   const eventDate = event.value?.date ? formatFullDate(event.value.date) : ''
   const eventTime = event.value?.time || ''
   const eventLocation = event.value?.location || ''
   const eventCity = event.value?.city || ''
-  
-  // Récupérer les informations du pack
+
+  // Pack info
   const packName = getPackName(pack, locale.value)
   const packPrice = formatPrice(pack.price, pack.currency)
   const packUnit = getPackUnitText(pack)
   const packFeatures = getPackFeatures(pack, locale.value)
-  
-  // Construire le message formaté avec emojis
-  let message = `🎉 *RÉSERVATION ÉVÉNEMENT*\n\n`
-  message += `📋 *Événement :* ${eventTitle}\n`
-  message += `📅 *Date :* ${eventDate}\n`
-  message += `🕐 *Heure :* ${eventTime}\n`
-  message += `📍 *Lieu :* ${eventLocation}, ${eventCity}\n\n`
-  message += `🎫 *Pack choisi :* ${packName}\n`
-  message += `💰 *Prix :* ${packPrice}`
-  
-  // Ajouter l'unité si elle existe
+
+  // Build professional formatted message (no emojis for a clean look)
+  let message = ''
+
+  // Header with decorative line
+  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
+  message += `${t('reservation.whatsapp.header').toUpperCase()}\n`
+  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
+
+  // Greeting
+  message += `${t('reservation.whatsapp.greeting')}\n\n`
+  message += `${t('reservation.whatsapp.intro')}\n\n`
+
+  // Client section
+  message += `*${t('reservation.whatsapp.clientSection')}*\n`
+  message += `----------------------------------------\n`
+  message += `${t('reservation.whatsapp.name')}: ${data.firstName} ${data.lastName}\n`
+  message += `${t('reservation.whatsapp.guests')}: ${data.numberOfPeople}\n\n`
+
+  // Event section
+  message += `*${t('reservation.whatsapp.eventSection')}*\n`
+  message += `----------------------------------------\n`
+  message += `${t('reservation.whatsapp.event')}: ${eventTitle}\n`
+  message += `${t('reservation.whatsapp.date')}: ${eventDate}\n`
+  message += `${t('reservation.whatsapp.time')}: ${eventTime}\n`
+  message += `${t('reservation.whatsapp.venue')}: ${eventLocation}, ${eventCity}\n\n`
+
+  // Pack section
+  message += `*${t('reservation.whatsapp.packSection')}*\n`
+  message += `----------------------------------------\n`
+  message += `${t('reservation.whatsapp.pack')}: ${packName}\n`
+
+  let priceText = packPrice
   if (packUnit && shouldShowUnit(pack)) {
-    message += ` ${packUnit}`
+    priceText += ` ${packUnit}`
   }
-  
-  // Ajouter les fonctionnalités du pack
+  message += `${t('reservation.whatsapp.price')}: ${priceText}\n`
+
   if (packFeatures.length > 0) {
-    message += `\n\n✨ *Inclus :*\n`
+    message += `${t('reservation.whatsapp.includes')}:\n`
     packFeatures.forEach((feature: string) => {
-      message += `• ${feature}\n`
+      message += `  - ${feature}\n`
     })
   }
-  
-  message += `\n\nJe souhaite réserver pour cet événement. Merci !`
-  
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+
+  // Closing
+  message += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
+  message += `${t('reservation.whatsapp.closing')}\n\n`
+  message += `${t('reservation.whatsapp.signature')},\n`
+  message += `${data.firstName} ${data.lastName}`
+
+  // Open WhatsApp with the message
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+  window.open(whatsappUrl, '_blank')
+
+  // Close the modal
+  closeReservationModal()
+}
+
+// Build share message for the event
+const buildShareMessage = (includeImage = true) => {
+  const eventId = route.params.id as string
+  // Use OG URL for proper link preview when shared (with current language)
+  const ogUrl = `${API_BASE_URL}/og/events/${eventId}?lang=${locale.value}`
+  const title = displayTitle.value
+  const date = event.value?.date ? formatFullDate(event.value.date) : ''
+  const time = event.value?.time || ''
+  const location = event.value?.location || ''
+  const city = event.value?.city || ''
+  const imageUrl = event.value?.image_url || event.value?.image || ''
+
+  // Get minimum price from packs
+  const minPrice = event.value?.packs?.length
+    ? Math.min(...event.value.packs.filter((p: Pack) => !p.is_soldout).map((p: Pack) => p.price))
+    : null
+
+  // Build professional formatted message (no emojis for a clean look)
+  let message = ''
+
+  // Header
+  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
+  message += `${t('eventDetail.share.message.header').toUpperCase()}\n`
+  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
+
+  // Introduction
+  message += `${t('eventDetail.share.message.discover')}\n\n`
+
+  // Event details
+  message += `*${t('eventDetail.share.message.event')}*\n`
+  message += `${title}\n\n`
+
+  message += `${t('eventDetail.share.message.date')}: ${date}\n`
+  if (time) {
+    message += `${t('eventDetail.share.message.time')}: ${time}\n`
+  }
+  message += `${t('eventDetail.share.message.venue')}: ${location}${city ? `, ${city}` : ''}\n`
+
+  if (minPrice && minPrice > 0) {
+    message += `${t('eventDetail.share.message.tickets')}: ${formatPrice(minPrice, event.value?.packs?.[0]?.currency || 'EUR')}\n`
+  }
+
+  // Call to action
+  message += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
+  message += `*${t('eventDetail.share.message.cta')}*\n\n`
+
+  // Link (OG URL for proper preview, redirects to actual page)
+  message += `${t('eventDetail.share.message.link')}: ${ogUrl}`
+
+  // Add image URL if available and requested
+  if (includeImage && imageUrl) {
+    message += `\n\nImage: ${imageUrl}`
+  }
+
+  return message
 }
 
 // Share links
 const shareLinks = computed(() => {
-  const url = window.location.href
+  const eventId = route.params.id as string
   const title = displayTitle.value
   const date = event.value?.date ? formatFullDate(event.value.date) : ''
   const location = event.value?.city || ''
-  
-  // Message enrichi avec plus de détails
-  const shareText = `${title} - ${date} à ${location}`
-  const shareMessage = `🎉 ${title}\n📅 ${date}\n📍 ${location}\n\n${url}`
-  
+
+  // URL with OpenGraph meta tags served by backend (for Facebook/Twitter crawlers)
+  // Include current language for proper translations
+  const ogUrl = `${API_BASE_URL}/og/events/${eventId}?lang=${locale.value}`
+
+  // Short text for Twitter (character limit, no emojis)
+  const shareText = `${title} | ${date} | ${location}`
+
+  // Beautiful WhatsApp message with image
+  const whatsappMessage = buildShareMessage(true)
+
   return {
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText)}`,
-    whatsapp: `https://wa.me/?text=${encodeURIComponent(shareMessage)}`
+    // Facebook & Twitter use the OG URL which has proper meta tags and redirects to the actual page
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(ogUrl)}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(ogUrl)}&text=${encodeURIComponent(shareText)}`,
+    // WhatsApp uses the formatted message directly
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`
   }
 })
 
 // Copier le lien de l'événement
 const copyEventLink = async () => {
   try {
-    const url = window.location.href
-    const title = displayTitle.value
-    const date = event.value?.date ? formatFullDate(event.value.date) : ''
-    const location = event.value?.city || ''
-    
-    // Texte enrichi à copier
-    const textToCopy = `🎉 ${title}\n📅 ${date}\n📍 ${location}\n\n${url}`
-    
+    // Build the beautiful share message (with image)
+    const textToCopy = buildShareMessage(true)
+
     // Utiliser l'API Clipboard si disponible
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(textToCopy)
@@ -677,6 +1066,267 @@ const copyEventLink = async () => {
 .btn--primary:hover {
   background: #c41e3a;
   transform: translateY(-2px);
+}
+
+/* ============================================
+   SKELETON LOADING STATE - PREMIUM
+   ============================================ */
+.event-hero--skeleton {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 120px 0 80px;
+  animation: skeleton-fade-in 0.4s ease-out;
+}
+
+@keyframes skeleton-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.event-hero__background--skeleton {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(220, 20, 60, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(10, 10, 15, 0.98) 0%, rgba(15, 10, 12, 0.95) 100%);
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Ambient glow effect */
+.event-hero__background--skeleton::before {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 300px;
+  background: radial-gradient(ellipse, rgba(220, 20, 60, 0.15) 0%, transparent 70%);
+  filter: blur(60px);
+  animation: skeleton-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes skeleton-glow {
+  0% { opacity: 0.5; transform: translateX(-50%) scale(0.9); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+}
+
+/* Premium shimmer animation */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Staggered entrance animation */
+@keyframes skeleton-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.skeleton-breadcrumb {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  animation: skeleton-slide-up 0.5s ease-out 0.1s both;
+}
+
+.skeleton-line {
+  height: 16px;
+  width: 200px;
+  border-radius: 20px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 80%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s ease-in-out infinite;
+}
+
+.skeleton-line--sm {
+  width: 180px;
+  height: 14px;
+}
+
+.skeleton-title {
+  height: 52px;
+  width: 75%;
+  max-width: 550px;
+  margin: 0 auto 1rem;
+  border-radius: 16px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.1) 80%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation:
+    skeleton-shimmer 2s ease-in-out infinite,
+    skeleton-slide-up 0.5s ease-out 0.2s both;
+}
+
+.skeleton-title--short {
+  width: 45%;
+  max-width: 350px;
+  height: 44px;
+  margin-bottom: 2.5rem;
+  animation:
+    skeleton-shimmer 2s ease-in-out infinite,
+    skeleton-slide-up 0.5s ease-out 0.3s both;
+}
+
+.skeleton-meta {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  padding: 1.5rem 2rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: skeleton-slide-up 0.5s ease-out 0.4s both;
+}
+
+.skeleton-meta-item {
+  width: 100px;
+  height: 45px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.06) 20%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.06) 80%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s ease-in-out infinite;
+}
+
+.skeleton-meta-item:nth-child(1) { animation-delay: 0s; }
+.skeleton-meta-item:nth-child(2) { animation-delay: 0.15s; }
+.skeleton-meta-item:nth-child(3) { animation-delay: 0.3s; }
+
+.skeleton-cta {
+  width: 200px;
+  height: 52px;
+  margin: 0 auto;
+  border-radius: 30px;
+  background: linear-gradient(
+    90deg,
+    rgba(220, 20, 60, 0.15) 0%,
+    rgba(220, 20, 60, 0.25) 20%,
+    rgba(220, 20, 60, 0.4) 50%,
+    rgba(220, 20, 60, 0.25) 80%,
+    rgba(220, 20, 60, 0.15) 100%
+  );
+  background-size: 200% 100%;
+  animation:
+    skeleton-shimmer 2s ease-in-out infinite,
+    skeleton-slide-up 0.5s ease-out 0.5s both,
+    skeleton-pulse 2s ease-in-out infinite 1s;
+  border: 1px solid rgba(220, 20, 60, 0.25);
+  box-shadow:
+    0 0 30px rgba(220, 20, 60, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Responsive skeleton */
+@media (max-width: 768px) {
+  .event-hero--skeleton {
+    min-height: 100vh;
+    padding: 100px 1rem 60px;
+  }
+
+  .event-hero__background--skeleton::before {
+    width: 300px;
+    height: 150px;
+  }
+
+  .skeleton-title {
+    height: 40px;
+    width: 90%;
+  }
+
+  .skeleton-title--short {
+    height: 36px;
+    width: 70%;
+  }
+
+  .skeleton-meta {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+  }
+
+  .skeleton-meta-item {
+    width: 100%;
+    height: 40px;
+  }
+
+  .skeleton-cta {
+    width: 160px;
+    height: 46px;
+  }
+}
+
+/* ============================================
+   SKELETON → CONTENT TRANSITION
+   ============================================ */
+.skeleton-fade-enter-active {
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.skeleton-fade-leave-active {
+  transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+}
+
+.skeleton-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.skeleton-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+/* Content wrapper for smooth entrance */
+.event-content-wrapper {
+  animation: content-reveal 0.5s ease-out;
+}
+
+@keyframes content-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
 

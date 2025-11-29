@@ -14,27 +14,18 @@ app.use(pinia)
 app.use(router)
 app.use(i18n)
 
-// Initialiser l'authentification au démarrage de manière asynchrone
-const authStore = useAuthStore()
+// ✅ Attendre que le router soit prêt AVANT de monter l'app
+// Cela évite le flash de la route par défaut (/) lors d'un accès direct à une autre route
+router.isReady().then(() => {
+  app.mount('#app')
 
-// Fonction d'initialisation
-async function initApp() {
-  // 1. Vérifier l'authentification
+  // ✅ Initialiser l'auth en arrière-plan (non bloquant)
+const authStore = useAuthStore()
   if (authStore.token) {
-    await authStore.checkAuth().catch(() => {
-      // Si le token est invalide, le store va le supprimer automatiquement
+    authStore.checkAuth().catch(() => {
+      // Token invalide, sera supprimé automatiquement
     })
   } else {
-    // Pas de token, marquer comme initialisé via l'action du store
     authStore.setInitialized(true)
   }
-  
-  // 2. Attendre que le router soit prêt
-  await router.isReady()
-  
-  // 3. Monter l'app après toutes les vérifications
-  app.mount('#app')
-}
-
-// Lancer l'initialisation
-initApp()
+})

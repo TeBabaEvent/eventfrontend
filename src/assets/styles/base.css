@@ -24,6 +24,7 @@ html {
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Background défini dans index.html critical CSS et GlobalBackground.vue */
 }
 
 body {
@@ -32,7 +33,7 @@ body {
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-normal);
   color: var(--color-white);
-  background-color: var(--bg-primary);
+  background-color: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -40,17 +41,6 @@ body {
 }
 
 /* Typographie */
-/* Optimisation de l'affichage des polices */
-@font-face {
-  font-family: 'Montserrat';
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-display: swap;
-}
-
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: var(--font-weight-bold);
@@ -201,6 +191,12 @@ textarea::placeholder {
 ::selection {
   background-color: var(--color-primary);
   color: var(--color-white);
+}
+
+/* Badge Pulse Animation - Shared across sections */
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 ::-moz-selection {
@@ -371,19 +367,19 @@ textarea::placeholder {
   html {
     font-size: 14px;
   }
-  
+
   h1 {
     font-size: var(--font-size-4xl);
   }
-  
+
   h2 {
     font-size: var(--font-size-3xl);
   }
-  
+
   h3 {
     font-size: var(--font-size-2xl);
   }
-  
+
   .container {
     padding: 0 1.5rem;
   }
@@ -410,7 +406,7 @@ textarea::placeholder {
   html {
     font-size: 13px;
   }
-  
+
   .container {
     padding: 0 1.25rem;
   }

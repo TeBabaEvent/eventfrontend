@@ -8,13 +8,13 @@ import { logger } from './logger'
 export interface ApiError {
   message: string
   status?: number
-  details?: any
+  details?: unknown
 }
 
 class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = buildApiUrl(endpoint)
-    
+
     const defaultOptions: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ class ApiService {
 
     try {
       const response = await fetch(url, { ...defaultOptions, ...options })
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         const error: ApiError = {
@@ -33,7 +33,7 @@ class ApiService {
         }
         throw error
       }
-      
+
       return await response.json()
     } catch (error) {
       // Si c'est une erreur réseau ou autre erreur non-HTTP
@@ -45,7 +45,7 @@ class ApiService {
         logger.error('Network error:', networkError)
         throw networkError
       }
-      
+
       // Si c'est déjà notre ApiError, on la propage
       logger.error('API request failed:', error)
       throw error
@@ -60,7 +60,7 @@ class ApiService {
   async getEventById(id: string): Promise<Event> {
     return this.request<Event>(API_ENDPOINTS.EVENT_BY_ID(id))
   }
-  
+
   // Alias pour compatibilité
   async getEvent(id: string): Promise<Event> {
     return this.getEventById(id)
@@ -83,7 +83,7 @@ class ApiService {
   async getArtist(id: string): Promise<DJ> {
     return this.request<DJ>(API_ENDPOINTS.ARTIST_BY_ID(id))
   }
-  
+
   // Alias pour compatibilité (deprecated - use getArtists/getArtist)
   getDJs = this.getArtists.bind(this)
   getDJ = this.getArtist.bind(this)
@@ -155,6 +155,15 @@ class ApiWithFallback {
     } catch (error) {
       logger.warn('API call failed, using mock data:', error)
       return getMockDJs()
+    }
+  }
+
+  async getWebsiteArtists(): Promise<DJ[]> {
+    try {
+      return await apiService.getWebsiteArtists()
+    } catch (error) {
+      logger.warn('API call failed, using mock data:', error)
+      return getMockDJs().filter(dj => dj.show_on_website !== false)
     }
   }
 

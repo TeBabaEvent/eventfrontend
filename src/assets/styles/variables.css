@@ -7,16 +7,16 @@
   --color-primary-dark: #8B0000;
   --color-primary-light: #FF1744;
   --color-primary-lighter: #ff4466; /* Variation plus claire pour les dégradés */
-  
+
   --color-secondary: #161616;
   --color-secondary-dark: #0F0F0F;
   --color-secondary-light: #2d2d2d;
-  
+
   --color-accent: #8B0000;
   --color-accent-rgb: 139, 0, 0;
   --color-accent-dark: #660000;
   --color-accent-light: #B71C1C;
-  
+
   /* Couleurs Réseaux Sociaux */
   --color-facebook: #1877F2;
   --color-twitter: #1DA1F2;
@@ -37,26 +37,26 @@
   --color-gray-700: #374151;
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
-  
+
   /* Couleurs d'état */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
-  
+
   /* Arrière-plans - Identiques au prototype */
   --bg-primary: #000000;
   --bg-secondary: #0F0F0F;
   --bg-tertiary: #161616;
   --bg-glass: rgba(255, 255, 255, 0.05);
   --bg-overlay: rgba(0, 0, 0, 0.9);
-  
+
   /* Typographie */
   --font-primary: 'Montserrat', sans-serif;
   --font-secondary: 'Inter', sans-serif;
   --font-heading: 'Montserrat', sans-serif;
   --font-body: 'Inter', sans-serif;
-  
+
   --font-size-xs: 0.75rem;    /* 12px */
   --font-size-sm: 0.875rem;   /* 14px */
   --font-size-base: 1rem;     /* 16px */
@@ -67,7 +67,7 @@
   --font-size-4xl: 2.25rem;   /* 36px */
   --font-size-5xl: 3rem;      /* 48px */
   --font-size-6xl: 3.75rem;   /* 60px */
-  
+
   --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -75,13 +75,13 @@
   --font-weight-bold: 700;
   --font-weight-extrabold: 800;
   --font-weight-black: 900;
-  
+
   --line-height-tight: 1.25;
   --line-height-snug: 1.375;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.625;
   --line-height-loose: 2;
-  
+
   /* Espacements */
   --spacing-0: 0;
   --spacing-1: 0.25rem;   /* 4px */
@@ -97,14 +97,14 @@
   --spacing-20: 5rem;     /* 80px */
   --spacing-24: 6rem;     /* 96px */
   --spacing-32: 8rem;     /* 128px */
-  
+
   /* Variables du prototype */
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 2rem;
   --spacing-lg: 4rem;
   --spacing-xl: 6rem;
-  
+
   /* Bordures - Identiques au prototype */
   --border-radius-none: 0;
   --border-radius-sm: 0.125rem;   /* 2px */
@@ -115,18 +115,18 @@
   --border-radius-2xl: 1rem;      /* 16px */
   --border-radius-3xl: 1.5rem;    /* 24px */
   --border-radius-full: 9999px;
-  
+
   /* Variables du prototype */
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
-  
+
   --border-width-0: 0;
   --border-width-1: 1px;
   --border-width-2: 2px;
   --border-width-4: 4px;
   --border-width-8: 8px;
-  
+
   /* Ombres - Alignées sur le prototype */
   --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.2);
   --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
@@ -136,12 +136,12 @@
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-glow: 0 0 40px rgba(var(--color-primary-rgb), 0.3);
   --shadow-glow-accent: 0 0 20px rgba(255, 215, 0, 0.3);
-  
+
   /* Transitions - Identiques au prototype */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
-  
+
   /* Z-index */
   --z-dropdown: 1000;
   --z-sticky: 1020;
@@ -151,22 +151,22 @@
   --z-popover: 1060;
   --z-tooltip: 1070;
   --z-toast: 1080;
-  
+
   /* Breakpoints (pour les media queries) */
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
-  
-  /* Container - Aligné sur le prototype */
-  --container-max-width: 1400px;
-  --container-padding: var(--spacing-md);
-  
-  /* Header */
-  --header-height: 90px;
-  --header-height-mobile: 80px;
-  
+
+  /* Container - Optimisé pour la lisibilité */
+  --container-max-width: 1200px;
+  --container-padding: clamp(1rem, 4vw, 2rem);
+
+  /* Header - Synced with AppHeader.vue */
+  --header-height: clamp(60px, 8vh, 80px);
+  --header-height-mobile: 70px;
+
   /* Animations */
   --animation-bounce: bounce 1s infinite;
   --animation-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -216,11 +216,11 @@
 
 /* Animations du prototype - Alignement design */
 @keyframes pulse-fire {
-  0%, 100% { 
+  0%, 100% {
     transform: scale(1);
     opacity: 1;
   }
-  50% { 
+  50% {
     transform: scale(1.2);
     opacity: 0.8;
   }
@@ -228,13 +228,13 @@
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 
+    box-shadow:
       0 4px 16px rgba(220, 20, 60, 0.5),
       0 0 30px rgba(220, 20, 60, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 4px 18px rgba(220, 20, 60, 0.6),
       0 0 35px rgba(220, 20, 60, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.25);

@@ -20,7 +20,7 @@ export function generateWhatsAppLink(
  * @param options - Options de formatage
  */
 export function formatDate(
-  date: string | Date, 
+  date: string | Date,
   locale: string = 'fr-FR',
   options?: Intl.DateTimeFormatOptions
 ): string {
@@ -78,7 +78,8 @@ export function isInViewport(element: Element): boolean {
 /**
  * Debounce une fonction
  */
-export function debounce<T extends (...args: any[]) => any>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce<T extends (...args: any[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -92,7 +93,8 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle une fonction
  */
-export function throttle<T extends (...args: any[]) => any>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function throttle<T extends (...args: any[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -147,7 +149,7 @@ export function isValidPhoneNumber(phone: string): boolean {
   const frenchRegex = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/
   // Regex pour numéros belges
   const belgianRegex = /^(?:(?:\+|00)32|0)\s*[1-9](?:[\s.-]*\d{2}){3,4}$/
-  
+
   return frenchRegex.test(phone) || belgianRegex.test(phone)
 }
 
