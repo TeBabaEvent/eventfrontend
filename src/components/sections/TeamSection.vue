@@ -84,7 +84,7 @@ const { isMobile } = useMobile()
 
 const initHeaderAnimations = () => {
   // SKIP animations on mobile for better scroll performance
-  if (isMobile()) {
+  if (isMobile.value) {
     return
   }
 
@@ -129,7 +129,7 @@ const animateDJCards = () => {
   animationsInitialized = true
 
   // SKIP animations on mobile for better scroll performance
-  if (isMobile()) {
+  if (isMobile.value) {
     return
   }
 
