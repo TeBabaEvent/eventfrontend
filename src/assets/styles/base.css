@@ -27,6 +27,29 @@ html {
   /* Background défini dans index.html critical CSS et GlobalBackground.vue */
 }
 
+/* Performance: Disable smooth scroll on mobile for better scroll performance with GSAP */
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Respect user preferences for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 body {
   font-family: var(--font-secondary);
   font-size: var(--font-size-base);

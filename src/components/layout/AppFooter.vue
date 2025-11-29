@@ -192,7 +192,16 @@ const getSocialIcon = (platform: string): string => {
 // AWWWARDS-WORTHY ANIMATIONS - Fluid and elegant
 // ═══════════════════════════════════════════════════════════════
 
+// Mobile detection for performance optimization
+const isMobile = () => {
+  return window.matchMedia('(max-width: 768px)').matches || 
+         'ontouchstart' in window || 
+         navigator.maxTouchPoints > 0
+}
+
 const initScrollAnimations = () => {
+  const mobile = isMobile()
+  
   gsapContext = gsap.context(() => {
     // ─────────────────────────────────────────────────────────────
     // CTA SECTION - Elegant staggered reveal

@@ -66,19 +66,33 @@ const glowRef = ref<HTMLElement | null>(null)
 let gsapContext: gsap.Context | null = null
 
 // ═══════════════════════════════════════════════════════════════
-// SUBTLE PARALLAX EFFECTS
+// MOBILE DETECTION
+// ═══════════════════════════════════════════════════════════════
+const isMobile = () => {
+  return window.matchMedia('(max-width: 768px)').matches ||
+         'ontouchstart' in window ||
+         navigator.maxTouchPoints > 0
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUBTLE PARALLAX EFFECTS (Desktop only for performance)
 // ═══════════════════════════════════════════════════════════════
 
 const initScrollEffects = () => {
+  // Skip heavy scroll effects on mobile for better performance
+  if (isMobile()) {
+    return
+  }
+
   // Use document.documentElement as the scroll container
   const scrollContainer = document.documentElement
 
   gsapContext = gsap.context(() => {
     // ─────────────────────────────────────────────────────────────
-    // BLOBS - Subtle parallax movement
+    // BLOBS - Subtle parallax movement (reduced intensity)
     // ─────────────────────────────────────────────────────────────
     gsap.to(blob1Ref.value, {
-      y: '-20vh',
+      y: '-10vh', // Reduced from -20vh
       ease: 'none',
       scrollTrigger: {
         trigger: scrollContainer,
@@ -89,7 +103,7 @@ const initScrollEffects = () => {
     })
 
     gsap.to(blob2Ref.value, {
-      y: '-30vh',
+      y: '-15vh', // Reduced from -30vh
       ease: 'none',
       scrollTrigger: {
         trigger: scrollContainer,
@@ -100,7 +114,7 @@ const initScrollEffects = () => {
     })
 
     gsap.to(blob3Ref.value, {
-      y: '-40vh',
+      y: '-20vh', // Reduced from -40vh
       ease: 'none',
       scrollTrigger: {
         trigger: scrollContainer,
@@ -111,7 +125,7 @@ const initScrollEffects = () => {
     })
 
     gsap.to(blob4Ref.value, {
-      y: '-50vh',
+      y: '-25vh', // Reduced from -50vh
       ease: 'none',
       scrollTrigger: {
         trigger: scrollContainer,
@@ -122,13 +136,13 @@ const initScrollEffects = () => {
     })
 
     // ─────────────────────────────────────────────────────────────
-    // AURORA - Gentle drift
+    // AURORA - Gentle drift (reduced)
     // ─────────────────────────────────────────────────────────────
     const auroraLayers = auroraRef.value?.querySelectorAll('.global-bg__aurora-layer')
     if (auroraLayers) {
       auroraLayers.forEach((layer, index) => {
         gsap.to(layer, {
-          y: `${(index + 1) * -15}vh`,
+          y: `${(index + 1) * -8}vh`, // Reduced from -15vh
           ease: 'none',
           scrollTrigger: {
             trigger: scrollContainer,
@@ -141,7 +155,7 @@ const initScrollEffects = () => {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // PARTICLES - Floating upward
+    // PARTICLES - Floating upward (simplified)
     // ─────────────────────────────────────────────────────────────
     const particles = particlesRef.value?.querySelectorAll('.global-bg__particle')
     if (particles) {
@@ -154,13 +168,13 @@ const initScrollEffects = () => {
         })
 
         gsap.to(particle, {
-          y: `-=${50 + (index * 20)}vh`,
+          y: `-=${30 + (index * 10)}vh`, // Reduced movement
           ease: 'none',
           scrollTrigger: {
             trigger: scrollContainer,
             start: 'top top',
             end: 'bottom bottom',
-            scrub: 1 + (index * 0.2)
+            scrub: 1.5 + (index * 0.2)
           }
         })
       })
@@ -682,13 +696,27 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  /* Performance: Disable will-change on mobile to save GPU memory */
+  .global-bg__aurora-layer,
+  .global-bg__blob,
+  .global-bg__beam,
+  .global-bg__particle {
+    will-change: auto;
+  }
+
+  /* Performance: Simplify/disable animations on mobile */
+  .global-bg__aurora-layer {
+    animation: none;
+  }
+
   .global-bg__blob--1 {
     width: 300px;
     height: 300px;
     top: 0;
     right: -100px;
-    opacity: 0.65;
-    filter: blur(80px);
+    opacity: 0.5; /* Reduced */
+    filter: blur(60px); /* Reduced blur for performance */
+    animation: none;
   }
 
   .global-bg__blob--2 {
@@ -696,8 +724,9 @@ onUnmounted(() => {
     height: 250px;
     top: 60vh;
     left: -100px;
-    opacity: 0.55;
-    filter: blur(70px);
+    opacity: 0.4;
+    filter: blur(50px);
+    animation: none;
   }
 
   .global-bg__blob--3 {
@@ -705,8 +734,9 @@ onUnmounted(() => {
     height: 200px;
     top: 120vh;
     right: -60px;
-    opacity: 0.45;
-    filter: blur(60px);
+    opacity: 0.35;
+    filter: blur(50px);
+    animation: none;
   }
 
   .global-bg__blob--4 {
@@ -714,35 +744,31 @@ onUnmounted(() => {
     height: 180px;
     top: 180vh;
     left: -50px;
-    opacity: 0.4;
+    opacity: 0.3;
+    animation: none;
   }
 
   .global-bg__aurora {
-    opacity: 0.55;
+    opacity: 0.4;
   }
 
   .global-bg__beams {
-    display: block;
-    opacity: 0.1;
+    display: none; /* Hide beams on mobile for performance */
   }
 
   .global-bg__grid {
-    opacity: 0.3;
+    opacity: 0.2;
     background-size: 50px 50px;
   }
 
   .global-bg__glow {
-    width: 300px;
-    height: 300px;
-    filter: blur(60px);
+    width: 250px;
+    height: 250px;
+    filter: blur(50px);
   }
 
   .global-bg__particles {
-    opacity: 0.6;
-  }
-
-  .global-bg__particle:nth-child(n+10) {
-    display: none;
+    display: none; /* Hide particles on mobile for performance */
   }
 
   .global-bg__vignette {
