@@ -91,10 +91,10 @@ const loadEvents = async () => {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AWWWARDS-WORTHY ANIMATIONS - Fluid and elegant
+// ANIMATIONS - Desktop only for performance
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection for performance optimization
+// Mobile detection - disable animations on mobile for performance
 const isMobile = () => {
   return window.matchMedia('(max-width: 768px)').matches ||
          'ontouchstart' in window ||
@@ -102,11 +102,14 @@ const isMobile = () => {
 }
 
 const initScrollAnimations = () => {
-  const mobile = isMobile()
+  // SKIP all animations on mobile for better scroll performance
+  if (isMobile()) {
+    return
+  }
 
   gsapCtx = gsap.context(() => {
     // ─────────────────────────────────────────────────────────────
-    // HEADER - Cinematic text reveal (simplified on mobile)
+    // HEADER - Cinematic text reveal (desktop only)
     // ─────────────────────────────────────────────────────────────
     const badge = headerRef.value?.querySelector('.events__badge')
     const title = headerRef.value?.querySelector('.events__title')
@@ -114,66 +117,53 @@ const initScrollAnimations = () => {
     const headerTl = gsap.timeline({
       scrollTrigger: {
         trigger: headerRef.value,
-        start: 'top 85%',
+        start: 'top 80%',
         toggleActions: 'play none none none'
       }
     })
 
     if (badge) {
-      gsap.set(badge, { opacity: 0, y: mobile ? 15 : 25 })
+      gsap.set(badge, { opacity: 0, y: 25 })
       headerTl.to(badge, {
         opacity: 1,
         y: 0,
-        duration: mobile ? 0.5 : 0.8,
+        duration: 0.8,
         ease: 'power2.out'
       })
     }
 
     if (title) {
-      if (mobile) {
-        // Simple fade on mobile (no clipPath)
-        gsap.set(title, { opacity: 0, y: 20 })
-        headerTl.to(title, {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          ease: 'power2.out'
-        }, '-=0.3')
-      } else {
-        gsap.set(title, { opacity: 0, y: 35, clipPath: 'inset(0 0 100% 0)' })
-        headerTl.to(title, {
-          opacity: 1,
-          y: 0,
-          clipPath: 'inset(0 0 0% 0)',
-          duration: 1,
-          ease: 'power3.out'
-        }, '-=0.5')
-      }
+      gsap.set(title, { opacity: 0, y: 35, clipPath: 'inset(0 0 100% 0)' })
+      headerTl.to(title, {
+        opacity: 1,
+        y: 0,
+        clipPath: 'inset(0 0 0% 0)',
+        duration: 1,
+        ease: 'power3.out'
+      }, '-=0.5')
     }
 
     // ─────────────────────────────────────────────────────────────
-    // CARDS - Simplified on mobile for better performance
+    // CARDS - Staggered reveal (desktop only)
     // ─────────────────────────────────────────────────────────────
     const cards = gridRef.value?.querySelectorAll('.event-card')
     if (cards && cards.length > 0) {
-      // Check if section is already in view
       const rect = gridRef.value?.getBoundingClientRect()
       const isInView = rect && rect.top < window.innerHeight * 0.85
 
-      // Set initial state - simpler on mobile
       gsap.set(cards, {
         opacity: 0,
-        y: mobile ? 20 : 50,
-        scale: mobile ? 1 : 0.96 // No scale on mobile
+        y: 50,
+        scale: 0.96
       })
 
       const animationConfig = {
         opacity: 1,
         y: 0,
         scale: 1,
-        duration: mobile ? 0.5 : 1,
+        duration: 1,
         stagger: {
-          amount: mobile ? 0.3 : 0.6,
+          amount: 0.6,
           from: 'start' as const
         },
         ease: 'power2.out'

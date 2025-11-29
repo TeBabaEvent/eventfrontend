@@ -189,22 +189,25 @@ const getSocialIcon = (platform: string): string => {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AWWWARDS-WORTHY ANIMATIONS - Fluid and elegant
+// ANIMATIONS - Desktop only for performance
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection for performance optimization
+// Mobile detection - disable animations on mobile for performance
 const isMobile = () => {
-  return window.matchMedia('(max-width: 768px)').matches || 
-         'ontouchstart' in window || 
+  return window.matchMedia('(max-width: 768px)').matches ||
+         'ontouchstart' in window ||
          navigator.maxTouchPoints > 0
 }
 
 const initScrollAnimations = () => {
-  const mobile = isMobile()
-  
+  // SKIP all animations on mobile for better scroll performance
+  if (isMobile()) {
+    return
+  }
+
   gsapContext = gsap.context(() => {
     // ─────────────────────────────────────────────────────────────
-    // CTA SECTION - Elegant staggered reveal
+    // CTA SECTION - Elegant staggered reveal (desktop only)
     // ─────────────────────────────────────────────────────────────
     const badge = ctaRef.value?.querySelector('.footer__cta-badge')
     const title = ctaRef.value?.querySelector('.footer__cta-title')
@@ -261,7 +264,7 @@ const initScrollAnimations = () => {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // FOOTER GRID - Smooth staggered reveal
+    // FOOTER GRID - Smooth staggered reveal (desktop only)
     // ─────────────────────────────────────────────────────────────
     const gridItems = gridRef.value?.querySelectorAll('.gsap-grid-item')
     if (gridItems && gridItems.length > 0) {
@@ -272,7 +275,7 @@ const initScrollAnimations = () => {
         duration: 0.8,
         stagger: {
           amount: 0.5,
-          from: 'start'
+          from: 'start' as const
         },
         ease: 'power2.out',
         scrollTrigger: {
