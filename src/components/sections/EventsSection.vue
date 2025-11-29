@@ -355,4 +355,50 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
     padding: 0 4px;
   }
 }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  /* Simple CSS Animation Fallback */
+  .events__badge,
+  .events__title {
+    animation: eventsFadeInUp 0.8s ease-out forwards;
+  }
+  
+  .events__badge {
+    animation-delay: 0.1s;
+  }
+  
+  .events__title {
+    animation-delay: 0.2s;
+  }
+
+  @keyframes eventsFadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Disable heavy glassmorphism */
+  .events__badge {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(30, 30, 35, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+  
+  .events__badge-icon {
+    animation: none !important;
+  }
+  
+  /* Optimize Cards */
+  .events__grid-container :deep(.event-card) {
+    will-change: auto !important;
+    transition: opacity 0.3s ease, transform 0.3s ease !important;
+  }
+}
 </style>

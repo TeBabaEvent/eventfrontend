@@ -49,6 +49,42 @@
     will-change: auto;
     /* Static state - no animated transforms on mobile */
   }
+
+  /* 🚀 CRITICAL PERFORMANCE FIX: Disable backdrop-filter on mobile */
+  .event-hero__badge,
+  .event-hero__meta,
+  .event-hero__meta-item,
+  .event-info__card,
+  .event-info__badge,
+  .event-highlight,
+  .lineup-item,
+  .venue__map-placeholder,
+  .venue__directions,
+  .booking-card,
+  .booking-card__header h3,
+  .ticket-option,
+  .info-card,
+  .info-card__title {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(10, 10, 15, 0.95) !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Simplify gradients and overlays */
+  .event-hero__overlay::after {
+    display: none;
+    /* Remove ambient glow animation */
+  }
+
+  /* Disable pulse animations */
+  .event-hero__badge-icon,
+  .event-info__badge-icon,
+  .booking-card__header h3::before,
+  .booking-card__badge i {
+    animation: none !important;
+  }
 }
 
 /* Dark cinematic overlay */
@@ -2780,4 +2816,70 @@
   .share-card__buttons {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* Map Facade */
+.venue__map-facade {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.venue__map-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.venue__map-facade:hover .venue__map-image {
+  opacity: 0.4;
+}
+
+.venue__map-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.venue__map-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.venue__map-facade:hover .venue__map-button {
+  background: rgba(220, 20, 60, 0.8);
+  border-color: rgba(220, 20, 60, 1);
+  transform: scale(1.05);
+}
+
+.venue__map-button i {
+  font-size: 24px;
+}
+
+.venue__map-button span {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }

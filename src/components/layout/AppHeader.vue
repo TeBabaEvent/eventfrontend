@@ -128,10 +128,17 @@ const headerClasses = computed(() => [
   }
 ])
 
-// Gestion du scroll
-const handleScroll = throttle(() => {
-  isScrolled.value = window.scrollY > 50
-}, 100)
+// Gestion du scroll optimisée
+const handleScroll = () => {
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      isScrolled.value = window.scrollY > 50
+      ticking = false
+    })
+    ticking = true
+  }
+}
+let ticking = false
 
 // Navigation
 const handleNavClick = async (href: string, event: Event) => {
@@ -572,14 +579,10 @@ onUnmounted(() => {
     width: min(85%, 360px);
     height: 100vh;
     height: 100dvh;
-    background: linear-gradient(
-      135deg,
-      rgba(10, 10, 10, 0.98) 0%,
-      rgba(15, 10, 12, 0.98) 100%
-    );
-    /* 🚀 CRITICAL PERFORMANCE FIX: Reduced from blur(40px) to blur(12px) */
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    /* 🚀 CRITICAL PERFORMANCE FIX: Disable backdrop-filter on mobile */
+    background: #0a0a0a;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
@@ -765,10 +768,9 @@ onUnmounted(() => {
   }
 
   .header__blur {
-    background: rgba(5, 5, 5, 0.92); /* Increased opacity to compensate for less blur */
-    /* 🚀 CRITICAL PERFORMANCE FIX: Reduced from blur(20px) to blur(8px) */
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(5, 5, 5, 0.98);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 }

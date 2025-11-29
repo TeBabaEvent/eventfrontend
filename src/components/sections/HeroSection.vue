@@ -1169,4 +1169,57 @@ onUnmounted(() => {
     letter-spacing: 1px;
   }
 }
+
+/* Mobile Optimizations - Added for performance */
+@media (max-width: 768px) {
+  /* Simple CSS Animation Fallback since GSAP is disabled */
+  .hero__animate {
+    animation: heroFadeInUp 0.8s ease-out forwards;
+  }
+  
+  .hero__badge {
+    animation-delay: 0.1s;
+  }
+  
+  .hero__subtitle {
+    animation-delay: 0.3s;
+  }
+  
+  .hero__cta {
+    animation-delay: 0.4s;
+    animation: heroFadeInUp 0.8s ease-out forwards; 
+  }
+  
+  .hero__featured {
+    animation-delay: 0.5s;
+  }
+
+  @keyframes heroFadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Disable heavy glassmorphism */
+  .hero__badge,
+  .hero__cta :deep(.btn--secondary),
+  .hero__cta-secondary :deep(.btn),
+  .hero__event-cta {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(30, 30, 35, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+  }
+  
+  /* Disable pulse animation */
+  .hero__badge-icon {
+    animation: none !important;
+  }
+}
 </style>
