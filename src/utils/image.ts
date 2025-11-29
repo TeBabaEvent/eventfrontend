@@ -9,7 +9,10 @@
  */
 export function getOptimizedImageUrl(url: string, width: number = 800, height?: number): string {
   if (!url) return ''
-  
+
+  // Skip already optimized URLs or data URIs
+  if (url.includes('wsrv.nl') || url.startsWith('data:')) return url
+
   // Pexels
   if (url.includes('images.pexels.com')) {
     const separator = url.includes('?') ? '&' : '?'
@@ -19,7 +22,7 @@ export function getOptimizedImageUrl(url: string, width: number = 800, height?: 
     }
     return `${url}${separator}${params}`
   }
-  
+
   // Unsplash
   if (url.includes('images.unsplash.com')) {
     const separator = url.includes('?') ? '&' : '?'
@@ -29,8 +32,25 @@ export function getOptimizedImageUrl(url: string, width: number = 800, height?: 
     }
     return `${url}${separator}${params}`
   }
-  
-  // Return original URL if provider is not recognized
+
+  // 🚀 Use wsrv.nl for all other absolute URLs (including our own backend)
+  // This solves the issue of serving 4K images for thumbnails
+  if (url.startsWith('http')) {
+    const baseUrl = 'https://wsrv.nl/?url='
+    // q=80: Good balance of quality/size
+    // output=webp: Modern format, smaller size
+    // we: Enable WebP
+    // il: Progressive loading
+    let params = `${encodeURIComponent(url)}&w=${width}&q=80&output=webp&we&il`
+
+    if (height) {
+      params += `&h=${height}&fit=cover`
+    }
+
+    return `${baseUrl}${params}`
+  }
+
+  // Return original URL if it's a relative path or other protocol
   return url
 }
 
@@ -42,12 +62,12 @@ export function getOptimizedImageUrl(url: string, width: number = 800, height?: 
  */
 export function generateSrcSet(url: string, widths: number[] = [400, 800, 1200]): string {
   if (!url) return ''
-  
+
   // Only generate srcset for supported providers
   if (!url.includes('images.pexels.com') && !url.includes('images.unsplash.com')) {
     return ''
   }
-  
+
   return widths
     .map(w => `${getOptimizedImageUrl(url, w)} ${w}w`)
     .join(', ')
