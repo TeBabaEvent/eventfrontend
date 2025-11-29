@@ -896,16 +896,16 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
 }
 
 // Build share message for the event
-const buildShareMessage = (includeImage = true) => {
+const buildShareMessage = () => {
   const eventId = route.params.id as string
-  // Use OG URL for proper link preview when shared (with current language)
-  const ogUrl = `${API_BASE_URL}/og/events/${eventId}?lang=${locale.value}`
+  // Use the actual frontend URL for sharing (not the backend OG URL)
+  // This way users can click and go directly to the event page
+  const frontendUrl = `${window.location.origin}/events/${eventId}`
   const title = displayTitle.value
   const date = event.value?.date ? formatFullDate(event.value.date) : ''
   const time = event.value?.time || ''
   const location = event.value?.location || ''
   const city = event.value?.city || ''
-  const imageUrl = event.value?.image_url || event.value?.image || ''
 
   // Get minimum price from packs
   const minPrice = event.value?.packs?.length
@@ -941,13 +941,8 @@ const buildShareMessage = (includeImage = true) => {
   message += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
   message += `*${t('eventDetail.share.message.cta')}*\n\n`
 
-  // Link (OG URL for proper preview, redirects to actual page)
-  message += `${t('eventDetail.share.message.link')}: ${ogUrl}`
-
-  // Add image URL if available and requested
-  if (includeImage && imageUrl) {
-    message += `\n\nImage: ${imageUrl}`
-  }
+  // Link to the frontend event page (direct link for users)
+  message += `${frontendUrl}`
 
   return message
 }
@@ -966,8 +961,8 @@ const shareLinks = computed(() => {
   // Short text for Twitter (character limit, no emojis)
   const shareText = `${title} | ${date} | ${location}`
 
-  // Beautiful WhatsApp message with image
-  const whatsappMessage = buildShareMessage(true)
+  // Beautiful WhatsApp message with frontend URL
+  const whatsappMessage = buildShareMessage()
 
   return {
     // Facebook & Twitter use the OG URL which has proper meta tags and redirects to the actual page
@@ -981,8 +976,8 @@ const shareLinks = computed(() => {
 // Copier le lien de l'événement
 const copyEventLink = async () => {
   try {
-    // Build the beautiful share message (with image)
-    const textToCopy = buildShareMessage(true)
+    // Build the beautiful share message
+    const textToCopy = buildShareMessage()
 
     // Utiliser l'API Clipboard si disponible
     if (navigator.clipboard && window.isSecureContext) {
