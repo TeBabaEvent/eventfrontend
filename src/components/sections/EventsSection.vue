@@ -363,18 +363,13 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
 
 /* Mobile Optimizations */
 @media (max-width: 768px) {
-  /* Simple CSS Animation Fallback */
-  .events__badge,
-  .events__title {
-    animation: eventsFadeInUp 0.8s ease-out forwards;
-  }
-  
+  /* ✅ Animations d'entrée section */
   .events__badge {
-    animation-delay: 0.1s;
+    animation: eventsFadeInUp 0.6s ease-out 0.1s backwards;
   }
   
   .events__title {
-    animation-delay: 0.2s;
+    animation: eventsFadeInUp 0.8s ease-out 0.2s backwards;
   }
 
   @keyframes eventsFadeInUp {
@@ -396,20 +391,43 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
   
+  /* ✅ Réactiver pulse subtil sur badge */
   .events__badge-icon {
-    animation: none !important;
+    animation: badge-pulse 3s ease-in-out infinite !important;
   }
   
-  /* Optimize Cards - Disable will-change and heavy transitions */
+  /* ✅ Transitions safe - uniquement opacity (pas de repositionnement) */
   .events__grid-container :deep(.event-card) {
     will-change: auto !important;
-    /* Remove transitions during scroll for better performance */
-    transition: none !important;
+    transition: opacity 0.4s ease !important;
   }
   
-  /* Only enable simple transitions on tap/touch */
-  .events__grid-container :deep(.event-card:active) {
-    transition: transform 0.2s ease !important;
+  /* ✅ Animation d'apparition des cartes - fade in staggeré */
+  .events__grid-container :deep(.event-card) {
+    animation: cardFadeIn 0.6s ease-out backwards;
+  }
+  
+  .events__grid-container :deep(.event-card:nth-child(1)) {
+    animation-delay: 0.3s;
+  }
+  
+  .events__grid-container :deep(.event-card:nth-child(2)) {
+    animation-delay: 0.4s;
+  }
+  
+  .events__grid-container :deep(.event-card:nth-child(3)) {
+    animation-delay: 0.5s;
+  }
+  
+  @keyframes cardFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 </style>

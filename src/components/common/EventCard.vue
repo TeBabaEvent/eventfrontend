@@ -697,13 +697,12 @@ const goToDetail = () => {
   .event-card {
     aspect-ratio: 4 / 5;
     border-radius: 16px;
-    /* Disable transitions during scroll - only on :active (tap) */
-    transition: none;
+    /* ✅ Transitions safe - opacity et transform uniquement */
+    transition: opacity 0.3s ease, transform 0.2s ease;
   }
   
-  /* Only animate on tap/touch */
+  /* ✅ Feedback tactile au tap */
   .event-card:active {
-    transition: transform 0.2s ease;
     transform: scale(0.98);
   }
 
@@ -821,7 +820,12 @@ const goToDetail = () => {
     display: none;
   }
 
-  /* Disable hover on mobile - use :active for touch feedback */
+  /* ✅ Transitions safe sur bouton CTA */
+  .event-card__cta {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  /* Feedback tactile au tap */
   .event-card__cta:active {
     transform: scale(0.95);
   }
@@ -896,7 +900,7 @@ const goToDetail = () => {
     will-change: auto !important;
   }
   
-  /* Disable hover effects - mobile uses :active */
+  /* ✅ Hover désactivé - mobile utilise :active */
   .event-card:hover {
     transform: none;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -911,6 +915,11 @@ const goToDetail = () => {
     opacity: initial;
     transform: none;
     background: initial;
+  }
+  
+  /* ✅ Transitions subtiles sur éléments internes */
+  .event-card__category-badge {
+    transition: opacity 0.2s ease;
   }
 }
 

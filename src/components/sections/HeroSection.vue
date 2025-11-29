@@ -1176,26 +1176,21 @@ onUnmounted(() => {
 
 /* Mobile Optimizations - Added for performance */
 @media (max-width: 768px) {
-  /* Simple CSS Animation Fallback since GSAP is disabled */
-  .hero__animate {
-    animation: heroFadeInUp 0.8s ease-out forwards;
+  /* ✅ Animations d'entrée au chargement - Safe (opacity + translateY) */
+  .hero__badge {
+    animation: heroFadeInUp 0.6s ease-out 0.1s backwards;
   }
   
-  .hero__badge {
-    animation-delay: 0.1s;
+  .hero__title {
+    animation: heroFadeInUp 0.8s ease-out 0.2s backwards;
   }
   
   .hero__subtitle {
-    animation-delay: 0.3s;
+    animation: heroFadeInUp 0.6s ease-out 0.3s backwards;
   }
   
   .hero__cta {
-    animation-delay: 0.4s;
-    animation: heroFadeInUp 0.8s ease-out forwards; 
-  }
-  
-  .hero__featured {
-    animation-delay: 0.5s;
+    animation: heroFadeInUp 0.6s ease-out 0.4s backwards;
   }
 
   @keyframes heroFadeInUp {
@@ -1221,9 +1216,9 @@ onUnmounted(() => {
     box-shadow: none !important;
   }
   
-  /* Disable pulse animation */
+  /* ✅ Réactiver pulse subtil sur badge (ralenti pour mobile) */
   .hero__badge-icon {
-    animation: none !important;
+    animation: hero-badge-pulse 3s ease-in-out infinite !important;
   }
 
   /* Disable all will-change on mobile */
@@ -1239,6 +1234,12 @@ onUnmounted(() => {
   .hero__title,
   .hero__layout {
     perspective: none !important;
+  }
+  
+  /* ✅ Feedback tactile sur boutons CTA */
+  .hero__cta :deep(.btn):active {
+    transform: scale(0.97);
+    transition: transform 0.15s ease;
   }
 }
 </style>
