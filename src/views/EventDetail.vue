@@ -245,6 +245,7 @@
               </div>
               <div class="venue">
                 <div v-if="googleMapsEmbedUrl" class="venue__map">
+                  <div v-if="!isMapLoaded" class="venue__map-facade" @click="loadMap">
                     <div class="venue__map-overlay">
                       <div class="venue__map-button">
                         <i class="fas fa-map-marked-alt"></i>
