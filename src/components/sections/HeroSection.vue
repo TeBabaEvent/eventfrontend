@@ -251,19 +251,29 @@ const goToEventDetail = () => {
   router.push({ name: 'event-detail', params: { id: featuredEvent.value.id } })
 }
 
-// Animate stats on mount
+// Animate stats on mount (optimized for mobile)
 const animateStats = () => {
+  const mobile = isMobile()
+
   stats.value.forEach(stat => {
-    let current = 0
-    const increment = stat.value / 100
-    const timer = setInterval(() => {
-      current += increment
-      if (current >= stat.value) {
-        current = stat.value
-        clearInterval(timer)
+    if (mobile) {
+      // On mobile, just set the final value immediately (no animation)
+      animatedStats.value[stat.label] = stat.value
+    } else {
+      // On desktop, animate with requestAnimationFrame for better performance
+      let current = 0
+      const increment = stat.value / 60 // 60 frames total (~1 second at 60fps)
+      const animate = () => {
+        current += increment
+        if (current >= stat.value) {
+          animatedStats.value[stat.label] = stat.value
+        } else {
+          animatedStats.value[stat.label] = Math.floor(current)
+          requestAnimationFrame(animate)
+        }
       }
-      animatedStats.value[stat.label] = Math.floor(current)
-    }, 20)
+      requestAnimationFrame(animate)
+    }
   })
 }
 
@@ -272,74 +282,108 @@ const animateStats = () => {
 // AWWWARDS-WORTHY HERO ANIMATIONS - Synced with background
 // ═══════════════════════════════════════════════════════════════
 
+// Mobile detection for performance optimization
+const isMobile = () => {
+  return window.matchMedia('(max-width: 768px)').matches ||
+         'ontouchstart' in window ||
+         navigator.maxTouchPoints > 0
+}
+
 const initHeroAnimations = () => {
   if (animationsInitialized) return
   animationsInitialized = true
+
+  const mobile = isMobile()
 
   gsapContext = gsap.context(() => {
     const titleLines = titleRef.value?.querySelectorAll('.hero__title-line, .hero__title-accent')
 
     // ─────────────────────────────────────────────────────────────
-    // MASTER TIMELINE - Delayed to sync with background fade-in
+    // MASTER TIMELINE - Faster on mobile for better perceived performance
     // ─────────────────────────────────────────────────────────────
     const masterTL = gsap.timeline({
       defaults: { ease: 'power2.out' },
-      delay: 0.8  // Wait for background to start appearing
+      delay: mobile ? 0.3 : 0.8  // Shorter delay on mobile
     })
 
     // Badge - Smooth fade
     masterTL.fromTo(badgeRef.value,
-      { opacity: 0, y: 25 },
-      { opacity: 1, y: 0, duration: 0.8 }
+      { opacity: 0, y: mobile ? 15 : 25 },
+      { opacity: 1, y: 0, duration: mobile ? 0.5 : 0.8 }
     )
 
-    // Title Lines - Clip-path reveal
+    // Title Lines - Simple fade on mobile (clipPath is expensive)
     if (titleLines && titleLines.length > 0) {
-      masterTL.fromTo(titleLines,
-        { opacity: 0, y: 40, clipPath: 'inset(0 0 100% 0)' },
-        {
-          opacity: 1,
-          y: 0,
-          clipPath: 'inset(0 0 0% 0)',
-          duration: 1,
-          stagger: 0.15,
-          ease: 'power3.out'
-        },
-        '-=0.5'
-      )
+      if (mobile) {
+        // Simple fade + translate on mobile (no clipPath)
+        masterTL.fromTo(titleLines,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'power2.out'
+          },
+          '-=0.3'
+        )
+      } else {
+        // Full clip-path animation on desktop
+        masterTL.fromTo(titleLines,
+          { opacity: 0, y: 40, clipPath: 'inset(0 0 100% 0)' },
+          {
+            opacity: 1,
+            y: 0,
+            clipPath: 'inset(0 0 0% 0)',
+            duration: 1,
+            stagger: 0.15,
+            ease: 'power3.out'
+          },
+          '-=0.5'
+        )
+      }
     }
 
     // Subtitle - Soft emergence
     masterTL.fromTo(subtitleRef.value,
-      { opacity: 0, y: 25 },
-      { opacity: 1, y: 0, duration: 0.8 },
-      '-=0.6'
+      { opacity: 0, y: mobile ? 15 : 25 },
+      { opacity: 1, y: 0, duration: mobile ? 0.5 : 0.8 },
+      '-=0.4'
     )
 
     // CTA Buttons
     if (ctaRef.value) {
       masterTL.fromTo(ctaRef.value,
-        { opacity: 0, y: 25 },
-        { opacity: 1, y: 0, duration: 0.8 },
-        '-=0.5'
+        { opacity: 0, y: mobile ? 15 : 25 },
+        { opacity: 1, y: 0, duration: mobile ? 0.5 : 0.8 },
+        '-=0.3'
       )
     }
 
     // ─────────────────────────────────────────────────────────────
-    // FEATURED CARD - Slow elegant entrance (comes last)
+    // FEATURED CARD - Simpler animation on mobile
     // ─────────────────────────────────────────────────────────────
     if (featuredRef.value) {
-      masterTL.fromTo(featuredRef.value,
-        { opacity: 0, x: 80, scale: 0.95 },
-        { opacity: 1, x: 0, scale: 1, duration: 1.2, ease: 'power3.out' },
-        '-=0.4'
-      )
+      if (mobile) {
+        // Simple fade on mobile (no scale/translate for performance)
+        masterTL.fromTo(featuredRef.value,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' },
+          '-=0.2'
+        )
+      } else {
+        masterTL.fromTo(featuredRef.value,
+          { opacity: 0, x: 80, scale: 0.95 },
+          { opacity: 1, x: 0, scale: 1, duration: 1.2, ease: 'power3.out' },
+          '-=0.4'
+        )
+      }
     }
 
     // ─────────────────────────────────────────────────────────────
-    // HOVER EFFECT - Card lift
+    // HOVER EFFECT - Desktop only (no hover on mobile)
     // ─────────────────────────────────────────────────────────────
-    if (featuredRef.value) {
+    if (featuredRef.value && !mobile) {
       const card = featuredRef.value.querySelector('.hero__event-card')
       if (card) {
         card.addEventListener('mouseenter', () => {
