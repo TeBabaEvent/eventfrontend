@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 import { useToast } from '@/composables/useToast'
 import Lenis from 'lenis'
+import { useMobile } from '@/composables/useMobile'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import GlobalBackground from '@/components/layout/GlobalBackground.vue'
@@ -23,8 +24,8 @@ const toastRef = ref()
 let lenis: Lenis | null = null
 let rafId: number | null = null
 
-// Mobile detection - disable Lenis on mobile for native scroll performance
-const isMobile = () => window.matchMedia('(max-width: 768px)').matches
+// Mobile detection - disable Lenis on mobile/tablet for native scroll performance
+const { isMobile } = useMobile()
 
 // Check if current route should hide layout
 const hideLayout = computed(() => route.meta.hideLayout === true)
@@ -48,7 +49,7 @@ onMounted(() => {
   }
 
   // SKIP Lenis on mobile - use native scroll for better performance
-  if (isMobile()) {
+  if (isMobile.value) {
     return
   }
 

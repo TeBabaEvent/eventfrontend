@@ -47,6 +47,7 @@ import DJCard from '@/components/common/DJCard.vue'
 import ErrorMessage from '@/components/ui/ErrorMessage.vue'
 import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
+import { useMobile } from '@/composables/useMobile'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -79,7 +80,7 @@ const error = computed(() => dataStore.artistsError)
 // ═══════════════════════════════════════════════════════════════
 
 // Mobile detection - disable animations on mobile (based on screen width only)
-const isMobile = () => window.matchMedia('(max-width: 768px)').matches
+const { isMobile } = useMobile()
 
 const initHeaderAnimations = () => {
   // SKIP animations on mobile for better scroll performance

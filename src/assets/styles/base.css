@@ -28,7 +28,7 @@ html {
 }
 
 /* Performance: Disable smooth scroll on mobile for better scroll performance with GSAP */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   html {
     scroll-behavior: auto;
   }

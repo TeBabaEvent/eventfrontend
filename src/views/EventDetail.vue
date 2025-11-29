@@ -419,6 +419,7 @@ import { api } from '@/services/api'
 import { API_BASE_URL } from '@/config/api'
 import { formatPrice, scrollToElement } from '@/utils'
 import { getEventTitle, getEventDescription, getArtistRole, getPackName, getPackFeatures } from '@/utils/translations'
+import { useMobile } from '@/composables/useMobile'
 import type { Event, Pack } from '@/types'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -615,13 +616,13 @@ watch(() => event.value, () => {
 // ============================================
 
 // Mobile detection - disable ALL GSAP on mobile (based on screen width only)
-const isMobile = () => window.matchMedia('(max-width: 768px)').matches
+const { isMobile } = useMobile()
 
 function initHeroAnimations() {
   if (!heroContentRef.value) return
 
   // SKIP all GSAP animations on mobile for smooth scroll performance
-  if (isMobile()) {
+  if (isMobile.value) {
     return
   }
 

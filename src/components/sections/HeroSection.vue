@@ -133,6 +133,7 @@ import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
 import { logger } from '@/services/logger'
 import { api } from '@/services/api'
+import { useMobile } from '@/composables/useMobile'
 import gsap from 'gsap'
 
 const { t, locale } = useI18n()
@@ -254,7 +255,7 @@ const goToEventDetail = () => {
 // Animate stats on mount (disabled on mobile)
 const animateStats = () => {
   // On mobile, just set final values immediately (no animation)
-  if (isMobile()) {
+  if (isMobile.value) {
     stats.value.forEach(stat => {
       animatedStats.value[stat.label] = stat.value
     })
@@ -283,14 +284,14 @@ const animateStats = () => {
 // ═══════════════════════════════════════════════════════════════
 
 // Mobile detection - disable ALL GSAP animations on mobile (based on screen width only)
-const isMobile = () => window.matchMedia('(max-width: 768px)').matches
+const { isMobile } = useMobile()
 
 const initHeroAnimations = () => {
   if (animationsInitialized) return
   animationsInitialized = true
 
   // SKIP all GSAP animations on mobile for smooth scroll performance
-  if (isMobile()) {
+  if (isMobile.value) {
     return
   }
 

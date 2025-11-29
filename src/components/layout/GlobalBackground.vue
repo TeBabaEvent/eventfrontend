@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useMobile } from '@/composables/useMobile'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -68,7 +69,7 @@ let gsapContext: gsap.Context | null = null
 // ═══════════════════════════════════════════════════════════════
 // MOBILE DETECTION - based on screen width only
 // ═══════════════════════════════════════════════════════════════
-const isMobile = () => window.matchMedia('(max-width: 768px)').matches
+const { isMobile } = useMobile()
 
 // ═══════════════════════════════════════════════════════════════
 // SUBTLE PARALLAX EFFECTS (Desktop only for performance)
@@ -76,7 +77,7 @@ const isMobile = () => window.matchMedia('(max-width: 768px)').matches
 
 const initScrollEffects = () => {
   // Skip heavy scroll effects on mobile for better performance
-  if (isMobile()) {
+  if (isMobile.value) {
     return
   }
 
@@ -691,7 +692,7 @@ onUnmounted(() => {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   /* Performance: Disable will-change on mobile to save GPU memory */
   .global-bg__aurora-layer,
   .global-bg__blob,
