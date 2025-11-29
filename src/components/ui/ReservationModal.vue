@@ -270,18 +270,7 @@ onUnmounted(() => {
     0 25px 80px rgba(0, 0, 0, 0.8),
     0 0 0 1px rgba(255, 255, 255, 0.03),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  animation: modal-appear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes modal-appear {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  /* Animation handled by Vue Transition - no separate animation */
 }
 
 /* Gradient border glow */
@@ -719,26 +708,25 @@ onUnmounted(() => {
 }
 
 /* ============================================
-   TRANSITIONS
+   TRANSITIONS - Single animation source
    ============================================ */
-.modal-enter-active {
+.modal-enter-active,
+.modal-leave-active {
   transition: opacity 0.3s ease-out;
 }
 
-.modal-enter-active .reservation-modal__container {
-  animation: modal-appear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.modal-leave-active {
-  transition: opacity 0.25s ease-in;
-}
-
+.modal-enter-active .reservation-modal__container,
 .modal-leave-active .reservation-modal__container {
-  transition: transform 0.25s ease-in, opacity 0.25s ease-in;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out;
 }
 
 .modal-enter-from,
 .modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .reservation-modal__container {
+  transform: scale(0.95) translateY(20px);
   opacity: 0;
 }
 
@@ -763,18 +751,18 @@ onUnmounted(() => {
     max-height: 90dvh;
     padding: 1.5rem 1.25rem;
     border-radius: 20px 20px 0 0;
-    animation: modal-slide-up 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Animation handled by Vue Transition */
   }
 
-  @keyframes modal-slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  /* Mobile-specific transition: slide up from bottom */
+  .modal-enter-from .reservation-modal__container {
+    transform: translateY(100%);
+    opacity: 1;
+  }
+
+  .modal-leave-to .reservation-modal__container {
+    transform: translateY(100%);
+    opacity: 1;
   }
 
   .reservation-modal__border-glow {

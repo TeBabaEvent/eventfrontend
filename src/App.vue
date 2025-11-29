@@ -21,6 +21,10 @@ const toastRef = ref()
 
 // Lenis instance
 let lenis: Lenis | null = null
+let rafId: number | null = null
+
+// Mobile detection - disable Lenis on mobile for native scroll performance
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches
 
 // Check if current route should hide layout
 const hideLayout = computed(() => route.meta.hideLayout === true)
@@ -36,14 +40,19 @@ const loadingMessage = computed(() => {
   return ''
 })
 
-// Initialize Lenis smooth scroll
+// Initialize Lenis smooth scroll (DESKTOP ONLY)
 onMounted(() => {
   // Initialize toast instance
   if (toastRef.value) {
     setToastInstance(toastRef.value)
   }
 
-  // Initialize Lenis for smooth scrolling
+  // SKIP Lenis on mobile - use native scroll for better performance
+  if (isMobile()) {
+    return
+  }
+
+  // Initialize Lenis for smooth scrolling (desktop only)
   lenis = new Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -51,18 +60,22 @@ onMounted(() => {
     gestureOrientation: 'vertical',
     smoothWheel: true,
     touchMultiplier: 2
-})
+  })
 
   // Animation frame loop for Lenis
   function raf(time: number) {
     lenis?.raf(time)
-    requestAnimationFrame(raf)
+    rafId = requestAnimationFrame(raf)
   }
-  requestAnimationFrame(raf)
+  rafId = requestAnimationFrame(raf)
 })
 
 // Cleanup Lenis on unmount
 onUnmounted(() => {
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+    rafId = null
+  }
   lenis?.destroy()
   lenis = null
 })
