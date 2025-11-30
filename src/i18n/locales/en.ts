@@ -60,7 +60,9 @@ Best regards`
     },
     comingSoon: {
       title: 'Coming Soon',
-      description: 'New exceptional events are coming soon'
+      description: 'New exceptional events are coming soon',
+      newEvent: 'New event',
+      stayInformed: 'Stay informed'
     }
   },
   team: {
@@ -76,7 +78,8 @@ Best regards`
       star: 'Star DJ',
       fire: 'Trending',
       premium: 'VIP'
-    }
+    },
+    defaultRole: 'Artist'
   },
   footer: {
     cta: {

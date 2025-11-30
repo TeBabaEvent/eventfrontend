@@ -70,7 +70,7 @@
           
           <div v-else class="dj-card__social-placeholder">
             <i class="fas fa-music"></i>
-            <span>Artiste</span>
+            <span>{{ t('team.defaultRole') }}</span>
           </div>
         </div>
       </div>

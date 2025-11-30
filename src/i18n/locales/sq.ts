@@ -60,7 +60,9 @@ Me respekt`
     },
     comingSoon: {
       title: 'Së Shpejti',
-      description: 'Evente të reja të jashtëzakonshme po vijnë së shpejti'
+      description: 'Evente të reja të jashtëzakonshme po vijnë së shpejti',
+      newEvent: 'Event i ri',
+      stayInformed: 'Qëndroni të informuar'
     }
   },
   team: {
@@ -76,7 +78,8 @@ Me respekt`
       star: 'DJ Yll',
       fire: 'Trending',
       premium: 'VIP'
-    }
+    },
+    defaultRole: 'Artist'
   },
   footer: {
     cta: {

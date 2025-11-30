@@ -87,7 +87,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useScrollSpy } from '@/composables/useScrollSpy'
-import { scrollToElement, throttle } from '@/utils'
+import { scrollToElement } from '@/utils'
 import { NAVIGATION_ITEMS } from '@/constants'
 import LanguageSelector from '@/components/ui/LanguageSelector.vue'
 import { useI18n } from 'vue-i18n'
@@ -776,13 +776,13 @@ onUnmounted(() => {
     -webkit-backdrop-filter: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
-  
+
   /* Extra stability for mobile scroll */
   .header {
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
   }
-  
+
   .nav {
     transform: translateZ(0);
   }

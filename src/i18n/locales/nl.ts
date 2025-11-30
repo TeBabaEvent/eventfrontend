@@ -60,7 +60,9 @@ Met vriendelijke groeten`
     },
     comingSoon: {
       title: 'Binnenkort',
-      description: 'Nieuwe uitzonderlijke evenementen komen binnenkort'
+      description: 'Nieuwe uitzonderlijke evenementen komen binnenkort',
+      newEvent: 'Nieuw evenement',
+      stayInformed: 'Blijf op de hoogte'
     }
   },
   team: {
@@ -76,7 +78,8 @@ Met vriendelijke groeten`
       star: 'Ster DJ',
       fire: 'Trending',
       premium: 'VIP'
-    }
+    },
+    defaultRole: 'Artiest'
   },
   footer: {
     cta: {

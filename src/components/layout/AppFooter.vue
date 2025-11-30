@@ -357,12 +357,7 @@ onUnmounted(() => {
 .footer__cta-badge-icon {
   color: var(--color-primary);
   font-size: 12px;
-  animation: footer-badge-pulse 2s ease-in-out infinite;
-}
-
-@keyframes footer-badge-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  animation: badge-pulse 2s ease-in-out infinite;
 }
 
 .footer__cta-badge-text {

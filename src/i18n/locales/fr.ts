@@ -60,7 +60,9 @@ Cordialement`
     },
     comingSoon: {
       title: 'Bientôt Disponible',
-      description: 'De nouveaux événements exceptionnels arrivent prochainement'
+      description: 'De nouveaux événements exceptionnels arrivent prochainement',
+      newEvent: 'Nouvel événement',
+      stayInformed: 'Restez informé'
     }
   },
   team: {
@@ -76,7 +78,8 @@ Cordialement`
       star: 'Star DJ',
       fire: 'Trending',
       premium: 'VIP'
-    }
+    },
+    defaultRole: 'Artiste'
   },
   footer: {
     cta: {

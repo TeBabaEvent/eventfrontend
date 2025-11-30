@@ -167,11 +167,7 @@
   --header-height: clamp(60px, 8vh, 80px);
   --header-height-mobile: 70px;
 
-  /* Animations */
-  --animation-bounce: bounce 1s infinite;
-  --animation-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animation-spin: spin 1s linear infinite;
-  --animation-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  /* Animations - Applied directly via keyframes, no CSS variables needed */
 }
 
 /* Mode sombre (si nécessaire) */
@@ -267,21 +263,4 @@
   }
 }
 
-@keyframes price-pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-}
-
-@keyframes grid-move {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(50px, 50px); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(-50%, 0); }
-  50% { transform: translate(-50%, 10px); }
-}
+/* Animations mortes supprimées: price-pulse, grid-move, float (non utilisées) */

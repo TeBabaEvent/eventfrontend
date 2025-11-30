@@ -297,6 +297,7 @@
 .event-hero__badge-icon {
   color: var(--color-primary);
   font-size: 10px;
+  /* Uses global badge-pulse from base.css */
   animation: badge-pulse 2s ease-in-out infinite;
 }
 

@@ -82,7 +82,7 @@
 
         <!-- Bottom Section: Info -->
         <div class="event-card__bottom">
-          <div class="event-card__cs-category">Nouvel événement</div>
+          <div class="event-card__cs-category">{{ t('events.comingSoon.newEvent') }}</div>
           <h3 class="event-card__title event-card__title--cs">{{ t('events.comingSoon.title') }}</h3>
           <p class="event-card__cs-description">{{ t('events.comingSoon.description') }}</p>
 
@@ -90,7 +90,7 @@
           <div class="event-card__cs-footer">
             <div class="event-card__cs-hint">
               <i class="fas fa-bell"></i>
-              <span>Restez informé</span>
+              <span>{{ t('events.comingSoon.stayInformed') }}</span>
             </div>
           </div>
         </div>
@@ -700,7 +700,7 @@ const goToDetail = () => {
     /* ✅ Transitions safe - opacity et transform uniquement */
     transition: opacity 0.3s ease, transform 0.2s ease;
   }
-  
+
   /* ✅ Feedback tactile au tap */
   .event-card:active {
     transform: scale(0.98);
@@ -891,7 +891,7 @@ const goToDetail = () => {
     color: var(--color-primary);
     font-size: 12px;
   }
-  
+
   /* Mobile performance: disable all GPU hints */
   .event-card,
   .event-card__image,
@@ -899,13 +899,13 @@ const goToDetail = () => {
   .event-card__content {
     will-change: auto !important;
   }
-  
+
   /* ✅ Hover désactivé - mobile utilise :active */
   .event-card:hover {
     transform: none;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
-  
+
   .event-card:hover::before,
   .event-card:hover .event-card__glow,
   .event-card:hover .event-card__border-glow,
@@ -916,7 +916,7 @@ const goToDetail = () => {
     transform: none;
     background: initial;
   }
-  
+
   /* ✅ Transitions subtiles sur éléments internes */
   .event-card__category-badge {
     transition: opacity 0.2s ease;

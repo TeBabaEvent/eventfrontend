@@ -357,31 +357,9 @@ const initHeroAnimations = () => {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // HOVER EFFECT - Card lift (desktop only)
+    // HOVER EFFECT - Card lift (desktop only, CSS-based for perf)
+    // Using CSS :hover instead of JS listeners for better performance
     // ─────────────────────────────────────────────────────────────
-    if (featuredRef.value) {
-      const card = featuredRef.value.querySelector('.hero__event-card')
-      if (card) {
-        card.addEventListener('mouseenter', () => {
-          gsap.to(card, {
-            scale: 1.02,
-            y: -8,
-            boxShadow: '0 30px 80px rgba(0, 0, 0, 0.5)',
-            duration: 0.4,
-            ease: 'power2.out'
-          })
-        })
-        card.addEventListener('mouseleave', () => {
-          gsap.to(card, {
-            scale: 1,
-            y: 0,
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
-            duration: 0.4,
-            ease: 'power2.out'
-          })
-        })
-      }
-    }
   }, heroMainRef.value?.parentElement || undefined)
 }
 
@@ -492,12 +470,7 @@ onUnmounted(() => {
 .hero__badge-icon {
   color: var(--color-primary);
   font-size: 12px;
-  animation: hero-badge-pulse 2s ease-in-out infinite;
-}
-
-@keyframes hero-badge-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  animation: badge-pulse 2s ease-in-out infinite;
 }
 
 .hero__badge-text {
@@ -1180,15 +1153,15 @@ onUnmounted(() => {
   .hero__badge {
     animation: heroFadeInUp 0.6s ease-out 0.1s backwards;
   }
-  
+
   .hero__title {
     animation: heroFadeInUp 0.8s ease-out 0.2s backwards;
   }
-  
+
   .hero__subtitle {
     animation: heroFadeInUp 0.6s ease-out 0.3s backwards;
   }
-  
+
   .hero__cta {
     animation: heroFadeInUp 0.6s ease-out 0.4s backwards;
   }
@@ -1215,10 +1188,10 @@ onUnmounted(() => {
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     box-shadow: none !important;
   }
-  
+
   /* ✅ Réactiver pulse subtil sur badge (ralenti pour mobile) */
   .hero__badge-icon {
-    animation: hero-badge-pulse 3s ease-in-out infinite !important;
+    animation: badge-pulse 3s ease-in-out infinite !important;
   }
 
   /* Disable all will-change on mobile */
@@ -1235,7 +1208,7 @@ onUnmounted(() => {
   .hero__layout {
     perspective: none !important;
   }
-  
+
   /* ✅ Feedback tactile sur boutons CTA */
   .hero__cta :deep(.btn):active {
     transform: scale(0.97);

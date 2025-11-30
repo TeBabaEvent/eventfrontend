@@ -8,18 +8,26 @@ import { ref, onMounted, onUnmounted } from 'vue'
 export function useMobile() {
   const isMobile = ref(false)
   const MOBILE_BREAKPOINT = 1024
+  let resizeTimeout: ReturnType<typeof setTimeout> | null = null
 
   const checkMobile = () => {
     isMobile.value = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches
   }
 
+  // 🚀 Debounced resize handler - only fires after resize stops (150ms)
+  const handleResize = () => {
+    if (resizeTimeout) clearTimeout(resizeTimeout)
+    resizeTimeout = setTimeout(checkMobile, 150)
+  }
+
   onMounted(() => {
     checkMobile()
-    window.addEventListener('resize', checkMobile)
+    window.addEventListener('resize', handleResize, { passive: true })
   })
 
   onUnmounted(() => {
-    window.removeEventListener('resize', checkMobile)
+    window.removeEventListener('resize', handleResize)
+    if (resizeTimeout) clearTimeout(resizeTimeout)
   })
 
   return {

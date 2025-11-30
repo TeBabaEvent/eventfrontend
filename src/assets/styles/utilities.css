@@ -34,6 +34,41 @@
 }
 
 /* ============================================
+   MOBILE PERFORMANCE UTILITIES
+   ============================================ */
+
+/*
+ * Mobile-safe glass effect
+ * Use this class on elements that need glass effect on desktop
+ * but solid background on mobile for performance
+ */
+.glass-mobile-safe {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 768px) {
+    .glass-mobile-safe {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(30, 30, 35, 0.95) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+}
+
+/*
+ * Disable will-change on mobile to save GPU memory
+ * Apply to elements that use will-change on desktop
+ */
+@media (max-width: 768px) {
+    .perf-mobile-safe {
+        will-change: auto !important;
+    }
+}
+
+/* ============================================
    FUTURE UTILITIES
    (Add more as needed)
    ============================================ */
