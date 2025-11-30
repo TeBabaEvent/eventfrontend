@@ -869,8 +869,10 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
   const eventAddress = event.value?.address || ''
   const eventCity = event.value?.city || ''
 
-  // Build full address
-  const fullAddress = [eventLocation, eventAddress, eventCity].filter(Boolean).join(', ')
+  // Build full address (don't duplicate city if already in address)
+  const fullAddress = eventAddress 
+    ? `${eventLocation}, ${eventAddress}` 
+    : `${eventLocation}, ${eventCity}`
 
   // Pack info
   const packName = getPackName(pack, locale.value)
