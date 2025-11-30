@@ -454,10 +454,10 @@ Met vriendelijke groeten`
     submit: 'Verstuur via WhatsApp',
     note: 'Uw gegevens worden niet opgeslagen en worden alleen gebruikt voor uw reservering.',
     whatsapp: {
-      greeting: 'Hallo! 👋\nIk wil graag reserveren voor:',
+      greeting: 'Hallo,\n\nIk wil graag reserveren voor:',
       at: 'om',
       people: 'pers.',
-      closing: 'Bevestig alstublieft mijn reservering! 🙏'
+      closing: 'Bevestig alstublieft mijn reservering.'
     }
   }
 }

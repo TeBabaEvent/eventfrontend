@@ -454,10 +454,10 @@ Me respekt`
     submit: 'Dërgo në WhatsApp',
     note: 'Të dhënat tuaja nuk ruhen dhe përdoren vetëm për rezervimin tuaj.',
     whatsapp: {
-      greeting: 'Përshëndetje! 👋\nDëshiroj të rezervoj për:',
-      at: 'në',
+      greeting: 'Pershendetje,\n\nDeshiroj te rezervoj per:',
+      at: 'ne',
       people: 'persona',
-      closing: 'Ju lutem konfirmoni rezervimin tim! 🙏'
+      closing: 'Ju lutem konfirmoni rezervimin tim.'
     }
   }
 }

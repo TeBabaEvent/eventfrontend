@@ -454,10 +454,10 @@ Cordialement`
     submit: 'Envoyer sur WhatsApp',
     note: 'Vos données ne sont pas stockées et sont uniquement utilisées pour votre réservation.',
     whatsapp: {
-      greeting: 'Bonjour ! 👋\nJe souhaite réserver pour :',
-      at: 'à',
+      greeting: 'Bonjour,\n\nJe souhaite réserver pour :',
+      at: 'a',
       people: 'pers.',
-      closing: 'Merci de confirmer ma réservation ! 🙏'
+      closing: 'Merci de confirmer ma reservation.'
     }
   }
 }

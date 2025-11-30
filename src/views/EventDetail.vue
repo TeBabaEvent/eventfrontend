@@ -875,13 +875,13 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
   // Build clean, concise WhatsApp message
   let message = `${t('reservation.whatsapp.greeting')}\n\n`
 
-  // Event details (compact)
-  message += `📅 *${eventTitle}*\n`
-  message += `🗓 ${eventDate}${eventTime ? ` ${t('reservation.whatsapp.at')} ${eventTime}` : ''}\n`
-  message += `📍 ${eventCity}\n\n`
+  // Event details
+  message += `*${eventTitle}*\n`
+  message += `${eventDate}${eventTime ? ` ${t('reservation.whatsapp.at')} ${eventTime}` : ''}\n`
+  message += `${eventCity}\n\n`
 
-  // Reservation info (one line each)
-  message += `👤 ${data.firstName} ${data.lastName}`
+  // Reservation info
+  message += `${data.firstName} ${data.lastName}`
   if (data.numberOfPeople > 1) {
     message += ` (${data.numberOfPeople} ${t('reservation.whatsapp.people')})`
   }
@@ -892,7 +892,7 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
   if (packUnit && shouldShowUnit(pack)) {
     priceText += ` ${packUnit}`
   }
-  message += `🎫 ${packName} — ${priceText}\n\n`
+  message += `${packName} - ${priceText}\n\n`
 
   // Closing
   message += `${t('reservation.whatsapp.closing')}`

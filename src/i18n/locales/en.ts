@@ -454,10 +454,10 @@ Best regards`
     submit: 'Send on WhatsApp',
     note: 'Your data is not stored and is only used for your booking.',
     whatsapp: {
-      greeting: 'Hi! 👋\nI would like to book:',
+      greeting: 'Hello,\n\nI would like to book:',
       at: 'at',
       people: 'people',
-      closing: 'Please confirm my reservation! 🙏'
+      closing: 'Please confirm my reservation.'
     }
   }
 }
