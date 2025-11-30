@@ -135,6 +135,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { APP_CONFIG, CONTACT_INFO, SOCIAL_LINKS, NAVIGATION_ITEMS } from '@/constants'
 import { generateWhatsAppLink } from '@/utils'
 import { useI18n } from 'vue-i18n'
+import { useMobile } from '@/composables/useMobile'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -142,6 +143,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 
 const { t } = useI18n()
+
+// Mobile detection - unified with other components (1024px breakpoint)
+const { isMobile } = useMobile()
 
 // Template refs for animations
 const sectionRef = ref<HTMLElement | null>(null)
@@ -192,12 +196,9 @@ const getSocialIcon = (platform: string): string => {
 // ANIMATIONS - Desktop only for performance
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection - disable animations on mobile (based on screen width only)
-const isMobile = () => window.matchMedia('(max-width: 768px)').matches
-
 const initScrollAnimations = () => {
-  // SKIP all animations on mobile for better scroll performance
-  if (isMobile()) {
+  // SKIP all animations on mobile/tablet for better scroll performance
+  if (isMobile.value) {
     return
   }
 

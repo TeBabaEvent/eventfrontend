@@ -86,108 +86,61 @@ const initScrollEffects = () => {
 
   gsapContext = gsap.context(() => {
     // ─────────────────────────────────────────────────────────────
-    // BLOBS - Subtle parallax movement (reduced intensity)
+    // 🚀 OPTIMIZED: Single ScrollTrigger for all parallax elements
+    // Instead of 16+ individual ScrollTriggers, we use ONE with onUpdate
     // ─────────────────────────────────────────────────────────────
-    gsap.to(blob1Ref.value, {
-      y: '-10vh', // Reduced from -20vh
-      ease: 'none',
-      scrollTrigger: {
-        trigger: scrollContainer,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 2
-      }
-    })
 
-    gsap.to(blob2Ref.value, {
-      y: '-15vh', // Reduced from -30vh
-      ease: 'none',
-      scrollTrigger: {
-        trigger: scrollContainer,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 3
-      }
-    })
-
-    gsap.to(blob3Ref.value, {
-      y: '-20vh', // Reduced from -40vh
-      ease: 'none',
-      scrollTrigger: {
-        trigger: scrollContainer,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 4
-      }
-    })
-
-    gsap.to(blob4Ref.value, {
-      y: '-25vh', // Reduced from -50vh
-      ease: 'none',
-      scrollTrigger: {
-        trigger: scrollContainer,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 5
-      }
-    })
-
-    // ─────────────────────────────────────────────────────────────
-    // AURORA - Gentle drift (reduced)
-    // ─────────────────────────────────────────────────────────────
-    const auroraLayers = auroraRef.value?.querySelectorAll('.global-bg__aurora-layer')
-    if (auroraLayers) {
-      auroraLayers.forEach((layer, index) => {
-        gsap.to(layer, {
-          y: `${(index + 1) * -8}vh`, // Reduced from -15vh
-          ease: 'none',
-          scrollTrigger: {
-            trigger: scrollContainer,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 2 + index
-          }
-        })
-      })
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // PARTICLES - Floating upward (simplified)
-    // ─────────────────────────────────────────────────────────────
+    // Store initial particle positions
     const particles = particlesRef.value?.querySelectorAll('.global-bg__particle')
+    const particleData: { el: Element; startY: number; speed: number }[] = []
+
     if (particles) {
       particles.forEach((particle, index) => {
+        const startY = Math.random() * window.innerHeight * 2
         gsap.set(particle, {
           x: Math.random() * window.innerWidth,
-          y: Math.random() * window.innerHeight * 2,
+          y: startY,
           scale: 0.3 + Math.random() * 0.7,
           opacity: 0.2 + Math.random() * 0.3
         })
-
-        gsap.to(particle, {
-          y: `-=${30 + (index * 10)}vh`, // Reduced movement
-          ease: 'none',
-          scrollTrigger: {
-            trigger: scrollContainer,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 1.5 + (index * 0.2)
-          }
+        particleData.push({
+          el: particle,
+          startY,
+          speed: 30 + (index * 10)
         })
       })
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // GLOW - Follow scroll
-    // ─────────────────────────────────────────────────────────────
-    gsap.to(glowRef.value, {
-      y: '150vh',
-      ease: 'none',
-      scrollTrigger: {
-        trigger: scrollContainer,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 2
+    // Master ScrollTrigger - handles ALL parallax in one callback
+    ScrollTrigger.create({
+      trigger: scrollContainer,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 1.5,
+      onUpdate: (self) => {
+        const progress = self.progress
+
+        // Blobs - different speeds create depth
+        if (blob1Ref.value) gsap.set(blob1Ref.value, { y: `${-10 * progress}vh` })
+        if (blob2Ref.value) gsap.set(blob2Ref.value, { y: `${-15 * progress}vh` })
+        if (blob3Ref.value) gsap.set(blob3Ref.value, { y: `${-20 * progress}vh` })
+        if (blob4Ref.value) gsap.set(blob4Ref.value, { y: `${-25 * progress}vh` })
+
+        // Aurora layers
+        const auroraLayers = auroraRef.value?.querySelectorAll('.global-bg__aurora-layer')
+        if (auroraLayers) {
+          auroraLayers.forEach((layer, index) => {
+            gsap.set(layer, { y: `${(index + 1) * -8 * progress}vh` })
+          })
+        }
+
+        // Particles
+        particleData.forEach(({ el, startY, speed }) => {
+          gsap.set(el, { y: startY - (speed * progress * window.innerHeight / 100) })
+        })
+
+        // Glow
+        if (glowRef.value) gsap.set(glowRef.value, { y: `${150 * progress}vh` })
       }
     })
 
@@ -698,7 +651,7 @@ onUnmounted(() => {
      - Saves 15-20 FPS by eliminating GPU-heavy filter: blur() operations
      - Background gradient alone provides sufficient visual depth
      ================================================================ */
-  
+
   /* HIDE ALL BLOBS - They use filter: blur(50-100px) which kills mobile FPS */
   .global-bg__blobs {
     display: none !important;

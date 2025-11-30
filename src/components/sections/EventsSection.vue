@@ -54,6 +54,7 @@ import EventCard from '@/components/common/EventCard.vue'
 import ErrorMessage from '@/components/ui/ErrorMessage.vue'
 import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
+import { useMobile } from '@/composables/useMobile'
 import { logger } from '@/services/logger'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -61,6 +62,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 
 const { t } = useI18n()
+
+// Mobile detection - unified with other components (1024px breakpoint)
+const { isMobile } = useMobile()
 
 // Emit loaded event
 const emit = defineEmits(['loaded'])
@@ -94,12 +98,9 @@ const loadEvents = async () => {
 // ANIMATIONS - Desktop only for performance
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection - disable animations on mobile (based on screen width only)
-const isMobile = () => window.matchMedia('(max-width: 768px)').matches
-
 const initScrollAnimations = () => {
-  // SKIP all animations on mobile for better scroll performance
-  if (isMobile()) {
+  // SKIP all animations on mobile/tablet for better scroll performance
+  if (isMobile.value) {
     return
   }
 
@@ -367,7 +368,7 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
   .events__badge {
     animation: eventsFadeInUp 0.6s ease-out 0.1s backwards;
   }
-  
+
   .events__title {
     animation: eventsFadeInUp 0.8s ease-out 0.2s backwards;
   }
@@ -390,35 +391,35 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
     background: rgba(30, 30, 35, 0.9) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
-  
+
   /* ✅ Réactiver pulse subtil sur badge */
   .events__badge-icon {
     animation: badge-pulse 3s ease-in-out infinite !important;
   }
-  
+
   /* ✅ Transitions safe - uniquement opacity (pas de repositionnement) */
   .events__grid-container :deep(.event-card) {
     will-change: auto !important;
     transition: opacity 0.4s ease !important;
   }
-  
+
   /* ✅ Animation d'apparition des cartes - fade in staggeré */
   .events__grid-container :deep(.event-card) {
     animation: cardFadeIn 0.6s ease-out backwards;
   }
-  
+
   .events__grid-container :deep(.event-card:nth-child(1)) {
     animation-delay: 0.3s;
   }
-  
+
   .events__grid-container :deep(.event-card:nth-child(2)) {
     animation-delay: 0.4s;
   }
-  
+
   .events__grid-container :deep(.event-card:nth-child(3)) {
     animation-delay: 0.5s;
   }
-  
+
   @keyframes cardFadeIn {
     from {
       opacity: 0;

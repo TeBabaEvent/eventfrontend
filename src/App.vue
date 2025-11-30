@@ -5,12 +5,17 @@ import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 import { useToast } from '@/composables/useToast'
 import Lenis from 'lenis'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useMobile } from '@/composables/useMobile'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import GlobalBackground from '@/components/layout/GlobalBackground.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
+
+// Register ScrollTrigger globally
+gsap.registerPlugin(ScrollTrigger)
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -22,7 +27,6 @@ const toastRef = ref()
 
 // Lenis instance
 let lenis: Lenis | null = null
-let rafId: number | null = null
 
 // Mobile detection - disable Lenis on mobile/tablet for native scroll performance
 const { isMobile } = useMobile()
@@ -63,22 +67,26 @@ onMounted(() => {
     touchMultiplier: 2
   })
 
-  // Animation frame loop for Lenis
-  function raf(time: number) {
-    lenis?.raf(time)
-    rafId = requestAnimationFrame(raf)
-  }
-  rafId = requestAnimationFrame(raf)
+  // 🚀 CRITICAL: Sync Lenis with GSAP ScrollTrigger
+  // This ensures ScrollTrigger updates when Lenis scrolls
+  lenis.on('scroll', ScrollTrigger.update)
+
+  // Use GSAP ticker instead of custom rAF loop for better sync
+  gsap.ticker.add((time) => {
+    lenis?.raf(time * 1000)
+  })
+
+  // Disable GSAP lag smoothing for smoother Lenis integration
+  gsap.ticker.lagSmoothing(0)
 })
 
 // Cleanup Lenis on unmount
 onUnmounted(() => {
-  if (rafId) {
-    cancelAnimationFrame(rafId)
-    rafId = null
+  if (lenis) {
+    lenis.off('scroll', ScrollTrigger.update)
+    lenis.destroy()
+    lenis = null
   }
-  lenis?.destroy()
-  lenis = null
 })
 </script>
 
