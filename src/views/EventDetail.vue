@@ -865,7 +865,12 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
   const eventTitle = displayTitle.value
   const eventDate = event.value?.date ? formatFullDate(event.value.date) : ''
   const eventTime = event.value?.time || ''
+  const eventLocation = event.value?.location || ''
+  const eventAddress = event.value?.address || ''
   const eventCity = event.value?.city || ''
+
+  // Build full address
+  const fullAddress = [eventLocation, eventAddress, eventCity].filter(Boolean).join(', ')
 
   // Pack info
   const packName = getPackName(pack, locale.value)
@@ -878,7 +883,7 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
   // Event details
   message += `*${eventTitle}*\n`
   message += `${eventDate}${eventTime ? ` ${t('reservation.whatsapp.at')} ${eventTime}` : ''}\n`
-  message += `${eventCity}\n\n`
+  message += `${fullAddress}\n\n`
 
   // Reservation info
   message += `${data.firstName} ${data.lastName}`
