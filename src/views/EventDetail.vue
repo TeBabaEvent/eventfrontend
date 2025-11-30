@@ -433,13 +433,11 @@ import { api } from '@/services/api'
 import { API_BASE_URL } from '@/config/api'
 import { formatPrice, scrollToElement } from '@/utils'
 import { getOptimizedImageUrl } from '@/utils/image'
-import { getEventTitle, getEventDescription, getArtistRole, getPackName, getPackFeatures } from '@/utils/translations'
+import { getEventTitle, getArtistRole, getPackName, getPackFeatures } from '@/utils/translations'
 import { useMobile } from '@/composables/useMobile'
 import type { Event, Pack } from '@/types'
 import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
+// ScrollTrigger is registered globally in App.vue, no need to import here
 
 const route = useRoute()
 const router = useRouter()

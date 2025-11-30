@@ -49,9 +49,7 @@ import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
 import { useMobile } from '@/composables/useMobile'
 import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
+// ScrollTrigger is registered globally in App.vue, no need to import here
 
 const { t } = useI18n()
 

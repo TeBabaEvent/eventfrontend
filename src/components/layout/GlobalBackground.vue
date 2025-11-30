@@ -50,7 +50,7 @@ import { useMobile } from '@/composables/useMobile'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-gsap.registerPlugin(ScrollTrigger)
+// ScrollTrigger is registered globally in App.vue
 
 // Refs
 const backgroundRef = ref<HTMLElement | null>(null)

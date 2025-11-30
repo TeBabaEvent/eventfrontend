@@ -27,6 +27,7 @@ const toastRef = ref()
 
 // Lenis instance
 let lenis: Lenis | null = null
+let lenisTickerCallback: ((time: number) => void) | null = null
 
 // Mobile detection + reduced motion preference (accessibility)
 const { isMobile, prefersReducedMotion } = useMobile()
@@ -72,9 +73,11 @@ onMounted(() => {
   lenis.on('scroll', ScrollTrigger.update)
 
   // Use GSAP ticker instead of custom rAF loop for better sync
-  gsap.ticker.add((time) => {
+  // Store reference for cleanup
+  lenisTickerCallback = (time: number) => {
     lenis?.raf(time * 1000)
-  })
+  }
+  gsap.ticker.add(lenisTickerCallback)
 
   // Disable GSAP lag smoothing for smoother Lenis integration
   gsap.ticker.lagSmoothing(0)
@@ -82,6 +85,13 @@ onMounted(() => {
 
 // Cleanup Lenis on unmount
 onUnmounted(() => {
+  // Remove ticker callback first
+  if (lenisTickerCallback) {
+    gsap.ticker.remove(lenisTickerCallback)
+    lenisTickerCallback = null
+  }
+
+  // Then cleanup Lenis
   if (lenis) {
     lenis.off('scroll', ScrollTrigger.update)
     lenis.destroy()
