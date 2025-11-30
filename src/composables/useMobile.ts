@@ -12,6 +12,7 @@ export function useMobile() {
   const prefersReducedMotion = ref(false)
   const MOBILE_BREAKPOINT = 1024
   let resizeTimeout: ReturnType<typeof setTimeout> | null = null
+  let motionQuery: MediaQueryList | null = null
 
   const checkMobile = () => {
     isMobile.value = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches
@@ -36,13 +37,19 @@ export function useMobile() {
     window.addEventListener('resize', handleResize, { passive: true })
 
     // Listen for reduced motion changes
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     motionQuery.addEventListener('change', checkReducedMotion)
   })
 
   onUnmounted(() => {
     window.removeEventListener('resize', handleResize)
     if (resizeTimeout) clearTimeout(resizeTimeout)
+    
+    // ✅ Cleanup motionQuery listener
+    if (motionQuery) {
+      motionQuery.removeEventListener('change', checkReducedMotion)
+      motionQuery = null
+    }
   })
 
   return {

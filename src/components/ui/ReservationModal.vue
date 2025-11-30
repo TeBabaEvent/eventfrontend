@@ -353,12 +353,7 @@ onUnmounted(() => {
 .reservation-modal__badge-icon {
   color: var(--color-primary);
   font-size: 12px;
-  animation: badge-pulse 2s ease-in-out infinite;
-}
-
-@keyframes badge-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  animation: badge-pulse 2s ease-in-out infinite; /* Défini dans base.css */
 }
 
 .reservation-modal__badge-text {

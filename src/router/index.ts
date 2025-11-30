@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { watchEffect } from 'vue'
+import { watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 
@@ -118,31 +118,36 @@ router.beforeEach(async (to, from, next) => {
 
     await Promise.race([
       new Promise<void>((resolve) => {
-        const stop = watchEffect(() => {
-          if (authStore.isInitialized) {
-            stop()
-          resolve()
-        }
-    })
+        // Utiliser watch au lieu de watchEffect pour un contrôle plus précis
+        const unwatch = watch(
+          () => authStore.isInitialized,
+          (isInit) => {
+            if (isInit) {
+              unwatch()
+              resolve()
+            }
+          },
+          { immediate: true }
+        )
       }),
       new Promise<void>((resolve) => setTimeout(resolve, 3000))
     ])
   }
 
   // Vérifier l'authentification pour les routes protégées
-    if (!authStore.isAuthenticated) {
-      return next({
-        path: '/login',
-        query: { redirect: to.fullPath }
-      })
-    }
+  if (!authStore.isAuthenticated) {
+    return next({
+      path: '/login',
+      query: { redirect: to.fullPath }
+    })
+  }
 
   // Vérifier les permissions admin
-    if (!authStore.isAdmin && to.path.startsWith('/dashboard')) {
-      return next({ path: '/' })
-    }
+  if (!authStore.isAdmin && to.path.startsWith('/dashboard')) {
+    return next({ path: '/' })
+  }
 
-    // Authentifié et autorisé
+  // Authentifié et autorisé
   appStore.startLoading('Chargement...')
   next()
 })
@@ -154,9 +159,9 @@ router.afterEach((to) => {
   // Les routes publiques ne déclenchent plus de loading global
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   if (requiresAuth && appStore.isLoading) {
-  requestAnimationFrame(() => {
-    appStore.stopLoading()
-  })
+    requestAnimationFrame(() => {
+      appStore.stopLoading()
+    })
   }
 })
 
