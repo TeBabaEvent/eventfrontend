@@ -870,8 +870,8 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
   const eventCity = event.value?.city || ''
 
   // Build full address (don't duplicate city if already in address)
-  const fullAddress = eventAddress 
-    ? `${eventLocation}, ${eventAddress}` 
+  const fullAddress = eventAddress
+    ? `${eventLocation}, ${eventAddress}`
     : `${eventLocation}, ${eventCity}`
 
   // Pack info
@@ -915,51 +915,37 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
 // Build share message for the event
 const buildShareMessage = () => {
   const eventId = route.params.id as string
-  // Use the actual frontend URL for sharing (not the backend OG URL)
-  // This way users can click and go directly to the event page
   const frontendUrl = `${window.location.origin}/events/${eventId}`
   const title = displayTitle.value
   const date = event.value?.date ? formatFullDate(event.value.date) : ''
   const time = event.value?.time || ''
   const location = event.value?.location || ''
+  const address = event.value?.address || ''
   const city = event.value?.city || ''
+
+  // Build full address
+  const fullAddress = address 
+    ? `${location}, ${address}` 
+    : `${location}, ${city}`
 
   // Get minimum price from packs
   const minPrice = event.value?.packs?.length
     ? Math.min(...event.value.packs.filter((p: Pack) => !p.is_soldout).map((p: Pack) => p.price))
     : null
 
-  // Build professional formatted message (no emojis for a clean look)
-  let message = ''
-
-  // Header
-  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
-  message += `${t('eventDetail.share.message.header').toUpperCase()}\n`
-  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
-
-  // Introduction
-  message += `${t('eventDetail.share.message.discover')}\n\n`
+  // Build clean share message
+  let message = `${t('eventDetail.share.message.discover')}\n\n`
 
   // Event details
-  message += `*${t('eventDetail.share.message.event')}*\n`
-  message += `${title}\n\n`
-
-  message += `${t('eventDetail.share.message.date')}: ${date}\n`
-  if (time) {
-    message += `${t('eventDetail.share.message.time')}: ${time}\n`
-  }
-  message += `${t('eventDetail.share.message.venue')}: ${location}${city ? `, ${city}` : ''}\n`
+  message += `*${title}*\n`
+  message += `${date}${time ? ` ${t('reservation.whatsapp.at')} ${time}` : ''}\n`
+  message += `${fullAddress}\n`
 
   if (minPrice && minPrice > 0) {
     message += `${t('eventDetail.share.message.tickets')}: ${formatPrice(minPrice, event.value?.packs?.[0]?.currency || 'EUR')}\n`
   }
 
-  // Call to action
-  message += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
-  message += `*${t('eventDetail.share.message.cta')}*\n\n`
-
-  // Link to the frontend event page (direct link for users)
-  message += `${frontendUrl}`
+  message += `\n${frontendUrl}`
 
   return message
 }

@@ -272,15 +272,8 @@ Met vriendelijke groeten`
       copied: 'Link succesvol gekopieerd!',
       copyError: 'Fout bij het kopiëren van de link',
       message: {
-        header: 'EVENEMENT UITNODIGING',
-        discover: 'Ontdek dit geweldige evenement',
-        event: 'Evenement',
-        date: 'Datum',
-        time: 'Tijd',
-        venue: 'Locatie',
-        tickets: 'Tickets vanaf',
-        cta: 'Reserveer nu je plek',
-        link: 'Link'
+        discover: 'Bekijk dit evenement:',
+        tickets: 'Vanaf'
       }
     }
   },

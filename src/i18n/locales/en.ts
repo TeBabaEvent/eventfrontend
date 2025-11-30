@@ -272,15 +272,8 @@ Best regards`
       copied: 'Link copied successfully!',
       copyError: 'Error copying the link',
       message: {
-        header: 'EVENT INVITATION',
-        discover: 'Check out this amazing event',
-        event: 'Event',
-        date: 'Date',
-        time: 'Time',
-        venue: 'Venue',
-        tickets: 'Tickets from',
-        cta: 'Book your spot now',
-        link: 'Link'
+        discover: 'Check out this event:',
+        tickets: 'From'
       }
     }
   },

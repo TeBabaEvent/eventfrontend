@@ -272,15 +272,8 @@ Cordialement`
       copied: 'Lien copié avec succès !',
       copyError: 'Erreur lors de la copie du lien',
       message: {
-        header: 'INVITATION EVENEMENT',
-        discover: 'Découvre cet événement exceptionnel',
-        event: 'Événement',
-        date: 'Date',
-        time: 'Heure',
-        venue: 'Lieu',
-        tickets: 'Billets à partir de',
-        cta: 'Réserve ta place maintenant',
-        link: 'Lien'
+        discover: 'Decouvre cet evenement :',
+        tickets: 'A partir de'
       }
     }
   },

@@ -272,15 +272,8 @@ Me respekt`
       copied: 'Linku u kopjua me sukses!',
       copyError: 'Gabim gjatë kopjimit të linkut',
       message: {
-        header: 'FTESE PER EVENT',
-        discover: 'Shiko këtë event të jashtëzakonshëm',
-        event: 'Eventi',
-        date: 'Data',
-        time: 'Ora',
-        venue: 'Vendndodhja',
-        tickets: 'Bileta nga',
-        cta: 'Rezervo vendin tënd tani',
-        link: 'Linku'
+        discover: 'Shiko kete event:',
+        tickets: 'Nga'
       }
     }
   },
