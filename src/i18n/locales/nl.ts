@@ -219,6 +219,7 @@ Met vriendelijke groeten`
     venue: {
       label: 'Locatie',
       title: 'De Locatie',
+      loadMap: 'Kaart laden',
       mapNotAvailable: 'Kaart niet beschikbaar',
       getDirections: 'Routebeschrijving'
     },

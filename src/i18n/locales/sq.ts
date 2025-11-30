@@ -219,6 +219,7 @@ Me respekt`
     venue: {
       label: 'Vendi',
       title: 'Vendi',
+      loadMap: 'Ngarko hartën',
       mapNotAvailable: 'Harta nuk është e disponueshme',
       getDirections: 'Merr udhëzimet'
     },

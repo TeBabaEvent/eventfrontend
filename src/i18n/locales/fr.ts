@@ -219,6 +219,7 @@ Cordialement`
     venue: {
       label: 'Lieu',
       title: 'Le Lieu',
+      loadMap: 'Charger la carte',
       mapNotAvailable: 'Carte non disponible',
       getDirections: 'Obtenir l\'itinéraire'
     },

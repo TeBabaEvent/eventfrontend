@@ -219,6 +219,7 @@ Best regards`
     venue: {
       label: 'Venue',
       title: 'The Venue',
+      loadMap: 'Load map',
       mapNotAvailable: 'Map not available',
       getDirections: 'Get directions'
     },
