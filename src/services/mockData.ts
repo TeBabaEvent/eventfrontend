@@ -1,4 +1,4 @@
-import type { Event, DJ, GalleryItem } from '@/types'
+import type { Event, Artist, GalleryItem } from '@/types'
 import { i18n } from '@/i18n'
 
 const { t } = i18n.global
@@ -55,15 +55,15 @@ export function getMockEvents(): Event[] {
   ]
 }
 
-export function getMockDJs(): DJ[] {
+export function getMockArtists(): Artist[] {
   return [
     {
       id: '1',
       name: 'DJ Ardit',
       role: t('mockData.djs.dj1.role'),
       description: t('mockData.djs.dj1.description'),
-      image: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?q=80&w=2070',
-      eventsCount: 200,
+      image_url: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?q=80&w=2070',
+      events_count: 200,
       instagram: 'https://instagram.com/djardit',
       badge: 'star' as const
     },
@@ -72,8 +72,8 @@ export function getMockDJs(): DJ[] {
       name: 'DJ Lori',
       role: t('mockData.djs.dj2.role'),
       description: t('mockData.djs.dj2.description'),
-      image: 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?q=80&w=2076',
-      eventsCount: 150,
+      image_url: 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?q=80&w=2076',
+      events_count: 150,
       instagram: 'https://instagram.com/djlori',
       badge: 'fire' as const
     },
@@ -82,13 +82,18 @@ export function getMockDJs(): DJ[] {
       name: 'DJ Enca',
       role: t('mockData.djs.dj3.role'),
       description: t('mockData.djs.dj3.description'),
-      image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=2070',
-      eventsCount: 100,
+      image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=2070',
+      events_count: 100,
       instagram: 'https://instagram.com/djenca',
       badge: 'premium' as const
     }
   ]
 }
+
+/**
+ * @deprecated Utilisez getMockArtists() à la place
+ */
+export const getMockDJs = getMockArtists
 
 export function getMockGallery(): GalleryItem[] {
   return [

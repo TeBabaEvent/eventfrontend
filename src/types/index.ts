@@ -104,12 +104,11 @@ export interface Artist {
   order?: number
 }
 
-// Alias pour compatibilité (DJ est essentiellement un Artist)
-export interface DJ extends Artist {
-  // Propriétés legacy pour compatibilité avec ancien code
-  image?: string // Deprecated: use image_url instead
-  eventsCount?: number // Deprecated: use events_count instead
-}
+/**
+ * @deprecated Utilisez `Artist` à la place. Ce type sera supprimé dans une version future.
+ * DJ est maintenant un alias de Artist pour la rétrocompatibilité.
+ */
+export type DJ = Artist
 
 export interface GalleryItem {
   id: string

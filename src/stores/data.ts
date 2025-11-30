@@ -15,8 +15,14 @@ export const useDataStore = defineStore('data', () => {
   const eventsError = ref<string | null>(null)
   const artistsError = ref<string | null>(null)
 
+  // Shared promises pour éviter les appels concurrents
+  // (remplace le pattern de polling avec setInterval)
+  let pendingEventsPromise: Promise<Event[]> | null = null
+  let pendingArtistsPromise: Promise<Artist[]> | null = null
+
   /**
    * Fetch events une seule fois et met en cache
+   * Utilise une Promise partagée pour dédupliquer les appels concurrents
    * @param force - Forcer le rechargement même si déjà en cache
    */
   async function fetchEvents(force = false): Promise<Event[]> {
@@ -25,38 +31,37 @@ export const useDataStore = defineStore('data', () => {
       return events.value
     }
 
-    // Si un chargement est déjà en cours, attendre qu'il se termine
-    if (isEventsLoading.value) {
-      await new Promise<void>(resolve => {
-        const check = setInterval(() => {
-          if (!isEventsLoading.value) {
-            clearInterval(check)
-            resolve()
-          }
-        }, 50)
-      })
-      return events.value
+    // Si un chargement est déjà en cours, retourner la Promise existante
+    if (pendingEventsPromise && !force) {
+      return pendingEventsPromise
     }
 
+    // Créer une nouvelle Promise et la stocker
     isEventsLoading.value = true
     eventsError.value = null
 
-    try {
-      const data = await api.getEvents()
-      events.value = data
-      eventsLoaded.value = true
-      return data
-    } catch (error) {
-      logger.error('Error fetching events:', error)
-      eventsError.value = error instanceof Error ? error.message : 'Unknown error'
-      throw error
-    } finally {
-      isEventsLoading.value = false
-    }
+    pendingEventsPromise = (async () => {
+      try {
+        const data = await api.getEvents()
+        events.value = data
+        eventsLoaded.value = true
+        return data
+      } catch (error) {
+        logger.error('Error fetching events:', error)
+        eventsError.value = error instanceof Error ? error.message : 'Unknown error'
+        throw error
+      } finally {
+        isEventsLoading.value = false
+        pendingEventsPromise = null
+      }
+    })()
+
+    return pendingEventsPromise
   }
 
   /**
    * Fetch artists une seule fois et met en cache
+   * Utilise une Promise partagée pour dédupliquer les appels concurrents
    * @param force - Forcer le rechargement même si déjà en cache
    */
   async function fetchArtists(force = false): Promise<Artist[]> {
@@ -65,34 +70,32 @@ export const useDataStore = defineStore('data', () => {
       return artists.value
     }
 
-    // Si un chargement est déjà en cours, attendre qu'il se termine
-    if (isArtistsLoading.value) {
-      await new Promise<void>(resolve => {
-        const check = setInterval(() => {
-          if (!isArtistsLoading.value) {
-            clearInterval(check)
-            resolve()
-          }
-        }, 50)
-      })
-      return artists.value
+    // Si un chargement est déjà en cours, retourner la Promise existante
+    if (pendingArtistsPromise && !force) {
+      return pendingArtistsPromise
     }
 
+    // Créer une nouvelle Promise et la stocker
     isArtistsLoading.value = true
     artistsError.value = null
 
-    try {
-      const data = await api.getWebsiteArtists()
-      artists.value = data
-      artistsLoaded.value = true
-      return data
-    } catch (error) {
-      logger.error('Error fetching artists:', error)
-      artistsError.value = error instanceof Error ? error.message : 'Unknown error'
-      throw error
-    } finally {
-      isArtistsLoading.value = false
-    }
+    pendingArtistsPromise = (async () => {
+      try {
+        const data = await api.getWebsiteArtists()
+        artists.value = data
+        artistsLoaded.value = true
+        return data
+      } catch (error) {
+        logger.error('Error fetching artists:', error)
+        artistsError.value = error instanceof Error ? error.message : 'Unknown error'
+        throw error
+      } finally {
+        isArtistsLoading.value = false
+        pendingArtistsPromise = null
+      }
+    })()
+
+    return pendingArtistsPromise
   }
 
   /**

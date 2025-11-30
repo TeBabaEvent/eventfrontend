@@ -1,7 +1,7 @@
 /**
  * Utilitaires pour gérer les traductions d'événements et d'artistes
  */
-import type { Event, DJ, Pack } from '@/types'
+import type { Event, Artist, Pack } from '@/types'
 
 /**
  * Récupère le titre d'un événement dans la langue actuelle
@@ -30,7 +30,7 @@ export function getEventDescription(event: Event, locale: string): string {
 /**
  * Récupère le rôle d'un artiste dans la langue actuelle
  */
-export function getArtistRole(artist: DJ, locale: string): string {
+export function getArtistRole(artist: Artist, locale: string): string {
   if (!artist.role_translations) {
     return artist.role || ''
   }
@@ -42,7 +42,7 @@ export function getArtistRole(artist: DJ, locale: string): string {
 /**
  * Récupère la description d'un artiste dans la langue actuelle
  */
-export function getArtistDescription(artist: DJ, locale: string): string {
+export function getArtistDescription(artist: Artist, locale: string): string {
   if (!artist.description_translations) {
     return artist.description || ''
   }

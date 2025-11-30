@@ -1,6 +1,6 @@
 // Service API pour Baba Event
 
-import type { Event, Artist, DJ, GalleryItem } from '@/types'
+import type { Event, Artist, GalleryItem } from '@/types'
 import { buildApiUrl, API_ENDPOINTS } from '@/config/api'
 import { logger } from './logger'
 
@@ -80,13 +80,9 @@ class ApiService {
     return artists.filter(artist => artist.show_on_website !== false)
   }
 
-  async getArtist(id: string): Promise<DJ> {
-    return this.request<DJ>(API_ENDPOINTS.ARTIST_BY_ID(id))
+  async getArtist(id: string): Promise<Artist> {
+    return this.request<Artist>(API_ENDPOINTS.ARTIST_BY_ID(id))
   }
-
-  // Alias pour compatibilité (deprecated - use getArtists/getArtist)
-  getDJs = this.getArtists.bind(this)
-  getDJ = this.getArtist.bind(this)
 
   // Galerie
   async getGalleryItems(): Promise<GalleryItem[]> {
@@ -124,7 +120,7 @@ class ApiService {
 export const apiService = new ApiService()
 
 // Import des données mockées traduites pour fallback
-import { getMockEvents, getMockDJs, getMockGallery } from './mockData'
+import { getMockEvents, getMockArtists, getMockGallery } from './mockData'
 
 // API wrapper avec fallback automatique vers mock data en cas d'erreur
 class ApiWithFallback {
@@ -149,21 +145,21 @@ class ApiWithFallback {
     }
   }
 
-  async getArtists(): Promise<DJ[]> {
+  async getArtists(): Promise<Artist[]> {
     try {
       return await apiService.getArtists()
     } catch (error) {
       logger.warn('API call failed, using mock data:', error)
-      return getMockDJs()
+      return getMockArtists()
     }
   }
 
-  async getWebsiteArtists(): Promise<DJ[]> {
+  async getWebsiteArtists(): Promise<Artist[]> {
     try {
       return await apiService.getWebsiteArtists()
     } catch (error) {
       logger.warn('API call failed, using mock data:', error)
-      return getMockDJs().filter(dj => dj.show_on_website !== false)
+      return getMockArtists().filter(artist => artist.show_on_website !== false)
     }
   }
 

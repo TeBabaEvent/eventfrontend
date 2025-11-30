@@ -2,9 +2,9 @@
   <article class="dj-card">
     <!-- Image Layer - Full Coverage -->
     <div class="dj-card__image-container">
-      <img 
-        v-if="dj.image_url || dj.image" 
-        :src="optimizedImage" 
+      <img
+        v-if="dj.image_url"
+        :src="optimizedImage"
         :alt="dj.name"
         class="dj-card__image"
         loading="lazy"
@@ -13,7 +13,7 @@
         height="500"
         @error="onImageError"
       >
-      
+
       <!-- Placeholder if no image -->
       <div v-else class="dj-card__placeholder">
         <div class="dj-card__placeholder-icon">
@@ -21,10 +21,10 @@
         </div>
         <div class="dj-card__placeholder-pattern"></div>
       </div>
-      
+
       <!-- Gradient Overlay - Same as EventCard -->
       <div class="dj-card__overlay"></div>
-      
+
       <!-- Hover Glow Effect -->
       <div class="dj-card__glow"></div>
     </div>
@@ -46,10 +46,10 @@
           <span class="dj-card__role-dot"></span>
           {{ displayRole }}
         </div>
-        
+
         <!-- Name -->
         <h3 class="dj-card__name">{{ dj.name }}</h3>
-        
+
         <!-- Description -->
         <p class="dj-card__description">{{ displayDescription }}</p>
 
@@ -67,7 +67,7 @@
             <i class="fab fa-instagram"></i>
             <span>Instagram</span>
           </a>
-          
+
           <div v-else class="dj-card__social-placeholder">
             <i class="fas fa-music"></i>
             <span>{{ t('team.defaultRole') }}</span>
@@ -84,7 +84,7 @@
 <script setup lang="ts">
 import { computed, type PropType } from 'vue'
 import { DJ_BADGES } from '@/constants'
-import type { DJ } from '@/types'
+import type { Artist } from '@/types'
 import { useI18n } from 'vue-i18n'
 import { getArtistRole, getArtistDescription } from '@/utils/translations'
 import { getOptimizedImageUrl } from '@/utils/image'
@@ -93,14 +93,13 @@ const { t, locale } = useI18n()
 
 const props = defineProps({
   dj: {
-    type: Object as PropType<DJ>,
+    type: Object as PropType<Artist>,
     required: true
   }
 })
 
 const optimizedImage = computed(() => {
-  const url = props.dj.image_url || props.dj.image || ''
-  return getOptimizedImageUrl(url, 400)
+  return getOptimizedImageUrl(props.dj.image_url || '', 400)
 })
 
 // Computed properties
