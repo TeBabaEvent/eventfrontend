@@ -28,8 +28,8 @@ const toastRef = ref()
 // Lenis instance
 let lenis: Lenis | null = null
 
-// Mobile detection - disable Lenis on mobile/tablet for native scroll performance
-const { isMobile } = useMobile()
+// Mobile detection + reduced motion preference (accessibility)
+const { isMobile, prefersReducedMotion } = useMobile()
 
 // Check if current route should hide layout
 const hideLayout = computed(() => route.meta.hideLayout === true)
@@ -52,8 +52,8 @@ onMounted(() => {
     setToastInstance(toastRef.value)
   }
 
-  // SKIP Lenis on mobile - use native scroll for better performance
-  if (isMobile.value) {
+  // SKIP Lenis on mobile OR if user prefers reduced motion
+  if (isMobile.value || prefersReducedMotion.value) {
     return
   }
 

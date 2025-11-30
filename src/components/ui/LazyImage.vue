@@ -6,13 +6,13 @@
         <div class="spinner-circle"></div>
       </div>
     </div>
-    
+
     <!-- Error Placeholder -->
     <div v-else-if="hasError" class="lazy-image__error">
       <i class="fas fa-image"></i>
       <span>{{ errorMessage || 'Image non disponible' }}</span>
     </div>
-    
+
     <!-- Actual Image -->
     <img
       v-else
@@ -126,13 +126,7 @@ onMounted(() => {
   border: 3px solid rgba(220, 20, 60, 0.2);
   border-top-color: var(--color-primary);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: spin 0.8s linear infinite; /* spin defined in variables.css */
 }
 
 .lazy-image__error {

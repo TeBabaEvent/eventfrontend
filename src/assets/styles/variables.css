@@ -137,10 +137,17 @@
   --shadow-glow: 0 0 40px rgba(var(--color-primary-rgb), 0.3);
   --shadow-glow-accent: 0 0 20px rgba(255, 215, 0, 0.3);
 
+  /* Easing - Courbes standardisées */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
   /* Transitions - Identiques au prototype */
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow: 0.5s ease;
+  --transition-fast: 0.2s var(--ease-smooth);
+  --transition-normal: 0.3s var(--ease-smooth);
+  --transition-slow: 0.5s var(--ease-smooth);
+  --transition-slower: 0.7s var(--ease-smooth);
 
   /* Z-index */
   --z-dropdown: 1000;
@@ -263,4 +270,30 @@
   }
 }
 
-/* Animations mortes supprimées: price-pulse, grid-move, float (non utilisées) */
+/* ============================================
+   SHARED ANIMATIONS - Centralized here
+   ============================================ */
+
+/* Skeleton loading shimmer - used by HeroSection, EventDetail */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Slide up animation */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

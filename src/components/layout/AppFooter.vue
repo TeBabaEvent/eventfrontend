@@ -144,8 +144,8 @@ gsap.registerPlugin(ScrollTrigger)
 
 const { t } = useI18n()
 
-// Mobile detection - unified with other components (1024px breakpoint)
-const { isMobile } = useMobile()
+// Mobile detection + reduced motion preference (accessibility)
+const { isMobile, prefersReducedMotion } = useMobile()
 
 // Template refs for animations
 const sectionRef = ref<HTMLElement | null>(null)
@@ -197,8 +197,8 @@ const getSocialIcon = (platform: string): string => {
 // ═══════════════════════════════════════════════════════════════
 
 const initScrollAnimations = () => {
-  // SKIP all animations on mobile/tablet for better scroll performance
-  if (isMobile.value) {
+  // SKIP all animations on mobile/tablet OR if user prefers reduced motion
+  if (isMobile.value || prefersReducedMotion.value) {
     return
   }
 

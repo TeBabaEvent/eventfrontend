@@ -67,17 +67,17 @@ const glowRef = ref<HTMLElement | null>(null)
 let gsapContext: gsap.Context | null = null
 
 // ═══════════════════════════════════════════════════════════════
-// MOBILE DETECTION - based on screen width only
+// MOBILE DETECTION + REDUCED MOTION PREFERENCE
 // ═══════════════════════════════════════════════════════════════
-const { isMobile } = useMobile()
+const { isMobile, prefersReducedMotion } = useMobile()
 
 // ═══════════════════════════════════════════════════════════════
 // SUBTLE PARALLAX EFFECTS (Desktop only for performance)
 // ═══════════════════════════════════════════════════════════════
 
 const initScrollEffects = () => {
-  // Skip heavy scroll effects on mobile for better performance
-  if (isMobile.value) {
+  // Skip heavy scroll effects on mobile OR if user prefers reduced motion
+  if (isMobile.value || prefersReducedMotion.value) {
     return
   }
 

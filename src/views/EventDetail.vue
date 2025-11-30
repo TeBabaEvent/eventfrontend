@@ -645,14 +645,14 @@ watch(() => event.value, () => {
 // GSAP ANIMATIONS - Desktop only
 // ============================================
 
-// Mobile detection - disable ALL GSAP on mobile (based on screen width only)
-const { isMobile } = useMobile()
+// Mobile detection + reduced motion preference (accessibility)
+const { isMobile, prefersReducedMotion } = useMobile()
 
 function initHeroAnimations() {
   if (!heroContentRef.value) return
 
-  // SKIP all GSAP animations on mobile for smooth scroll performance
-  if (isMobile.value) {
+  // SKIP all GSAP animations on mobile OR if user prefers reduced motion
+  if (isMobile.value || prefersReducedMotion.value) {
     return
   }
 
@@ -1149,11 +1149,7 @@ const copyEventLink = async () => {
   100% { opacity: 1; transform: translateX(-50%) scale(1.1); }
 }
 
-/* Premium shimmer animation */
-@keyframes skeleton-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
+/* skeleton-shimmer is now centralized in variables.css */
 
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 1; }

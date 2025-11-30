@@ -43,13 +43,7 @@ withDefaults(defineProps<Props>(), {
   border: 4px solid rgba(220, 20, 60, 0.2);
   border-top-color: var(--color-primary);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: spin 0.8s linear infinite; /* spin defined in variables.css */
 }
 
 /* Message */

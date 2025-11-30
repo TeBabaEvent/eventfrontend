@@ -284,15 +284,15 @@ const animateStats = () => {
 // HERO ANIMATIONS - Desktop only for performance
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection - disable ALL GSAP animations on mobile (based on screen width only)
-const { isMobile } = useMobile()
+// Mobile detection + reduced motion preference (accessibility)
+const { isMobile, prefersReducedMotion } = useMobile()
 
 const initHeroAnimations = () => {
   if (animationsInitialized) return
   animationsInitialized = true
 
-  // SKIP all GSAP animations on mobile for smooth scroll performance
-  if (isMobile.value) {
+  // SKIP all GSAP animations on mobile OR if user prefers reduced motion
+  if (isMobile.value || prefersReducedMotion.value) {
     return
   }
 
@@ -601,15 +601,10 @@ onUnmounted(() => {
   height: 100%;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.02) 100%);
   background-size: 200% 100%;
-  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite; /* skeleton-shimmer defined in variables.css */
 }
 
 .skeleton-content { display: none; }
-
-@keyframes skeleton-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
 
 /* Event Image - Full Card */
 .hero__event-image {
@@ -843,12 +838,6 @@ onUnmounted(() => {
   .hero__featured {
     will-change: transform, opacity;
   }
-}
-
-/* ===== ANIMATIONS ===== */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== RESPONSIVE ===== */

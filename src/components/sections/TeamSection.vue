@@ -79,12 +79,12 @@ const error = computed(() => dataStore.artistsError)
 // AWWWARDS-WORTHY ANIMATIONS - Fluid and elegant
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection - disable animations on mobile (based on screen width only)
-const { isMobile } = useMobile()
+// Mobile detection + reduced motion preference (accessibility)
+const { isMobile, prefersReducedMotion } = useMobile()
 
 const initHeaderAnimations = () => {
-  // SKIP animations on mobile for better scroll performance
-  if (isMobile.value) {
+  // SKIP animations on mobile OR if user prefers reduced motion
+  if (isMobile.value || prefersReducedMotion.value) {
     return
   }
 
@@ -128,8 +128,8 @@ const animateDJCards = () => {
   if (animationsInitialized) return
   animationsInitialized = true
 
-  // SKIP animations on mobile for better scroll performance
-  if (isMobile.value) {
+  // SKIP animations on mobile OR if user prefers reduced motion
+  if (isMobile.value || prefersReducedMotion.value) {
     return
   }
 
