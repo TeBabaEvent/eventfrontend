@@ -454,23 +454,10 @@ Me respekt`
     submit: 'Dërgo në WhatsApp',
     note: 'Të dhënat tuaja nuk ruhen dhe përdoren vetëm për rezervimin tuaj.',
     whatsapp: {
-      header: 'KERKESE REZERVIMI',
-      greeting: 'Përshëndetje,',
-      intro: 'Dëshiroj të bëj një rezervim për eventin e mëposhtëm:',
-      clientSection: 'INFORMACIONI I KLIENTIT',
-      name: 'Emri',
-      guests: 'Numri i personave',
-      eventSection: 'DETAJET E EVENTIT',
-      event: 'Eventi',
-      date: 'Data',
-      time: 'Ora',
-      venue: 'Vendndodhja',
-      packSection: 'PAKETA E ZGJEDHUR',
-      pack: 'Paketa',
-      price: 'Çmimi',
-      includes: 'Përfshin',
-      closing: 'Ju lutem konfirmoni disponueshmërinë dhe më jepni detajet e pagesës.',
-      signature: 'Me respekt'
+      greeting: 'Përshëndetje! 👋\nDëshiroj të rezervoj për:',
+      at: 'në',
+      people: 'persona',
+      closing: 'Ju lutem konfirmoni rezervimin tim! 🙏'
     }
   }
 }

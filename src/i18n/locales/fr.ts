@@ -454,23 +454,10 @@ Cordialement`
     submit: 'Envoyer sur WhatsApp',
     note: 'Vos données ne sont pas stockées et sont uniquement utilisées pour votre réservation.',
     whatsapp: {
-      header: 'DEMANDE DE RESERVATION',
-      greeting: 'Bonjour,',
-      intro: 'Je souhaite effectuer une réservation pour l\'événement suivant :',
-      clientSection: 'INFORMATIONS CLIENT',
-      name: 'Nom',
-      guests: 'Nombre de personnes',
-      eventSection: 'DETAILS DE L\'EVENEMENT',
-      event: 'Événement',
-      date: 'Date',
-      time: 'Heure',
-      venue: 'Lieu',
-      packSection: 'FORMULE CHOISIE',
-      pack: 'Formule',
-      price: 'Prix',
-      includes: 'Inclus',
-      closing: 'Merci de confirmer la disponibilité et de me communiquer les modalités de paiement.',
-      signature: 'Cordialement'
+      greeting: 'Bonjour ! 👋\nJe souhaite réserver pour :',
+      at: 'à',
+      people: 'pers.',
+      closing: 'Merci de confirmer ma réservation ! 🙏'
     }
   }
 }

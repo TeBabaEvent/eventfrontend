@@ -865,64 +865,37 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
   const eventTitle = displayTitle.value
   const eventDate = event.value?.date ? formatFullDate(event.value.date) : ''
   const eventTime = event.value?.time || ''
-  const eventLocation = event.value?.location || ''
   const eventCity = event.value?.city || ''
 
   // Pack info
   const packName = getPackName(pack, locale.value)
   const packPrice = formatPrice(pack.price, pack.currency)
   const packUnit = getPackUnitText(pack)
-  const packFeatures = getPackFeatures(pack, locale.value)
 
-  // Build professional formatted message (no emojis for a clean look)
-  let message = ''
+  // Build clean, concise WhatsApp message
+  let message = `${t('reservation.whatsapp.greeting')}\n\n`
 
-  // Header with decorative line
-  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
-  message += `${t('reservation.whatsapp.header').toUpperCase()}\n`
-  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
+  // Event details (compact)
+  message += `📅 *${eventTitle}*\n`
+  message += `🗓 ${eventDate}${eventTime ? ` ${t('reservation.whatsapp.at')} ${eventTime}` : ''}\n`
+  message += `📍 ${eventCity}\n\n`
 
-  // Greeting
-  message += `${t('reservation.whatsapp.greeting')}\n\n`
-  message += `${t('reservation.whatsapp.intro')}\n\n`
+  // Reservation info (one line each)
+  message += `👤 ${data.firstName} ${data.lastName}`
+  if (data.numberOfPeople > 1) {
+    message += ` (${data.numberOfPeople} ${t('reservation.whatsapp.people')})`
+  }
+  message += `\n`
 
-  // Client section
-  message += `*${t('reservation.whatsapp.clientSection')}*\n`
-  message += `----------------------------------------\n`
-  message += `${t('reservation.whatsapp.name')}: ${data.firstName} ${data.lastName}\n`
-  message += `${t('reservation.whatsapp.guests')}: ${data.numberOfPeople}\n\n`
-
-  // Event section
-  message += `*${t('reservation.whatsapp.eventSection')}*\n`
-  message += `----------------------------------------\n`
-  message += `${t('reservation.whatsapp.event')}: ${eventTitle}\n`
-  message += `${t('reservation.whatsapp.date')}: ${eventDate}\n`
-  message += `${t('reservation.whatsapp.time')}: ${eventTime}\n`
-  message += `${t('reservation.whatsapp.venue')}: ${eventLocation}, ${eventCity}\n\n`
-
-  // Pack section
-  message += `*${t('reservation.whatsapp.packSection')}*\n`
-  message += `----------------------------------------\n`
-  message += `${t('reservation.whatsapp.pack')}: ${packName}\n`
-
+  // Pack info
   let priceText = packPrice
   if (packUnit && shouldShowUnit(pack)) {
     priceText += ` ${packUnit}`
   }
-  message += `${t('reservation.whatsapp.price')}: ${priceText}\n`
-
-  if (packFeatures.length > 0) {
-    message += `${t('reservation.whatsapp.includes')}:\n`
-    packFeatures.forEach((feature: string) => {
-      message += `  - ${feature}\n`
-    })
-  }
+  message += `🎫 ${packName} — ${priceText}\n\n`
 
   // Closing
-  message += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
-  message += `${t('reservation.whatsapp.closing')}\n\n`
-  message += `${t('reservation.whatsapp.signature')},\n`
-  message += `${data.firstName} ${data.lastName}`
+  message += `${t('reservation.whatsapp.closing')}`
 
   // Open WhatsApp with the message
   const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`

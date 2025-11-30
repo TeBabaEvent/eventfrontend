@@ -454,23 +454,10 @@ Best regards`
     submit: 'Send on WhatsApp',
     note: 'Your data is not stored and is only used for your booking.',
     whatsapp: {
-      header: 'BOOKING REQUEST',
-      greeting: 'Hello,',
-      intro: 'I would like to make a reservation for the following event:',
-      clientSection: 'CLIENT INFORMATION',
-      name: 'Name',
-      guests: 'Number of guests',
-      eventSection: 'EVENT DETAILS',
-      event: 'Event',
-      date: 'Date',
-      time: 'Time',
-      venue: 'Venue',
-      packSection: 'SELECTED PACKAGE',
-      pack: 'Package',
-      price: 'Price',
-      includes: 'Includes',
-      closing: 'Please confirm availability and provide payment details.',
-      signature: 'Best regards'
+      greeting: 'Hi! 👋\nI would like to book:',
+      at: 'at',
+      people: 'people',
+      closing: 'Please confirm my reservation! 🙏'
     }
   }
 }

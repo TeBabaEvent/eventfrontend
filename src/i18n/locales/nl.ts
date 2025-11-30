@@ -454,23 +454,10 @@ Met vriendelijke groeten`
     submit: 'Verstuur via WhatsApp',
     note: 'Uw gegevens worden niet opgeslagen en worden alleen gebruikt voor uw reservering.',
     whatsapp: {
-      header: 'RESERVERINGSAANVRAAG',
-      greeting: 'Goedendag,',
-      intro: 'Ik wil graag een reservering maken voor het volgende evenement:',
-      clientSection: 'KLANTGEGEVENS',
-      name: 'Naam',
-      guests: 'Aantal personen',
-      eventSection: 'EVENEMENTDETAILS',
-      event: 'Evenement',
-      date: 'Datum',
-      time: 'Tijd',
-      venue: 'Locatie',
-      packSection: 'GEKOZEN PAKKET',
-      pack: 'Pakket',
-      price: 'Prijs',
-      includes: 'Inclusief',
-      closing: 'Gelieve de beschikbaarheid te bevestigen en mij de betalingsgegevens door te geven.',
-      signature: 'Met vriendelijke groeten'
+      greeting: 'Hallo! 👋\nIk wil graag reserveren voor:',
+      at: 'om',
+      people: 'pers.',
+      closing: 'Bevestig alstublieft mijn reservering! 🙏'
     }
   }
 }
