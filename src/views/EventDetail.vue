@@ -867,12 +867,11 @@ const handleReservationSubmit = (data: { firstName: string; lastName: string; nu
   const eventTime = event.value?.time || ''
   const eventLocation = event.value?.location || ''
   const eventAddress = event.value?.address || ''
-  const eventCity = event.value?.city || ''
 
-  // Build full address (don't duplicate city if already in address)
+  // Build address: location + address (address already contains city/postal code)
   const fullAddress = eventAddress
     ? `${eventLocation}, ${eventAddress}`
-    : `${eventLocation}, ${eventCity}`
+    : eventLocation
 
   // Pack info
   const packName = getPackName(pack, locale.value)
@@ -924,8 +923,8 @@ const buildShareMessage = () => {
   const city = event.value?.city || ''
 
   // Build full address
-  const fullAddress = address 
-    ? `${location}, ${address}` 
+  const fullAddress = address
+    ? `${location}, ${address}`
     : `${location}, ${city}`
 
   // Get minimum price from packs
