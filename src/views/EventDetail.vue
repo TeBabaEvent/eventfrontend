@@ -434,16 +434,15 @@ import { API_BASE_URL } from '@/config/api'
 import { formatPrice, scrollToElement } from '@/utils'
 import { getOptimizedImageUrl } from '@/utils/image'
 import { getEventTitle, getArtistRole, getPackName, getPackFeatures } from '@/utils/translations'
-import { useMobile } from '@/composables/useMobile'
+import { useAnimations } from '@/composables/useAnimations'
 import type { Event, Pack } from '@/types'
-import gsap from 'gsap'
-// ScrollTrigger is registered globally in App.vue, no need to import here
 
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
 const toast = useToast()
 const dataStore = useDataStore()
+const { createContext, isReady: animationsReady } = useAnimations()
 
 // Refs for GSAP animations
 const heroRef = ref<HTMLElement | null>(null)
@@ -456,16 +455,19 @@ const countdownRef = ref<HTMLElement | null>(null)
 const metaRef = ref<HTMLElement | null>(null)
 const ctaRef = ref<HTMLElement | null>(null)
 
-let gsapContext: gsap.Context | null = null
+let animationContext: ReturnType<typeof createContext> | null = null
+let contentRevealTimeout: ReturnType<typeof setTimeout> | null = null
+let animationsInitialized = false
 
-// ✅ Vérifier le cache IMMÉDIATEMENT (avant le premier rendu)
+// ✅ UX CONSISTENCY: Always start with loading state for consistent skeleton animation
+// Even with cached data, show skeleton for minimum 250ms for smooth visual transition
 const initialEventId = route.params.id as string
 const cachedEvent = initialEventId ? dataStore.getEventById(initialEventId) ?? null : null
 
-// Si on a un cache hit, initialiser avec les données immédiatement (pas de skeleton)
 const event = ref<Event | null>(cachedEvent)
-const isLoading = ref(!cachedEvent) // false si cache hit, true sinon
-const isInitialized = ref(!!cachedEvent) // true si cache hit, false sinon
+const isLoading = ref(true) // ✅ Always true initially for consistent skeleton
+const isInitialized = ref(false) // ✅ Always false initially for consistent skeleton
+const loadingStartTime = ref(Date.now()) // Track when loading started
 
 // Reservation Modal State
 const isReservationModalOpen = ref(false)
@@ -521,8 +523,18 @@ const googleMapsEmbedUrl = computed(() => {
   return `https://maps.google.com/maps?width=100%25&height=400&hl=fr&q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`
 })
 
-// Fetch event data - Cache-first strategy for instant transitions
+// Fetch event data - Cache-first strategy with consistent skeleton animation
 async function fetchEventData(eventId: string) {
+  // ✅ Helper to enforce minimum loading duration for consistent UX
+  const MIN_LOADING_DURATION = 250 // ms
+  const ensureMinimumLoadingTime = async () => {
+    const elapsed = Date.now() - loadingStartTime.value
+    const remaining = MIN_LOADING_DURATION - elapsed
+    if (remaining > 0) {
+      await new Promise(resolve => setTimeout(resolve, remaining))
+    }
+  }
+
   try {
     // 1. Si on a déjà les données (initialisation synchrone), juste rafraîchir en background
     if (event.value && event.value.id === eventId && isInitialized.value) {
@@ -539,6 +551,10 @@ async function fetchEventData(eventId: string) {
     const cachedEvent = dataStore.getEventById(eventId)
     if (cachedEvent) {
       event.value = cachedEvent
+
+      // ✅ Show skeleton for minimum duration even on cache hit
+      await ensureMinimumLoadingTime()
+
       isLoading.value = false
       isInitialized.value = true
 
@@ -555,6 +571,10 @@ async function fetchEventData(eventId: string) {
     isLoading.value = true
     const newEvent = await api.getEventById(eventId)
     event.value = newEvent
+
+    // ✅ Ensure minimum loading time for consistent UX
+    await ensureMinimumLoadingTime()
+
     isInitialized.value = true
 
   } catch (error) {
@@ -569,6 +589,12 @@ async function fetchEventData(eventId: string) {
 // Watch for route changes
 watch(() => route.params.id, (newId) => {
   if (newId) {
+    // ✅ Reset loading state for consistent skeleton animation on each navigation
+    isLoading.value = true
+    isInitialized.value = false
+    loadingStartTime.value = Date.now()
+    animationsInitialized = false // Reset animation flag for new event
+
     fetchEventData(newId as string)
   }
 }, { immediate: true })
@@ -643,107 +669,122 @@ watch(() => event.value, () => {
 // GSAP ANIMATIONS - Desktop only
 // ============================================
 
-// Mobile detection + reduced motion preference (accessibility)
-const { isMobile, prefersReducedMotion } = useMobile()
-
 function initHeroAnimations() {
-  if (!heroContentRef.value) return
-
-  // SKIP all GSAP animations on mobile OR if user prefers reduced motion
-  if (isMobile.value || prefersReducedMotion.value) {
+  // 🚀 Prevent multiple initializations
+  if (animationsInitialized) {
+    return
+  }
+  if (!heroContentRef.value) {
     return
   }
 
-  gsapContext = gsap.context(() => {
-    // Set initial states for animated elements
-    const animatedElements = heroContentRef.value?.querySelectorAll('.hero-animate')
-    if (animatedElements) {
-      gsap.set(animatedElements, {
-        opacity: 0,
-        y: 30
-      })
-    }
+  // Create scoped animation context (no-op on mobile/reduced motion)
+  animationContext = createContext(heroRef.value || undefined)
 
-    // Create master timeline
-    const tl = gsap.timeline({
-      delay: 0.2,
-      defaults: {
-        ease: 'power2.out'
-      }
+  // Skip if animations disabled (mobile/reduced motion)
+  if (!animationContext.gsap) {
+    return
+  }
+
+  const { gsap, ScrollTrigger } = animationContext
+  animationsInitialized = true
+
+  // Use the context for all animations
+  animationContext.context?.add(() => {
+    // ─────────────────────────────────────────────────────────────
+    // MASTER TIMELINE - Elegant entrance (like HeroSection)
+    // ─────────────────────────────────────────────────────────────
+    const masterTL = gsap.timeline({
+      delay: 0.8,
+      defaults: { ease: 'power2.out' }
     })
 
-    // Animate breadcrumb
+    // ─────────────────────────────────────────────────────────────
+    // Breadcrumb - Smooth fade in
+    // ─────────────────────────────────────────────────────────────
     if (breadcrumbRef.value) {
-      tl.to(breadcrumbRef.value, {
-        opacity: 1,
-        y: 0,
-        duration: 0.6
-      })
+      masterTL.fromTo(breadcrumbRef.value,
+        { opacity: 0, y: 25 },
+        { opacity: 1, y: 0, duration: 0.6 }
+      )
     }
 
-    // Animate badge (if exists)
+    // ─────────────────────────────────────────────────────────────
+    // Badge - Smooth fade (if exists)
+    // ─────────────────────────────────────────────────────────────
     if (badgeRef.value) {
-      tl.to(badgeRef.value, {
-        opacity: 1,
-        y: 0,
-        duration: 0.5
-      }, '-=0.3')
+      masterTL.fromTo(badgeRef.value,
+        { opacity: 0, y: 25 },
+        { opacity: 1, y: 0, duration: 0.7 },
+        '-=0.3'
+      )
     }
 
-    // Animate title
+    // ─────────────────────────────────────────────────────────────
+    // Title - Cinematic clip-path reveal (like HeroSection)
+    // ─────────────────────────────────────────────────────────────
     if (titleRef.value) {
-      tl.to(titleRef.value, {
-        opacity: 1,
-        y: 0,
-        duration: 0.7
-      }, '-=0.3')
+      masterTL.fromTo(titleRef.value,
+        { opacity: 0, y: 40, clipPath: 'inset(0 0 100% 0)' },
+        {
+          opacity: 1,
+          y: 0,
+          clipPath: 'inset(0 0 0% 0)',
+          duration: 1,
+          ease: 'power3.out'
+        },
+        '-=0.4'
+      )
     }
 
-    // Animate countdown
+    // ─────────────────────────────────────────────────────────────
+    // Countdown - Soft emergence
+    // ─────────────────────────────────────────────────────────────
     if (countdownRef.value) {
-      tl.to(countdownRef.value, {
-        opacity: 1,
-        y: 0,
-        duration: 0.5
-      }, '-=0.4')
+      masterTL.fromTo(countdownRef.value,
+        { opacity: 0, y: 25 },
+        { opacity: 1, y: 0, duration: 0.7 },
+        '-=0.6'
+      )
     }
 
-    // Animate meta section
+    // ─────────────────────────────────────────────────────────────
+    // Meta Items - Elegant staggered reveal
+    // ─────────────────────────────────────────────────────────────
     if (metaRef.value) {
-      tl.to(metaRef.value, {
-        opacity: 1,
-        y: 0,
-        duration: 0.6
-      }, '-=0.3')
-
-      // Stagger meta items
       const metaItems = metaRef.value.querySelectorAll('.event-hero__meta-item')
       if (metaItems.length) {
-        tl.fromTo(metaItems,
-          { opacity: 0, y: 20, scale: 0.95 },
+        masterTL.fromTo(metaItems,
+          { opacity: 0, y: 30, scale: 0.95 },
           {
             opacity: 1,
             y: 0,
             scale: 1,
-            duration: 0.5,
-            stagger: 0.1
+            duration: 0.7,
+            stagger: 0.12,
+            ease: 'power3.out'
           },
-          '-=0.4'
+          '-=0.5'
         )
       }
     }
 
-    // Animate CTA
+    // ─────────────────────────────────────────────────────────────
+    // CTA Button - Final reveal
+    // ─────────────────────────────────────────────────────────────
     if (ctaRef.value) {
-      tl.to(ctaRef.value, {
-        opacity: 1,
-        y: 0,
-        duration: 0.5
-      }, '-=0.2')
+      masterTL.fromTo(ctaRef.value,
+        { opacity: 0, y: 25 },
+        { opacity: 1, y: 0, duration: 0.8 },
+        '-=0.4'
+      )
     }
 
-    // Parallax + Fade effect on hero image (desktop only)
-    if (heroImageRef.value && heroRef.value) {
+    // ─────────────────────────────────────────────────────────────
+    // SCROLL EFFECTS - Parallax + Overlay fade (desktop only)
+    // ─────────────────────────────────────────────────────────────
+    if (heroImageRef.value && heroRef.value && ScrollTrigger) {
+      // Parallax on hero image
       gsap.to(heroImageRef.value, {
         yPercent: 15,
         scale: 1.02,
@@ -756,13 +797,11 @@ function initHeroAnimations() {
         }
       })
 
-      // 🚀 CRITICAL PERFORMANCE FIX: Animate overlay opacity instead of image
-      // - Animating opacity on overlay is cheaper than on large image
-      // - Eliminates repaint of 1920x1080 image on every frame
+      // 🚀 PERFORMANCE: Animate overlay instead of image
       const heroOverlay = heroRef.value.querySelector('.event-hero__overlay')
       if (heroOverlay) {
         gsap.to(heroOverlay, {
-          opacity: 0.9, // Darken overlay as user scrolls down
+          opacity: 0.9,
           ease: 'power2.in',
           scrollTrigger: {
             trigger: heroRef.value,
@@ -773,22 +812,81 @@ function initHeroAnimations() {
         })
       }
     }
-  }, heroRef.value || undefined)
+  })
 }
 
-// Watch for content initialization to trigger animations
-watch(isInitialized, async (newValue) => {
-  if (newValue && event.value) {
-    await nextTick()
-    setTimeout(() => initHeroAnimations(), 50)
+// Watch for content initialization AND animations ready to trigger animations
+watch([isInitialized, animationsReady], async ([initialized, ready]) => {
+  // Clear any existing timeout
+  if (contentRevealTimeout) {
+    clearTimeout(contentRevealTimeout)
+    contentRevealTimeout = null
   }
-})
 
-// Cleanup GSAP on unmount
+  if (!initialized || !event.value) return
+
+  if (ready) {
+    // ✅ GSAP available - trigger beautiful animations
+    // Wait for heroContentRef to be available (after transition)
+    await nextTick()
+
+    // Poll for heroContentRef availability (max 10 attempts, 50ms each)
+    let attempts = 0
+    const checkAndInit = () => {
+      if (heroContentRef.value) {
+        initHeroAnimations()
+      } else if (attempts < 10) {
+        attempts++
+        setTimeout(checkAndInit, 50)
+      }
+    }
+
+    requestAnimationFrame(checkAndInit)
+  } else {
+    // 🚀 FALLBACK: If animations disabled (mobile/no GSAP), reveal content immediately
+    await nextTick()
+    requestAnimationFrame(() => {
+      const animatedElements = heroContentRef.value?.querySelectorAll('.hero-animate')
+      if (animatedElements) {
+        animatedElements.forEach((el) => {
+          (el as HTMLElement).style.opacity = '1'
+          ;(el as HTMLElement).style.transform = 'none'
+        })
+      }
+    })
+  }
+
+  // 🚀 UNIVERSAL SAFETY TIMEOUT: Reveal content after 2.5s if still hidden
+  // This is a last resort to prevent content staying hidden forever
+  contentRevealTimeout = setTimeout(() => {
+    const animatedElements = heroContentRef.value?.querySelectorAll('.hero-animate')
+    if (animatedElements) {
+      animatedElements.forEach((el) => {
+        const element = el as HTMLElement
+        // Only reveal if still hidden
+        const computedOpacity = getComputedStyle(element).opacity
+        if (computedOpacity === '0' || element.style.opacity === '0') {
+          element.style.opacity = '1'
+          element.style.transform = 'none'
+          element.style.transition = 'opacity 0.3s ease, transform 0.3s ease'
+        }
+      })
+    }
+  }, 2500)
+}, { immediate: true })
+
+// Cleanup animations on unmount
 onUnmounted(() => {
-  if (gsapContext) {
-    gsapContext.revert()
-    gsapContext = null
+  // Clear safety timeout
+  if (contentRevealTimeout) {
+    clearTimeout(contentRevealTimeout)
+    contentRevealTimeout = null
+  }
+
+  // 🚀 FIXED: Proper cleanup with tween killing
+  if (animationContext) {
+    animationContext.cleanup()
+    animationContext = null
   }
 })
 
@@ -1319,6 +1417,26 @@ const copyEventLink = async () => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ============================================
+   GSAP ANIMATION SETUP
+   ============================================ */
+/* Desktop: Hide elements initially for GSAP animation */
+@media (min-width: 769px) {
+  .hero-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    will-change: transform, opacity;
+  }
+}
+
+/* Mobile: All elements visible by default (no GSAP animations) */
+@media (max-width: 768px) {
+  .hero-animate {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 </style>

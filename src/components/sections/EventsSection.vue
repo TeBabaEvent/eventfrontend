@@ -49,20 +49,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import EventCard from '@/components/common/EventCard.vue'
 import ErrorMessage from '@/components/ui/ErrorMessage.vue'
 import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
-import { useMobile } from '@/composables/useMobile'
+import { useAnimations } from '@/composables/useAnimations'
 import { logger } from '@/services/logger'
-import gsap from 'gsap'
-// ScrollTrigger is registered globally in App.vue, no need to import here
 
 const { t } = useI18n()
-
-// Mobile detection + reduced motion preference (accessibility)
-const { isMobile, prefersReducedMotion } = useMobile()
 
 // Emit loaded event
 const emit = defineEmits(['loaded'])
@@ -72,8 +67,9 @@ const sectionRef = ref<HTMLElement | null>(null)
 const headerRef = ref<HTMLElement | null>(null)
 const gridRef = ref<HTMLElement | null>(null)
 
-// GSAP context
-let gsapCtx: gsap.Context | null = null
+// Animation context
+const { createContext, isReady: animationsReady } = useAnimations()
+let animationContext: ReturnType<typeof createContext> | null = null
 
 // ✅ Utiliser le dataStore au lieu d'appeler l'API
 const dataStore = useDataStore()
@@ -97,12 +93,13 @@ const loadEvents = async () => {
 // ═══════════════════════════════════════════════════════════════
 
 const initScrollAnimations = () => {
-  // SKIP all animations on mobile/tablet OR if user prefers reduced motion
-  if (isMobile.value || prefersReducedMotion.value) {
-    return
-  }
+  animationContext = createContext(sectionRef.value || undefined)
+  if (!animationContext.gsap) return
 
-  gsapCtx = gsap.context(() => {
+  const { gsap, ScrollTrigger } = animationContext
+  if (!ScrollTrigger) return
+
+  animationContext.context?.add(() => {
     // ─────────────────────────────────────────────────────────────
     // HEADER - Cinematic text reveal (desktop only)
     // ─────────────────────────────────────────────────────────────
@@ -177,23 +174,29 @@ const initScrollAnimations = () => {
         })
       }
     }
-  }, sectionRef.value || undefined)
+  })
 }
+
+// Wait for animations ready
+watch(animationsReady, async (ready) => {
+  if (ready) {
+    await nextTick()
+    requestAnimationFrame(() => {
+      initScrollAnimations()
+    })
+  }
+}, { immediate: true })
 
 // Lifecycle
 onMounted(async () => {
   // Load events (will use cache if already loaded by Hero)
   loadEvents()
-
-  // Init animations after DOM is ready
-  await nextTick()
-  setTimeout(() => initScrollAnimations(), 100)
 })
 
 onUnmounted(() => {
-  if (gsapCtx) {
-    gsapCtx.revert()
-    gsapCtx = null
+  if (animationContext) {
+    animationContext.cleanup()
+    animationContext = null
   }
 })
 
@@ -303,7 +306,7 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
 }
 
 /* Desktop only: Enable will-change for smooth animations */
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .events__grid-container :deep(.event-card) {
     will-change: transform, opacity;
   }

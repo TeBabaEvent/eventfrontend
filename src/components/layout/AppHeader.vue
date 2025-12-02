@@ -84,14 +84,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useScrollSpy } from '@/composables/useScrollSpy'
 import { scrollToElement } from '@/utils'
 import { NAVIGATION_ITEMS } from '@/constants'
 import LanguageSelector from '@/components/ui/LanguageSelector.vue'
 import { useI18n } from 'vue-i18n'
-import gsap from 'gsap'
+import { useAnimations } from '@/composables/useAnimations'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -105,8 +105,9 @@ const logoRef = ref<HTMLElement | null>(null)
 const navMenuRef = ref<HTMLElement | null>(null)
 const toggleRef = ref<HTMLElement | null>(null)
 
-// GSAP context
-let gsapContext: gsap.Context | null = null
+// Animation context
+const { createContext, isReady: animationsReady } = useAnimations()
+let animationContext: ReturnType<typeof createContext> | null = null
 
 // Navigation items with translations
 const navigationItems = computed(() =>
@@ -170,7 +171,12 @@ const closeMenu = () => {
 
 // GSAP Nav entrance animation
 const initNavAnimations = () => {
-  gsapContext = gsap.context(() => {
+  animationContext = createContext()
+  if (!animationContext.gsap) return
+
+  const { gsap } = animationContext
+
+  animationContext.context?.add(() => {
     const tl = gsap.timeline({
       defaults: {
         ease: 'power2.out'
@@ -203,16 +209,20 @@ const initNavAnimations = () => {
   })
 }
 
+// Wait for animations to be ready before initializing
+watch(animationsReady, async (ready) => {
+  if (ready) {
+    await nextTick()
+    requestAnimationFrame(() => {
+      initNavAnimations()
+    })
+  }
+}, { immediate: true })
+
 // Lifecycle
-onMounted(async () => {
+onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   handleScroll() // Initial check
-
-  // Initialize GSAP animations
-  await nextTick()
-  requestAnimationFrame(() => {
-    initNavAnimations()
-  })
 })
 
 onUnmounted(() => {
@@ -220,9 +230,9 @@ onUnmounted(() => {
   document.body.style.overflow = ''
 
   // Cleanup GSAP
-  if (gsapContext) {
-    gsapContext.revert()
-    gsapContext = null
+  if (animationContext) {
+    animationContext.cleanup()
+    animationContext = null
   }
 })
 </script>
@@ -278,6 +288,7 @@ onUnmounted(() => {
   z-index: 1;
   width: 100%;
   max-width: 100%;
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header--scrolled .nav {
@@ -325,16 +336,28 @@ onUnmounted(() => {
 }
 
 /* ===== GSAP ANIMATION SETUP ===== */
-.nav__logo.nav__animate {
-  opacity: 0;
+/* Desktop: Hide elements initially for GSAP animation */
+@media (min-width: 1025px) {
+  .nav__logo.nav__animate {
+    opacity: 0;
+  }
+
+  .nav__item.nav__animate {
+    opacity: 0;
+  }
+
+  .nav__toggle.nav__animate {
+    opacity: 0;
+  }
 }
 
-.nav__item.nav__animate {
-  opacity: 0;
-}
-
-.nav__toggle.nav__animate {
-  opacity: 0;
+/* Mobile/Tablet: All elements visible by default (no GSAP animations) */
+@media (max-width: 1024px) {
+  .nav__logo.nav__animate,
+  .nav__item.nav__animate,
+  .nav__toggle.nav__animate {
+    opacity: 1 !important;
+  }
 }
 
 /* Navigation Menu */
@@ -548,25 +571,32 @@ onUnmounted(() => {
 
 /* Mobile Styles */
 @media (max-width: 768px) {
-  .header {
-    height: 70px;
-  }
-
   .nav {
     height: 70px;
   }
 
+  .header--scrolled .nav {
+    height: 60px;
+  }
+
   .logo-image {
-    height: 55px;
+    height: 50px;
   }
 
   .header--scrolled .logo-image {
-    height: 48px;
+    height: 42px;
   }
 
   .nav__toggle {
     display: flex;
     z-index: var(--z-modal);
+    width: 44px;
+    height: 44px;
+  }
+
+  .header--scrolled .nav__toggle {
+    width: 40px;
+    height: 40px;
   }
 
   .nav__menu--desktop {
@@ -789,12 +819,20 @@ onUnmounted(() => {
 }
 
 @media (max-width: 480px) {
+  .nav {
+    height: 65px;
+  }
+
+  .header--scrolled .nav {
+    height: 56px;
+  }
+
   .logo-image {
-    height: 48px;
+    height: 46px;
   }
 
   .header--scrolled .logo-image {
-    height: 42px;
+    height: 38px;
   }
 
   .nav__menu--mobile {
@@ -822,9 +860,14 @@ onUnmounted(() => {
   }
 
   .nav__toggle {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     border-radius: 12px;
+  }
+
+  .header--scrolled .nav__toggle {
+    width: 38px;
+    height: 38px;
   }
 
   .nav__toggle span {

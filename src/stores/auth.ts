@@ -11,7 +11,6 @@ export interface User {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  // Helper sécurisé pour localStorage
   const getStorageItem = (key: string): string | null => {
     try {
       return localStorage.getItem(key)
@@ -36,18 +35,15 @@ export const useAuthStore = defineStore('auth', () => {
       logger.error('localStorage remove error:', error)
     }
   }
-  
-  // État
+
   const token = ref<string | null>(getStorageItem('auth_token'))
   const user = ref<User | null>(null)
   const isLoading = ref(false)
   const isInitialized = ref(false)
 
-  // Getters
   const isAuthenticated = computed(() => !!token.value && !!user.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
 
-  // Actions
   function setToken(newToken: string | null) {
     token.value = newToken
     if (newToken) {
@@ -90,17 +86,14 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       const data = await response.json()
-      
-      // Validation des données reçues
+
       if (!data.access_token || !data.user) {
         throw new Error('Invalid response data')
       }
-      
-      // Stocker le token et l'utilisateur
+
       setToken(data.access_token)
       setUser(data.user)
-      
-      // Stocker aussi l'email pour checkAuth
+
       if (data.user.email) {
         setStorageItem('user_email', data.user.email)
       }
@@ -118,7 +111,6 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    // Appeler le backend pour logger la déconnexion
     if (token.value) {
       try {
         await fetch(buildApiUrl(API_ENDPOINTS.LOGOUT), {
@@ -126,16 +118,13 @@ export const useAuthStore = defineStore('auth', () => {
           headers: getAuthHeaders(token.value)
         })
       } catch (error) {
-        // Continuer même si l'appel échoue (token invalide, serveur down, etc.)
         logger.error('Logout backend error:', error)
       }
     }
-    
-    // Nettoyer le state local
+
     setToken(null)
     setUser(null)
     removeStorageItem('user_email')
-    // Redirection sera gérée par le composant
   }
 
   function setInitialized(value: boolean) {
@@ -175,17 +164,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    // State
     token,
     user,
     isLoading,
     isInitialized,
-    
-    // Getters
     isAuthenticated,
     isAdmin,
-    
-    // Actions
     login,
     logout,
     checkAuth,

@@ -131,26 +131,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { APP_CONFIG, CONTACT_INFO, SOCIAL_LINKS, NAVIGATION_ITEMS } from '@/constants'
 import { generateWhatsAppLink } from '@/utils'
 import { useI18n } from 'vue-i18n'
-import { useMobile } from '@/composables/useMobile'
-import gsap from 'gsap'
-// ScrollTrigger is registered globally in App.vue, no need to import here
+import { useAnimations } from '@/composables/useAnimations'
 
 const { t } = useI18n()
-
-// Mobile detection + reduced motion preference (accessibility)
-const { isMobile, prefersReducedMotion } = useMobile()
 
 // Template refs for animations
 const sectionRef = ref<HTMLElement | null>(null)
 const ctaRef = ref<HTMLElement | null>(null)
 const gridRef = ref<HTMLElement | null>(null)
 
-// GSAP context
-let gsapContext: gsap.Context | null = null
+// Animation context
+const { createContext, isReady: animationsReady } = useAnimations()
+let animationContext: ReturnType<typeof createContext> | null = null
 
 // Data
 const appName = APP_CONFIG.name
@@ -194,12 +190,16 @@ const getSocialIcon = (platform: string): string => {
 // ═══════════════════════════════════════════════════════════════
 
 const initScrollAnimations = () => {
-  // SKIP all animations on mobile/tablet OR if user prefers reduced motion
-  if (isMobile.value || prefersReducedMotion.value) {
-    return
-  }
+  // Create scoped animation context (no-op on mobile/reduced motion)
+  animationContext = createContext(sectionRef.value || undefined)
 
-  gsapContext = gsap.context(() => {
+  // Skip if animations disabled
+  if (!animationContext.gsap) return
+
+  const { gsap, ScrollTrigger } = animationContext
+  if (!ScrollTrigger) return
+
+  animationContext.context?.add(() => {
     // ─────────────────────────────────────────────────────────────
     // CTA SECTION - Elegant staggered reveal (desktop only)
     // ─────────────────────────────────────────────────────────────
@@ -279,21 +279,24 @@ const initScrollAnimations = () => {
         }
       })
     }
-  }, sectionRef.value || undefined)
+  })
 }
 
-// Lifecycle
-onMounted(async () => {
-  await nextTick()
-  requestAnimationFrame(() => {
-    initScrollAnimations()
-  })
-})
+// Wait for animations to be ready before initializing
+watch(animationsReady, async (ready) => {
+  if (ready) {
+    await nextTick()
+    requestAnimationFrame(() => {
+      initScrollAnimations()
+    })
+  }
+}, { immediate: true })
 
 onUnmounted(() => {
-  if (gsapContext) {
-    gsapContext.revert()
-    gsapContext = null
+  // 🚀 FIXED: Proper cleanup with tween killing
+  if (animationContext) {
+    animationContext.cleanup()
+    animationContext = null
   }
 })
 </script>
@@ -306,14 +309,14 @@ onUnmounted(() => {
 
 /* ===== GSAP SCROLL ANIMATION ===== */
 /* Desktop: Elements start hidden for GSAP animation */
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .gsap-grid-item {
     opacity: 0;
   }
 }
 
-/* Mobile: Elements visible by default (no GSAP animations) */
-@media (max-width: 768px) {
+/* Mobile/Tablet: Elements visible by default (no GSAP animations) */
+@media (max-width: 1024px) {
   .gsap-grid-item {
     opacity: 1 !important;
   }

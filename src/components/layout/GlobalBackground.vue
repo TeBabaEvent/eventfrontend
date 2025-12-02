@@ -45,12 +45,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useMobile } from '@/composables/useMobile'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-// ScrollTrigger is registered globally in App.vue
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useAnimations } from '@/composables/useAnimations'
 
 // Refs
 const backgroundRef = ref<HTMLElement | null>(null)
@@ -64,27 +60,27 @@ const particlesRef = ref<HTMLElement | null>(null)
 const gridRef = ref<HTMLElement | null>(null)
 const glowRef = ref<HTMLElement | null>(null)
 
-let gsapContext: gsap.Context | null = null
-
-// ═══════════════════════════════════════════════════════════════
-// MOBILE DETECTION + REDUCED MOTION PREFERENCE
-// ═══════════════════════════════════════════════════════════════
-const { isMobile, prefersReducedMotion } = useMobile()
+const { createContext, isReady: animationsReady } = useAnimations()
+let animationContext: ReturnType<typeof createContext> | null = null
 
 // ═══════════════════════════════════════════════════════════════
 // SUBTLE PARALLAX EFFECTS (Desktop only for performance)
 // ═══════════════════════════════════════════════════════════════
 
 const initScrollEffects = () => {
-  // Skip heavy scroll effects on mobile OR if user prefers reduced motion
-  if (isMobile.value || prefersReducedMotion.value) {
-    return
-  }
+  // Create scoped animation context (no-op on mobile/reduced motion)
+  animationContext = createContext(backgroundRef.value || undefined)
+
+  // Skip if animations disabled
+  if (!animationContext.gsap) return
+
+  const { gsap, ScrollTrigger } = animationContext
+  if (!ScrollTrigger) return
 
   // Use document.documentElement as the scroll container
   const scrollContainer = document.documentElement
 
-  gsapContext = gsap.context(() => {
+  animationContext.context?.add(() => {
     // ─────────────────────────────────────────────────────────────
     // 🚀 OPTIMIZED: Single ScrollTrigger for all parallax elements
     // Instead of 16+ individual ScrollTriggers, we use ONE with onUpdate
@@ -219,18 +215,24 @@ const initScrollEffects = () => {
       })
     }
 
-  }, backgroundRef.value || undefined)
+  })
 }
 
-onMounted(() => {
-  // Initialize immediately
-  initScrollEffects()
-})
+// Wait for animations to be ready before initializing
+watch(animationsReady, async (ready) => {
+  if (ready) {
+    await nextTick()
+    requestAnimationFrame(() => {
+      initScrollEffects()
+    })
+  }
+}, { immediate: true })
 
 onUnmounted(() => {
-  if (gsapContext) {
-    gsapContext.revert()
-    gsapContext = null
+  // 🚀 FIXED: Proper cleanup with tween killing
+  if (animationContext) {
+    animationContext.cleanup()
+    animationContext = null
   }
 })
 </script>

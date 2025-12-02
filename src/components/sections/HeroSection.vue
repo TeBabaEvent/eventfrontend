@@ -32,7 +32,7 @@
             </p>
 
             <!-- CTA Buttons -->
-            <div ref="ctaRef" class="hero__cta">
+            <div ref="ctaRef" class="hero__cta hero__animate">
               <BaseButton
                 variant="primary"
                 size="large"
@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { scrollToElement, formatPrice, generateWhatsAppLink, formatDay, formatMonth } from '@/utils'
@@ -134,10 +134,11 @@ import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
 import { logger } from '@/services/logger'
 import { api } from '@/services/api'
+import { useAnimations } from '@/composables/useAnimations'
 import { useMobile } from '@/composables/useMobile'
-import gsap from 'gsap'
 
 const { t, locale } = useI18n()
+const { isMobile } = useMobile()
 const router = useRouter()
 const isPrefetched = ref(false)
 
@@ -155,8 +156,9 @@ const subtitleRef = ref<HTMLElement | null>(null)
 const ctaRef = ref<HTMLElement | null>(null)
 const featuredRef = ref<HTMLElement | null>(null)
 
-// GSAP context for cleanup
-let gsapContext: gsap.Context | null = null
+// Animation context
+const { createContext, isReady: animationsReady } = useAnimations()
+let animationContext: ReturnType<typeof createContext> | null = null
 let animationsInitialized = false
 
 // Data
@@ -284,19 +286,16 @@ const animateStats = () => {
 // HERO ANIMATIONS - Desktop only for performance
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection + reduced motion preference (accessibility)
-const { isMobile, prefersReducedMotion } = useMobile()
-
 const initHeroAnimations = () => {
   if (animationsInitialized) return
+
+  animationContext = createContext(heroMainRef.value || undefined)
+  if (!animationContext.gsap) return
+
+  const { gsap } = animationContext
   animationsInitialized = true
 
-  // SKIP all GSAP animations on mobile OR if user prefers reduced motion
-  if (isMobile.value || prefersReducedMotion.value) {
-    return
-  }
-
-  gsapContext = gsap.context(() => {
+  animationContext.context?.add(() => {
     const titleLines = titleRef.value?.querySelectorAll('.hero__title-line, .hero__title-accent')
 
     // ─────────────────────────────────────────────────────────────
@@ -360,8 +359,18 @@ const initHeroAnimations = () => {
     // HOVER EFFECT - Card lift (desktop only, CSS-based for perf)
     // Using CSS :hover instead of JS listeners for better performance
     // ─────────────────────────────────────────────────────────────
-  }, heroMainRef.value?.parentElement || undefined)
+  })
 }
+
+// Wait for animations to be ready before initializing
+watch(animationsReady, async (ready) => {
+  if (ready) {
+    await nextTick()
+    requestAnimationFrame(() => {
+      initHeroAnimations()
+    })
+  }
+}, { immediate: true })
 
 onMounted(async () => {
   // Initialize stats
@@ -369,10 +378,9 @@ onMounted(async () => {
     animatedStats.value[stat.label] = 0
   })
 
-  // ✅ Start GSAP animations IMMEDIATELY (don't wait for data)
+  // ✅ Start stats animation (GSAP animations handled by watch)
   await nextTick()
   requestAnimationFrame(() => {
-    initHeroAnimations()
     animateStats()
   })
 
@@ -387,11 +395,11 @@ onMounted(async () => {
   }
 })
 
-// Cleanup GSAP on unmount
+// Cleanup on unmount
 onUnmounted(() => {
-  if (gsapContext) {
-    gsapContext.revert()
-    gsapContext = null
+  if (animationContext) {
+    animationContext.cleanup()
+    animationContext = null
   }
 })
 </script>
@@ -796,7 +804,7 @@ onUnmounted(() => {
 
 /* ===== GSAP ANIMATION SETUP ===== */
 /* Desktop: Hide elements initially for GSAP animation */
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .hero__animate {
     opacity: 0;
     will-change: transform, opacity;
@@ -808,8 +816,8 @@ onUnmounted(() => {
   }
 }
 
-/* Mobile: All elements visible by default (no GSAP animations) */
-@media (max-width: 768px) {
+/* Mobile/Tablet: All elements visible by default (no GSAP animations) */
+@media (max-width: 1024px) {
   .hero__animate {
     opacity: 1 !important;
   }
@@ -821,7 +829,7 @@ onUnmounted(() => {
 }
 
 /* Desktop only: 3D perspective for animations */
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .hero__layout {
     perspective: 1500px;
   }

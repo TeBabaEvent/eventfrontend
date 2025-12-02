@@ -47,9 +47,7 @@ import DJCard from '@/components/common/DJCard.vue'
 import ErrorMessage from '@/components/ui/ErrorMessage.vue'
 import { useDataStore } from '@/stores/data'
 import { useI18n } from 'vue-i18n'
-import { useMobile } from '@/composables/useMobile'
-import gsap from 'gsap'
-// ScrollTrigger is registered globally in App.vue, no need to import here
+import { useAnimations } from '@/composables/useAnimations'
 
 const { t } = useI18n()
 
@@ -61,8 +59,9 @@ const sectionRef = ref<HTMLElement | null>(null)
 const headerRef = ref<HTMLElement | null>(null)
 const gridRef = ref<HTMLElement | null>(null)
 
-// GSAP context
-let gsapCtx: gsap.Context | null = null
+// Animation context
+const { createContext, isReady: animationsReady } = useAnimations()
+let animationContext: ReturnType<typeof createContext> | null = null
 let animationsInitialized = false
 
 // ✅ Utiliser le dataStore au lieu d'appeler l'API
@@ -77,16 +76,14 @@ const error = computed(() => dataStore.artistsError)
 // AWWWARDS-WORTHY ANIMATIONS - Fluid and elegant
 // ═══════════════════════════════════════════════════════════════
 
-// Mobile detection + reduced motion preference (accessibility)
-const { isMobile, prefersReducedMotion } = useMobile()
-
 const initHeaderAnimations = () => {
-  // SKIP animations on mobile OR if user prefers reduced motion
-  if (isMobile.value || prefersReducedMotion.value) {
-    return
-  }
+  animationContext = createContext(sectionRef.value || undefined)
+  if (!animationContext.gsap) return
 
-  gsapCtx = gsap.context(() => {
+  const { gsap, ScrollTrigger } = animationContext
+  if (!ScrollTrigger) return
+
+  animationContext.context?.add(() => {
     const badge = headerRef.value?.querySelector('.team__badge')
     const title = headerRef.value?.querySelector('.team__title')
 
@@ -118,18 +115,16 @@ const initHeaderAnimations = () => {
         ease: 'power3.out'
       }, '-=0.5')
     }
-  }, sectionRef.value || undefined)
+  })
 }
 
 // Animate DJ cards when they appear (desktop only)
 const animateDJCards = () => {
   if (animationsInitialized) return
+  if (!animationContext || !animationContext.gsap) return
   animationsInitialized = true
 
-  // SKIP animations on mobile OR if user prefers reduced motion
-  if (isMobile.value || prefersReducedMotion.value) {
-    return
-  }
+  const { gsap, ScrollTrigger } = animationContext
 
   const cards = gridRef.value?.querySelectorAll('.dj-card')
   if (!cards || cards.length === 0) return
@@ -182,17 +177,24 @@ watch(artists, async (newArtists, oldArtists) => {
 }
 }, { immediate: true })
 
+// Wait for animations ready before initializing
+watch(animationsReady, async (ready) => {
+  if (ready) {
+    await nextTick()
+    requestAnimationFrame(() => {
+      initHeaderAnimations()
+    })
+  }
+}, { immediate: true })
+
 // Lifecycle
 onMounted(async () => {
   // Load artists FIRST (will use cache if already loaded)
   await dataStore.fetchArtists().catch(() => {})
 
-  // Init header animations after data attempt
+  // If artists already loaded and animations ready, setup card animations
   await nextTick()
-  initHeaderAnimations()
-
-  // If artists already loaded, setup card animations
-  if (artists.value.length > 0 && !animationsInitialized) {
+  if (artists.value.length > 0 && !animationsInitialized && animationsReady.value) {
     setTimeout(() => {
       animateDJCards()
     }, 100)
@@ -202,9 +204,9 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  if (gsapCtx) {
-    gsapCtx.revert()
-    gsapCtx = null
+  if (animationContext) {
+    animationContext.cleanup()
+    animationContext = null
   }
 })
 </script>
