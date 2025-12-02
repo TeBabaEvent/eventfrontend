@@ -186,6 +186,18 @@ const formatFullDate = (dateStr: string) => {
     return ''
   }
 
+  // Pour l'albanais, utiliser un formatage manuel car Intl ne supporte pas bien sq
+  if (locale.value === 'sq') {
+    const monthNames = ['Jan', 'Shk', 'Mar', 'Pri', 'Maj', 'Qer', 'Kor', 'Gus', 'Sht', 'Tet', 'Nën', 'Dhj']
+    const dayNames = ['Die', 'Hën', 'Mar', 'Mër', 'Enj', 'Pre', 'Sht']
+
+    const dayName = dayNames[date.getDay()]
+    const day = date.getDate()
+    const monthName = monthNames[date.getMonth()]
+
+    return `${dayName}, ${day} ${monthName}`
+  }
+
   return date.toLocaleDateString(locale.value, {
     weekday: 'short',
     day: 'numeric',

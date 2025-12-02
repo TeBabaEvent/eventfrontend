@@ -25,6 +25,19 @@ export function formatDate(
   options?: Intl.DateTimeFormatOptions
 ): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
+
+  // Pour l'albanais, utiliser un formatage manuel car Intl ne supporte pas bien sq
+  if (locale === 'sq' || locale === 'sq-AL') {
+    if (isNaN(dateObj.getTime())) return ''
+
+    const monthNames = ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor']
+    const day = dateObj.getDate()
+    const monthName = monthNames[dateObj.getMonth()]
+    const year = dateObj.getFullYear()
+
+    return `${day} ${monthName} ${year}`
+  }
+
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'long',

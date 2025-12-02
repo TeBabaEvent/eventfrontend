@@ -36,6 +36,19 @@ function formatDateForMeta(dateStr: string, locale: string): string {
   const date = new Date(dateStr)
   if (isNaN(date.getTime())) return ''
 
+  // Pour l'albanais, utiliser un formatage manuel car Intl ne supporte pas bien sq
+  if (locale === 'sq') {
+    const monthNames = ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor']
+    const dayNames = ['e diel', 'e hënë', 'e martë', 'e mërkurë', 'e enjte', 'e premte', 'e shtunë']
+
+    const dayName = dayNames[date.getDay()]
+    const day = date.getDate()
+    const monthName = monthNames[date.getMonth()]
+    const year = date.getFullYear()
+
+    return `${dayName}, ${day} ${monthName} ${year}`
+  }
+
   return date.toLocaleDateString(locale, {
     weekday: 'long',
     day: 'numeric',

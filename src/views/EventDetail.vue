@@ -605,6 +605,22 @@ watch(() => route.params.id, (newId) => {
 const formatFullDate = (dateString: string) => {
   if (!dateString) return ''
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) return ''
+
+  // Pour l'albanais, utiliser un formatage manuel car Intl ne supporte pas bien sq
+  if (locale.value === 'sq') {
+    const monthNames = ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor']
+    const dayNames = ['e diel', 'e hënë', 'e martë', 'e mërkurë', 'e enjte', 'e premte', 'e shtunë']
+
+    const dayName = dayNames[date.getDay()]
+    const day = date.getDate()
+    const monthName = monthNames[date.getMonth()]
+    const year = date.getFullYear()
+
+    return `${dayName}, ${day} ${monthName} ${year}`
+  }
+
+  // Pour les autres langues, utiliser Intl.DateTimeFormat
   const options: Intl.DateTimeFormatOptions = {
     weekday: 'long',
     year: 'numeric',
