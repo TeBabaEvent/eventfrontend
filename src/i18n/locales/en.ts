@@ -452,6 +452,15 @@ Best regards`
       people: 'people',
       closing: 'Please confirm my reservation.'
     }
+  },
+  seo: {
+    title: 'Baba Event - Premium Albanian Cultural Events | Concerts, Festivals, Weddings',
+    description: 'Creator of unforgettable Albanian cultural experiences: exclusive parties, authentic festivals, exceptional weddings and memorable concerts across Europe.',
+    keywords: 'Albanian events, Albanian concerts, cultural festivals, Albanian weddings, VIP parties, Albanian DJ, Albanian music, Paris events, Brussels events, Geneva events',
+    ogTitle: 'Baba Event - Premium Albanian Cultural Events',
+    ogDescription: 'Creator of unforgettable Albanian cultural experiences: concerts, festivals, exclusive parties and exceptional weddings across Europe.',
+    twitterTitle: 'Baba Event - Premium Albanian Cultural Events',
+    twitterDescription: 'Creator of unforgettable Albanian cultural experiences: concerts, festivals, exclusive parties and exceptional weddings.'
   }
 }
 

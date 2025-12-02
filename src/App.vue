@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 import { useToast } from '@/composables/useToast'
 import { useAnimations } from '@/composables/useAnimations'
+import { usePerformance } from '@/composables/usePerformance'
+import { useSeo } from '@/composables/useSeo'
 import Lenis from 'lenis'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
@@ -17,6 +19,10 @@ const authStore = useAuthStore()
 const appStore = useAppStore()
 const { setToastInstance } = useToast()
 const { initialize: initAnimations, isEnabled: animationsEnabled } = useAnimations()
+const { startMonitoring } = usePerformance()
+
+// Initialize SEO with dynamic meta tags
+useSeo()
 
 const toastRef = ref()
 let lenis: Lenis | null = null
@@ -35,6 +41,8 @@ onMounted(async () => {
   if (toastRef.value) {
     setToastInstance(toastRef.value)
   }
+
+  startMonitoring()
 
   await initAnimations()
 

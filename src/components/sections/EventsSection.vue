@@ -305,6 +305,11 @@ const getCardVariant = (index: number): 'large' | 'medium' => {
   margin: 0 auto;
 }
 
+/* Ensure cards are visible by default (GSAP will override) */
+.events__grid-container :deep(.event-card) {
+  opacity: 1;
+}
+
 /* Desktop only: Enable will-change for smooth animations */
 @media (min-width: 1025px) {
   .events__grid-container :deep(.event-card) {

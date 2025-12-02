@@ -452,6 +452,15 @@ Cordialement`
       people: 'pers.',
       closing: 'Merci de confirmer ma reservation.'
     }
+  },
+  seo: {
+    title: 'Baba Event - Événements Culturels Albanais Premium | Concerts, Festivals, Mariages',
+    description: 'Créateur d\'expériences culturelles albanaises inoubliables : soirées exclusives, festivals authentiques, mariages d\'exception et concerts mémorables à travers l\'Europe.',
+    keywords: 'événements albanais, concerts albanais, festivals culturels, mariages albanais, soirées VIP, DJ albanais, musique albanaise, événements Paris, événements Bruxelles, événements Genève',
+    ogTitle: 'Baba Event - Événements Culturels Albanais Premium',
+    ogDescription: 'Créateur d\'expériences culturelles albanaises inoubliables : concerts, festivals, soirées exclusives et mariages d\'exception à travers l\'Europe.',
+    twitterTitle: 'Baba Event - Événements Culturels Albanais Premium',
+    twitterDescription: 'Créateur d\'expériences culturelles albanaises inoubliables : concerts, festivals, soirées exclusives et mariages d\'exception.'
   }
 }
 

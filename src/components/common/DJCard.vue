@@ -11,7 +11,6 @@
         decoding="async"
         width="400"
         height="500"
-        @error="onImageError"
       >
 
       <!-- Placeholder if no image -->
@@ -87,7 +86,7 @@ import { DJ_BADGES } from '@/constants'
 import type { Artist } from '@/types'
 import { useI18n } from 'vue-i18n'
 import { getArtistRole, getArtistDescription } from '@/utils/translations'
-import { getOptimizedImageUrl } from '@/utils/image'
+import { getOptimizedImageUrl, IMAGE_WIDTHS } from '@/utils/image'
 
 const { t, locale } = useI18n()
 
@@ -99,7 +98,7 @@ const props = defineProps({
 })
 
 const optimizedImage = computed(() => {
-  return getOptimizedImageUrl(props.dj.image_url || '', 400)
+  return getOptimizedImageUrl(props.dj.image_url || '', IMAGE_WIDTHS.SMALL)
 })
 
 // Computed properties
@@ -126,16 +125,6 @@ const displayRole = computed(() => {
 const displayDescription = computed(() => {
   return getArtistDescription(props.dj, locale.value)
 })
-
-// Methods
-const onImageError = (event: Event) => {
-  const img = event.target as HTMLImageElement
-  img.style.display = 'none'
-  const placeholder = img.parentElement?.querySelector('.dj-card__placeholder')
-  if (placeholder) {
-    (placeholder as HTMLElement).style.display = 'flex'
-  }
-}
 </script>
 
 <style scoped>

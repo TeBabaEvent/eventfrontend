@@ -424,6 +424,7 @@ import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useToast } from '@/composables/useToast'
+import { useEventSeo } from '@/composables/useEventSeo'
 import { logger } from '@/services/logger'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import EventCountdown from '@/components/ui/EventCountdown.vue'
@@ -614,56 +615,10 @@ const formatFullDate = (dateString: string) => {
 }
 
 // ============================================
-// META TAGS FOR SOCIAL SHARING
+// META TAGS FOR SOCIAL SHARING - Multilingual with @vueuse/head
 // ============================================
-const updateMetaTags = () => {
-  if (!event.value) return
-
-  const title = displayTitle.value
-  const description = displayDescription.value || `${title} - ${event.value.city || ''}`
-  const imageUrl = event.value.image_url || event.value.image || ''
-  const url = window.location.href
-  const date = event.value.date ? formatFullDate(event.value.date) : ''
-
-  // Update page title
-  document.title = `${title} | Baba Event`
-
-  // Helper to update or create meta tags
-  const setMetaTag = (property: string, content: string, isName = false) => {
-    const attr = isName ? 'name' : 'property'
-    let element = document.querySelector(`meta[${attr}="${property}"]`) as HTMLMetaElement
-    if (!element) {
-      element = document.createElement('meta')
-      element.setAttribute(attr, property)
-      document.head.appendChild(element)
-    }
-    element.content = content
-  }
-
-  // OpenGraph meta tags (no emojis for a professional look)
-  setMetaTag('og:title', title)
-  setMetaTag('og:description', `${date} | ${event.value.location || ''}, ${event.value.city || ''} | ${description}`)
-  setMetaTag('og:image', imageUrl)
-  setMetaTag('og:url', url)
-  setMetaTag('og:type', 'event')
-  setMetaTag('og:site_name', 'Baba Event')
-
-  // Twitter Card meta tags
-  setMetaTag('twitter:card', 'summary_large_image', true)
-  setMetaTag('twitter:title', title, true)
-  setMetaTag('twitter:description', `${date} | ${event.value.location || ''}, ${event.value.city || ''}`, true)
-  setMetaTag('twitter:image', imageUrl, true)
-
-  // Additional meta tags for better sharing
-  setMetaTag('description', description, true)
-}
-
-// Watch for event changes to update meta tags
-watch(() => event.value, () => {
-  if (event.value) {
-    updateMetaTags()
-  }
-}, { immediate: true })
+// Initialize SEO with reactive event ref (updates automatically)
+useEventSeo(event)
 
 // ============================================
 // GSAP ANIMATIONS - Desktop only

@@ -283,7 +283,9 @@ onUnmounted(() => {
   min-height: 400px;
 }
 
+/* Ensure cards are visible by default (GSAP will override) */
 .team__grid :deep(.dj-card) {
+  opacity: 1;
   will-change: transform, opacity;
 }
 

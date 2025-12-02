@@ -1,14 +1,5 @@
-import fr from './fr'
-import en from './en'
-import nl from './nl'
-import sq from './sq'
-
-export const messages = {
-  fr,
-  en,
-  nl,
-  sq
-}
+// Locales are now loaded lazily via dynamic imports
+// See src/i18n/index.ts loadLocale() function
 
 export const availableLocales = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },

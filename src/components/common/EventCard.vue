@@ -1,5 +1,12 @@
 <template>
-  <article :class="cardClasses" @click="goToDetail" @mouseenter="prefetchEvent">
+  <article
+    :class="cardClasses"
+    @click="goToDetail"
+    @mouseenter="prefetchEvent"
+    :aria-label="`${t('event.viewDetails')}: ${displayTitle}`"
+    role="button"
+    tabindex="0"
+  >
     <!-- Image Layer - Full Coverage -->
     <div class="event-card__image-container">
       <img
@@ -106,7 +113,7 @@
 import { computed, ref, type PropType } from 'vue'
 import { useRouter } from 'vue-router'
 import { formatPrice } from '@/utils'
-import { getOptimizedImageUrl } from '@/utils/image'
+import { getOptimizedImageUrl, IMAGE_WIDTHS } from '@/utils/image'
 import { getEventTitle } from '@/utils/translations'
 import type { Event } from '@/types'
 import { useI18n } from 'vue-i18n'
@@ -150,7 +157,7 @@ const displayTitle = computed(() => {
 
 const optimizedImage = computed(() => {
   const url = props.event.image_url || props.event.image || ''
-  const width = props.variant === 'large' ? 800 : 600
+  const width = props.variant === 'large' ? IMAGE_WIDTHS.LARGE : IMAGE_WIDTHS.MEDIUM
   return getOptimizedImageUrl(url, width)
 })
 
@@ -170,7 +177,15 @@ const minPrice = computed(() => {
 
 // Format full date
 const formatFullDate = (dateStr: string) => {
+  if (!dateStr) return ''
+
   const date = new Date(dateStr)
+
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return ''
+  }
+
   return date.toLocaleDateString(locale.value, {
     weekday: 'short',
     day: 'numeric',

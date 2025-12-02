@@ -452,6 +452,15 @@ Me respekt`
       people: 'persona',
       closing: 'Ju lutem konfirmoni rezervimin tim.'
     }
+  },
+  seo: {
+    title: 'Baba Event - Ngjarje Premium Kulturore Shqiptare | Koncerte, Festivale, Dasma',
+    description: 'Krijues i përvojave kulturore shqiptare të paharrueshme: festa ekskluzive, festivale autentike, dasma të jashtëzakonshme dhe koncerte të paharrueshme në të gjithë Evropën.',
+    keywords: 'ngjarje shqiptare, koncerte shqiptare, festivale kulturore, dasma shqiptare, festa VIP, DJ shqiptar, muzikë shqiptare, ngjarje Paris, ngjarje Bruksel, ngjarje Gjenevë',
+    ogTitle: 'Baba Event - Ngjarje Premium Kulturore Shqiptare',
+    ogDescription: 'Krijues i përvojave kulturore shqiptare të paharrueshme: koncerte, festivale, festa ekskluzive dhe dasma të jashtëzakonshme në të gjithë Evropën.',
+    twitterTitle: 'Baba Event - Ngjarje Premium Kulturore Shqiptare',
+    twitterDescription: 'Krijues i përvojave kulturore shqiptare të paharrueshme: koncerte, festivale, festa ekskluzive dhe dasma të jashtëzakonshme.'
   }
 }
 

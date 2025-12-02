@@ -452,6 +452,15 @@ Met vriendelijke groeten`
       people: 'pers.',
       closing: 'Bevestig alstublieft mijn reservering.'
     }
+  },
+  seo: {
+    title: 'Baba Event - Premium Albanese Culturele Evenementen | Concerten, Festivals, Bruiloften',
+    description: 'Maker van onvergetelijke Albanese culturele ervaringen: exclusieve feesten, authentieke festivals, uitzonderlijke bruiloften en gedenkwaardige concerten door heel Europa.',
+    keywords: 'Albanese evenementen, Albanese concerten, culturele festivals, Albanese bruiloften, VIP-feesten, Albanese DJ, Albanese muziek, evenementen Parijs, evenementen Brussel, evenementen Genève',
+    ogTitle: 'Baba Event - Premium Albanese Culturele Evenementen',
+    ogDescription: 'Maker van onvergetelijke Albanese culturele ervaringen: concerten, festivals, exclusieve feesten en uitzonderlijke bruiloften door heel Europa.',
+    twitterTitle: 'Baba Event - Premium Albanese Culturele Evenementen',
+    twitterDescription: 'Maker van onvergetelijke Albanese culturele ervaringen: concerten, festivals, exclusieve feesten en uitzonderlijke bruiloften.'
   }
 }
 
