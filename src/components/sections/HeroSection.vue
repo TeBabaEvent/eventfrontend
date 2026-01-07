@@ -784,16 +784,45 @@ onUnmounted(() => {
 }
 
 /* ===== GSAP ANIMATION SETUP ===== */
-/* Desktop: Hide elements initially for GSAP animation */
+/* Desktop: Use CSS animation as fallback, GSAP takes over when ready */
 @media (min-width: 1025px) {
+  /* CSS fallback animation - runs immediately, GSAP will override */
   .hero__animate {
     opacity: 0;
+    animation: heroDesktopFadeIn 0.8s ease-out forwards;
+    animation-delay: 0.3s;
     will-change: transform, opacity;
   }
 
   .hero__title-line,
   .hero__title-accent {
     opacity: 0;
+    animation: heroDesktopFadeIn 0.8s ease-out forwards;
+  }
+
+  .hero__title-line:nth-child(1) { animation-delay: 0.4s; }
+  .hero__title-accent { animation-delay: 0.55s; }
+  .hero__title-line:nth-child(3) { animation-delay: 0.7s; }
+
+  .hero__badge { animation-delay: 0.2s; }
+  .hero__subtitle { animation-delay: 0.6s; }
+  .hero__cta { animation-delay: 0.75s; }
+  .hero__featured { animation-delay: 0.5s; }
+
+  @keyframes heroDesktopFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* When GSAP is ready, it will set opacity directly, overriding animation */
+  .hero__animate[style*="opacity"] {
+    animation: none;
   }
 }
 
@@ -966,8 +995,9 @@ onUnmounted(() => {
 /* Mobile (max 768px) - Premium Experience */
 @media (max-width: 768px) {
   .hero {
+    /* Use svh as fallback, then JS-calculated --vh for stability */
     min-height: 100svh;
-    min-height: 100dvh;
+    min-height: calc(var(--vh, 1vh) * 100);
     padding-top: 0;
     padding-bottom: 0;
     display: flex;
@@ -983,7 +1013,7 @@ onUnmounted(() => {
     max-width: 100%;
     padding: 0;
     min-height: 100svh;
-    min-height: 100dvh;
+    min-height: calc(var(--vh, 1vh) * 100);
     display: flex;
     flex-direction: column;
     justify-content: center;

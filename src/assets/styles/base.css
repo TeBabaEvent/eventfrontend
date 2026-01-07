@@ -75,6 +75,46 @@ body {
   overflow-x: hidden;
 }
 
+/* ============================================
+   iOS VIEWPORT HEIGHT FIX
+   Prevents jarring layout shifts when Safari
+   URL bar resizes during scroll direction changes
+   ============================================ */
+:root {
+  /* Fallback viewport height - JS will set actual value */
+  --vh: 1vh;
+}
+
+@supports (-webkit-touch-callout: none) {
+  /* Safari/iOS only */
+  html, body {
+    /* Use fixed height based on initial viewport to prevent jumps */
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Mobile viewport stability */
+@media (max-width: 768px) {
+  /* Use CSS variable for stable viewport height */
+  .hero,
+  .full-height {
+    /* Fallback: use svh which is the smallest viewport height */
+    min-height: 100svh;
+    /* Override with JS-calculated value when available */
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+
+  /* Smooth transitions for layout changes caused by URL bar */
+  body {
+    transition: height 0.2s ease-out;
+  }
+
+  /* Prevent pull-to-refresh from causing jank */
+  html {
+    overscroll-behavior-y: none;
+  }
+}
+
 /* Typographie */
 h1,
 h2,

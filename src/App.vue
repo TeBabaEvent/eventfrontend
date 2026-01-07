@@ -29,6 +29,24 @@ let lenis: Lenis | null = null
 let rafId: number | null = null
 let visibilityHandler: (() => void) | null = null
 
+// iOS viewport height fix - prevents jarring repositioning when URL bar changes
+const setViewportHeight = () => {
+  // Only apply on mobile
+  if (window.innerWidth > 768) return
+
+  // Set a CSS custom property to the actual viewport height
+  const vh = window.innerHeight * 0.01
+  document.documentElement.style.setProperty('--vh', `${vh}px`)
+}
+
+// Debounced resize handler for viewport
+let resizeTimeout: ReturnType<typeof setTimeout> | null = null
+const handleViewportResize = () => {
+  if (resizeTimeout) clearTimeout(resizeTimeout)
+  // Debounce to prevent rapid updates during scroll
+  resizeTimeout = setTimeout(setViewportHeight, 150)
+}
+
 const hideLayout = computed(() => route.meta.hideLayout === true)
 const isLoading = computed(() => appStore.isLoading)
 const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
@@ -54,6 +72,14 @@ onMounted(async () => {
   if (toastRef.value) {
     setToastInstance(toastRef.value)
   }
+
+  // Set initial viewport height for iOS
+  setViewportHeight()
+  window.addEventListener('resize', handleViewportResize, { passive: true })
+  // Also update on orientation change
+  window.addEventListener('orientationchange', () => {
+    setTimeout(setViewportHeight, 100)
+  })
 
   startMonitoring()
 
@@ -100,6 +126,13 @@ onUnmounted(() => {
   if (visibilityHandler) {
     document.removeEventListener('visibilitychange', visibilityHandler)
     visibilityHandler = null
+  }
+
+  // Clean up viewport resize handler
+  window.removeEventListener('resize', handleViewportResize)
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+    resizeTimeout = null
   }
 
   if (rafId !== null) {
