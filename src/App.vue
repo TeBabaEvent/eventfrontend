@@ -27,9 +27,22 @@ useSeo()
 const toastRef = ref()
 let lenis: Lenis | null = null
 let rafId: number | null = null
+let visibilityHandler: (() => void) | null = null
 
 const hideLayout = computed(() => route.meta.hideLayout === true)
 const isLoading = computed(() => appStore.isLoading)
+const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
+const isLoginRoute = computed(() => route.path === '/login')
+
+// Skip transitions for routes that hide layout (login, dashboard) to avoid background flash
+const skipTransition = computed(() => hideLayout.value || isDashboardRoute.value)
+
+// Use stable keys for dashboard and login to prevent re-mounting
+const getRouteKey = computed(() => {
+  if (isDashboardRoute.value) return 'dashboard'
+  if (isLoginRoute.value) return 'login'
+  return route.path
+})
 
 const loadingMessage = computed(() => {
   if (!authStore.isInitialized) return 'Initialisation...'
@@ -59,15 +72,36 @@ onMounted(async () => {
     touchMultiplier: 2
   })
 
-  // Use native RAF instead of GSAP ticker for better decoupling
+  // RAF animation loop for Lenis
   function animate(time: number) {
     lenis?.raf(time)
     rafId = requestAnimationFrame(animate)
   }
+
+  // Start/stop RAF based on page visibility to save CPU when tab is hidden
+  visibilityHandler = () => {
+    if (document.hidden) {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+        rafId = null
+      }
+    } else if (lenis && rafId === null) {
+      rafId = requestAnimationFrame(animate)
+    }
+  }
+  document.addEventListener('visibilitychange', visibilityHandler)
+
+  // Start animation loop
   rafId = requestAnimationFrame(animate)
 })
 
 onUnmounted(() => {
+  // Clean up visibility handler
+  if (visibilityHandler) {
+    document.removeEventListener('visibilitychange', visibilityHandler)
+    visibilityHandler = null
+  }
+
   if (rafId !== null) {
     cancelAnimationFrame(rafId)
     rafId = null
@@ -97,9 +131,13 @@ onUnmounted(() => {
       <router-view v-slot="{ Component }">
       <Suspense>
           <template #default>
-            <Transition name="fade" mode="out-in">
-            <component :is="Component" :key="route.path" />
-          </Transition>
+            <!-- Skip transitions for dashboard and login to avoid background flash -->
+            <Transition :name="skipTransition ? '' : 'fade'" mode="out-in">
+              <component
+                :is="Component"
+                :key="getRouteKey"
+              />
+            </Transition>
           </template>
           <template #fallback>
             <div class="suspense-fallback"></div>
@@ -108,7 +146,7 @@ onUnmounted(() => {
         </router-view>
     </main>
 
-    <AppFooter v-if="!hideLayout" />
+    <AppFooter v-if="!hideLayout" :key="`footer-${route.path}`" />
   </div>
 </template>
 

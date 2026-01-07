@@ -53,18 +53,7 @@
   /* 🚀 CRITICAL PERFORMANCE FIX: Disable backdrop-filter on mobile */
   .event-hero__badge,
   .event-hero__meta,
-  .event-hero__meta-item,
-  .event-info__card,
-  .event-info__badge,
-  .event-highlight,
-  .lineup-item,
-  .venue__map-placeholder,
-  .venue__directions,
-  .booking-card,
-  .booking-card__header h3,
-  .ticket-option,
-  .info-card,
-  .info-card__title {
+  .event-hero__meta-item {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     background: rgba(10, 10, 15, 0.95) !important;
@@ -72,18 +61,83 @@
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
 
-  /* Simplify gradients and overlays */
-  .event-hero__overlay::after {
-    display: none;
-    /* Remove ambient glow animation */
+  /* Cards with slightly transparent backgrounds */
+  .event-info__card,
+  .booking-card,
+  .info-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(15, 15, 20, 0.9) !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
   }
 
-  /* Disable pulse animations */
+  /* Lighter backgrounds for smaller elements */
+  .event-info__badge,
+  .event-highlight,
+  .lineup-item,
+  .ticket-option {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Minimal styling for text elements */
+  .venue__map-placeholder,
+  .venue__directions,
+  .booking-card__header h3,
+  .info-card__title {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* 🚀 Remove ambient glow animation - saves GPU cycles */
+  .event-hero__overlay::after {
+    display: none !important;
+    animation: none !important;
+  }
+
+  /* 🚀 Disable all continuous animations on mobile */
   .event-hero__badge-icon,
   .event-info__badge-icon,
   .booking-card__header h3::before,
   .booking-card__badge i {
     animation: none !important;
+  }
+
+  /* 🚀 Disable will-change on mobile - saves GPU memory */
+  .event-hero__image,
+  .event-hero__overlay,
+  .event-info__card,
+  .ticket-option,
+  .lineup-item,
+  .event-highlight {
+    will-change: auto !important;
+  }
+
+  /* 🚀 Use simpler transitions on mobile */
+  .event-info__card,
+  .ticket-option,
+  .event-highlight,
+  .lineup-item,
+  .info-card,
+  .share-card,
+  .share-btn {
+    transition: opacity 0.2s ease !important;
+  }
+
+  /* 🚀 Disable hover transforms on mobile (use :active instead) */
+  .event-info__card:hover,
+  .ticket-option:hover,
+  .event-highlight:hover,
+  .lineup-item:hover,
+  .info-card:hover,
+  .share-card:hover {
+    transform: none !important;
   }
 }
 
@@ -513,23 +567,64 @@
 /* Mobile Large (768px) */
 @media (max-width: 768px) {
   .event-hero {
-    min-height: 100vh;
     min-height: 100svh;
-    padding: 100px 0 80px;
+    min-height: 100dvh;
+    padding: 0;
     display: flex;
     align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* 🔧 FIX: Hide breadcrumb and badge on mobile - not needed, saves space */
+  .breadcrumb,
+  .event-hero__badge {
+    display: none !important;
   }
 
   .event-hero__content {
     max-width: 100%;
+    min-height: 100svh;
+    min-height: 100dvh;
     padding: 0 1.5rem;
     gap: 0.25rem;
+    /* Same pattern as homepage - content fills viewport and centers */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
 
+  /* ✅ MOBILE ANIMATIONS - CSS fade-in (no GSAP) */
   .event-hero__title {
     font-size: 1.625rem;
     margin-bottom: 0.75rem;
     line-height: 1.15;
+    animation: eventDetailFadeInUp 0.8s ease-out 0.1s backwards;
+  }
+
+  .event-hero__content .countdown {
+    animation: eventDetailFadeInUp 0.6s ease-out 0.2s backwards;
+  }
+
+  .event-hero__meta {
+    animation: eventDetailFadeInUp 0.6s ease-out 0.3s backwards;
+  }
+
+  .event-hero__cta {
+    animation: eventDetailFadeInUp 0.6s ease-out 0.4s backwards;
+  }
+
+  @keyframes eventDetailFadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .breadcrumb {
@@ -628,12 +723,6 @@
 
 /* Mobile Small (480px) */
 @media (max-width: 480px) {
-  .event-hero {
-    min-height: 100vh;
-    min-height: 100svh;
-    padding: 90px 0 70px;
-  }
-
   .event-hero__content {
     padding: 0 1.25rem;
   }
@@ -644,11 +733,7 @@
     line-height: 1.2;
   }
 
-  .breadcrumb {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.4375rem;
-    margin-bottom: 0.75rem;
-  }
+  /* breadcrumb hidden at 768px */
 
   .breadcrumb__separator {
     font-size: 0.375rem;
@@ -723,12 +808,6 @@
 
 /* Mobile Extra Small (360px) */
 @media (max-width: 360px) {
-  .event-hero {
-    min-height: 100vh;
-    min-height: 100svh;
-    padding: 85px 0 60px;
-  }
-
   .event-hero__content {
     padding: 0 1rem;
   }
@@ -738,19 +817,7 @@
     margin-bottom: 0.5rem;
   }
 
-  .breadcrumb {
-    display: none;
-  }
-
-  .event-hero__badge {
-    padding: 4px 8px;
-    margin-bottom: 0.5rem;
-    gap: 4px;
-  }
-
-  .event-hero__badge-icon {
-    font-size: 6px;
-  }
+  /* breadcrumb and badge already hidden at 768px */
 
   .event-hero__badge-text {
     font-size: 6px;

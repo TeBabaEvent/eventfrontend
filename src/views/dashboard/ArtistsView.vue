@@ -1,21 +1,24 @@
 <template>
   <div class="artists-view">
-    <!-- Loading State -->
-    <LoadingSpinner v-if="isPageLoading" :message="'Chargement des artistes...'" />
-    
-    <!-- Content -->
-    <template v-else>
-      <!-- Page Header -->
-      <div class="page-header">
-      <h1 class="page-header__title">Artistes</h1>
+    <!-- Page Header - Always visible -->
+    <div class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-header__title">Artistes</h1>
+        <p class="page-header__count">{{ artists.length }} artiste(s)</p>
+      </div>
       <button class="create-btn" @click="showCreateModal">
         <i class="fas fa-plus"></i>
         <span>Nouvel artiste</span>
       </button>
     </div>
 
+    <!-- Skeleton Loading State -->
+    <div v-if="isInitialLoading" class="artists-grid">
+      <SkeletonCard v-for="n in 4" :key="n" variant="artist" />
+    </div>
+
     <!-- Empty State -->
-    <div v-if="artists.length === 0" class="empty-state">
+    <div v-else-if="artists.length === 0" class="empty-state">
       <div class="empty-state__icon">
         <i class="fas fa-microphone-slash"></i>
       </div>
@@ -23,55 +26,67 @@
       <p class="empty-state__text">Commencez par créer votre premier artiste</p>
     </div>
 
+    <!-- Artists Grid -->
     <div v-else class="artists-grid">
-      <div v-for="artist in artists" :key="artist.id" class="artist-card">
-        <div class="artist-card__image">
+      <article v-for="artist in artists" :key="artist.id" class="artist-card">
+        <!-- Image -->
+        <div class="artist-card__visual">
           <img v-if="artist.image_url" :src="artist.image_url" :alt="artist.name">
-          <div v-else class="artist-card__placeholder">
+          <div v-else class="artist-card__no-image">
             <i class="fas fa-user-music"></i>
           </div>
-          <div v-if="artist.badge" class="artist-card__badge" :class="`artist-card__badge--${artist.badge}`">
-            <i class="fas" :class="getBadgeIcon(artist.badge)"></i>
-          </div>
         </div>
+
+        <!-- Content -->
         <div class="artist-card__content">
-          <div class="artist-card__header">
-            <h3 class="artist-card__name">{{ artist.name }}</h3>
-            <div class="artist-card__status">
-              <span 
-                v-if="artist.show_on_website !== false" 
-                class="status-badge status-badge--visible"
-                title="Visible sur le site web"
-              >
-                <i class="fas fa-eye"></i>
-              </span>
-              <span 
-                v-else 
-                class="status-badge status-badge--hidden"
-                title="Masqué du site web"
-              >
-                <i class="fas fa-eye-slash"></i>
-              </span>
+          <!-- Top Row: Role + Status -->
+          <div class="artist-card__top">
+            <span class="artist-card__tag">{{ artist.role || 'Artiste' }}</span>
+            <span :class="['artist-card__indicator', artist.show_on_website !== false ? 'artist-card__indicator--active' : 'artist-card__indicator--hidden']">
+              <i :class="artist.show_on_website !== false ? 'fas fa-circle' : 'fas fa-eye-slash'"></i>
+              {{ artist.show_on_website !== false ? 'Visible' : 'Masqué' }}
+            </span>
+          </div>
+
+          <!-- Name -->
+          <h3 class="artist-card__name">{{ artist.name }}</h3>
+
+          <!-- Details -->
+          <div class="artist-card__details">
+            <div class="detail" v-if="artist.description">
+              <i class="fas fa-info-circle"></i>
+              <span>{{ artist.description }}</span>
+            </div>
+            <div class="detail">
+              <i class="fas fa-calendar-alt"></i>
+              <span>{{ artist.events_count || 0 }} événement(s)</span>
             </div>
           </div>
-          <p class="artist-card__role">{{ artist.role || 'Artiste' }}</p>
-          <p class="artist-card__desc">{{ artist.description || 'Aucune description' }}</p>
-          <div class="artist-card__stats">
-            <span><i class="fas fa-calendar"></i> {{ artist.events_count || 0 }} événements</span>
-            <a v-if="artist.instagram" :href="artist.instagram" target="_blank" class="artist-card__instagram">
+
+          <!-- Stats Row -->
+          <div class="artist-card__stats" v-if="artist.instagram || artist.badge">
+            <a v-if="artist.instagram" :href="artist.instagram" target="_blank" class="stat stat--link">
               <i class="fab fa-instagram"></i>
+              <span>Instagram</span>
             </a>
+            <div v-if="artist.badge" class="stat stat--badge" :class="`stat--badge-${artist.badge}`">
+              <i class="fas" :class="getBadgeIcon(artist.badge)"></i>
+              <span>{{ getBadgeLabel(artist.badge) }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="artist-card__actions">
+            <button class="btn-action btn-action--secondary" @click="editArtist(artist)">
+              <i class="fas fa-pen"></i>
+              Modifier
+            </button>
+            <button class="btn-action btn-action--icon" @click="deleteArtist(artist)" title="Supprimer">
+              <i class="fas fa-trash-alt"></i>
+            </button>
           </div>
         </div>
-        <div class="artist-card__actions">
-          <button class="action-btn action-btn--edit" @click="editArtist(artist)">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="action-btn action-btn--delete" @click="deleteArtist(artist)">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
+      </article>
     </div>
 
     <!-- Create/Edit Modal -->
@@ -85,15 +100,16 @@
             </button>
           </div>
 
-          <form @submit.prevent="handleSubmit" class="form">
-            <div class="form-row">
+          <form @submit.prevent="handleSubmit" class="artist-form">
+            <!-- Nom -->
+            <div class="form-row form-row--single">
               <div class="form-group">
                 <label class="form-label">
                   <i class="fas fa-user"></i>
                   Nom
                   <span class="required">*</span>
                 </label>
-                <input v-model="formData.name" type="text" class="form-input" required>
+                <input v-model="formData.name" type="text" class="form-input" placeholder="Nom de l'artiste" required>
               </div>
             </div>
 
@@ -104,11 +120,11 @@
                   <i class="fas fa-microphone"></i>
                   Rôle
                 </label>
-                
+
                 <!-- Language Tabs -->
                 <div class="language-tabs">
-                  <button 
-                    v-for="lang in languages" 
+                  <button
+                    v-for="lang in languages"
                     :key="lang.code"
                     type="button"
                     :class="['language-tab', { active: currentRoleLang === lang.code }]"
@@ -117,16 +133,16 @@
                     {{ lang.label }}
                   </button>
                 </div>
-                
+
                 <!-- Role inputs for each language -->
                 <div class="language-inputs">
-                  <input 
-                    v-for="lang in languages" 
+                  <input
+                    v-for="lang in languages"
                     :key="lang.code"
                     v-show="currentRoleLang === lang.code"
-                    v-model="(formData.role_translations as any)[lang.code]" 
-                    type="text" 
-                    class="form-input" 
+                    v-model="(formData.role_translations as any)[lang.code]"
+                    type="text"
+                    class="form-input"
                     :placeholder="`Rôle de l'artiste (${lang.label})`"
                   >
                 </div>
@@ -140,11 +156,11 @@
                   <i class="fas fa-align-left"></i>
                   Description
                 </label>
-                
+
                 <!-- Language Tabs -->
                 <div class="language-tabs">
-                  <button 
-                    v-for="lang in languages" 
+                  <button
+                    v-for="lang in languages"
                     :key="lang.code"
                     type="button"
                     :class="['language-tab', { active: currentDescLang === lang.code }]"
@@ -153,15 +169,15 @@
                     {{ lang.label }}
                   </button>
                 </div>
-                
+
                 <!-- Description textareas for each language -->
                 <div class="language-inputs">
-                  <textarea 
-                    v-for="lang in languages" 
+                  <textarea
+                    v-for="lang in languages"
                     :key="lang.code"
                     v-show="currentDescLang === lang.code"
-                    v-model="(formData.description_translations as any)[lang.code]" 
-                    class="form-textarea" 
+                    v-model="(formData.description_translations as any)[lang.code]"
+                    class="form-textarea"
                     :placeholder="`Description de l'artiste (${lang.label})`"
                   ></textarea>
                 </div>
@@ -201,58 +217,47 @@
               <div class="form-group">
                 <label class="form-label">
                   <i class="fas fa-calendar-check"></i>
-                  Nombre d'événements
+                  Événements
                 </label>
-                <input v-model.number="formData.events_count" type="number" class="form-input" min="0">
+                <input v-model.number="formData.events_count" type="number" class="form-input" min="0" placeholder="0">
               </div>
             </div>
 
             <div class="form-row form-row--single">
-              <div class="form-group">
-                <div class="checkbox-group">
-                  <input 
-                    v-model="formData.show_on_website" 
-                    type="checkbox" 
-                    id="show_on_website" 
-                    class="form-checkbox"
-                  >
-                  <label for="show_on_website" class="checkbox-label">
-                    <i class="fas fa-globe"></i>
-                    Afficher sur le site web
-                    <span class="checkbox-help">Si coché, cet artiste apparaîtra dans la section "Notre équipe" du site web</span>
-                  </label>
-                </div>
-              </div>
+              <label class="checkbox-label">
+                <span class="checkbox-label__content">
+                  <i class="fas fa-globe"></i>
+                  Afficher sur le site web
+                </span>
+                <input v-model="formData.show_on_website" type="checkbox">
+              </label>
             </div>
 
             <div class="form-actions">
               <button type="button" class="btn btn--outline" @click="closeModal">
-                <span>Annuler</span>
+                Annuler
               </button>
               <button type="submit" class="btn btn--primary" :disabled="isSubmitting">
-                <span v-if="isSubmitting">Chargement...</span>
-                <span v-else>{{ editingArtist ? 'Enregistrer' : 'Créer' }}</span>
-                <i v-if="!isSubmitting" class="fas" :class="editingArtist ? 'fa-save' : 'fa-plus'"></i>
+                {{ isSubmitting ? 'Chargement...' : (editingArtist ? 'Enregistrer' : 'Créer') }}
               </button>
             </div>
           </form>
         </div>
       </div>
     </Transition>
-    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
-import { useAuthStore } from '@/stores/auth'
+import { useAdminDataStore } from '@/stores/adminData'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import SkeletonCard from '@/components/ui/SkeletonCard.vue'
 import type { Artist } from '@/types'
 
-const authStore = useAuthStore()
+const adminStore = useAdminDataStore()
 const toast = useToast()
 
 // Languages
@@ -263,12 +268,12 @@ const languages = [
   { code: 'sq', label: 'SQ' }
 ]
 
-// State
-const artists = ref<Artist[]>([])
+// State - Use store for cached data
+const artists = computed(() => adminStore.artists)
 const isModalOpen = ref(false)
 const editingArtist = ref<Artist | null>(null)
-const isSubmitting = ref(false) // Renommé pour plus de clarté
-const isPageLoading = ref(true)
+const isSubmitting = ref(false)
+const isInitialLoading = ref(!adminStore.artistsLoaded)
 const submitError = ref<string | null>(null)
 const currentRoleLang = ref('fr')
 const currentDescLang = ref('fr')
@@ -297,18 +302,14 @@ const formData = ref({
 })
 
 // Fetch artists
-async function fetchArtists() {
+async function fetchArtists(force = false) {
   try {
-    const response = await fetch(buildApiUrl(API_ENDPOINTS.ARTISTS))
-    if (!response.ok) {
-      throw new Error('Erreur lors du chargement des artistes')
-    }
-    artists.value = await response.json()
+    await adminStore.fetchArtists(force)
   } catch (error) {
     logger.error('Erreur lors de la récupération des artistes:', error)
     toast.error('Impossible de charger les artistes')
   } finally {
-    isPageLoading.value = false
+    isInitialLoading.value = false
   }
 }
 
@@ -316,45 +317,47 @@ async function fetchArtists() {
 async function handleSubmit() {
   isSubmitting.value = true
   submitError.value = null
-  
+
   try {
     // Utiliser FR comme rôle/description principal, fallback aux autres langues
-    const primaryRole = formData.value.role_translations.fr || 
-                       formData.value.role_translations.en || 
-                       formData.value.role_translations.nl || 
-                       formData.value.role_translations.sq || 
+    const primaryRole = formData.value.role_translations.fr ||
+                       formData.value.role_translations.en ||
+                       formData.value.role_translations.nl ||
+                       formData.value.role_translations.sq ||
                        formData.value.role
-    
-    const primaryDesc = formData.value.description_translations.fr || 
-                       formData.value.description_translations.en || 
-                       formData.value.description_translations.nl || 
-                       formData.value.description_translations.sq || 
+
+    const primaryDesc = formData.value.description_translations.fr ||
+                       formData.value.description_translations.en ||
+                       formData.value.description_translations.nl ||
+                       formData.value.description_translations.sq ||
                        formData.value.description
-    
+
     const data = {
       ...formData.value,
       role: primaryRole,
       description: primaryDesc
     }
-    
-    const url = editingArtist.value 
+
+    const url = editingArtist.value
       ? buildApiUrl(API_ENDPOINTS.ARTIST_BY_ID(editingArtist.value.id))
       : buildApiUrl(API_ENDPOINTS.ARTISTS)
-    
+
     const method = editingArtist.value ? 'PUT' : 'POST'
-    
+
     const response = await fetch(url, {
       method,
-      headers: getAuthHeaders(authStore.token),
+      credentials: 'include', // ✅ Send auth cookie
+      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || 'Erreur lors de la sauvegarde')
     }
-    
-    await fetchArtists()
+
+    adminStore.invalidateArtists()
+    await fetchArtists(true)
     toast.success(editingArtist.value ? 'Artiste modifié avec succès' : 'Artiste créé avec succès')
     closeModal()
   } catch (error) {
@@ -398,19 +401,21 @@ function editArtist(artist: Artist) {
 // Delete artist
 async function deleteArtist(artist: Artist) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer cet artiste ?')) return
-  
+
   try {
     const response = await fetch(buildApiUrl(API_ENDPOINTS.ARTIST_BY_ID(artist.id)), {
       method: 'DELETE',
-      headers: getAuthHeaders(authStore.token)
+      credentials: 'include', // ✅ Send auth cookie
+      headers: getAuthHeaders()
     })
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || 'Erreur lors de la suppression')
     }
-    
-    await fetchArtists()
+
+    adminStore.invalidateArtists()
+    await fetchArtists(true)
     toast.success('Artiste supprimé avec succès')
   } catch (error) {
     logger.error('Erreur:', error)
@@ -466,8 +471,19 @@ function getBadgeIcon(badge: string): string {
   return icons[badge] || 'fa-star'
 }
 
-onMounted(() => {
-  fetchArtists()
+function getBadgeLabel(badge: string): string {
+  const labels: Record<string, string> = {
+    star: 'Vedette',
+    fire: 'Tendance',
+    premium: 'Premium'
+  }
+  return labels[badge] || badge
+}
+
+onMounted(async () => {
+  await fetchArtists()
+  // Refresh in background if cache is stale
+  adminStore.refreshInBackground('artists')
 })
 </script>
 
@@ -476,274 +492,356 @@ onMounted(() => {
 
 .artists-view {
   max-width: 1400px;
+  animation: pageIn 0.5s ease-out;
 }
 
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   PAGE HEADER - Matching Events Style
+   ============================================ */
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.page-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .page-header__title {
   font-family: var(--font-heading);
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-white);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+  margin: 0;
 }
 
+.page-header__count {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+/* Create Button - Premium Style */
 .create-btn {
-  padding: 0.8rem 1.75rem;
-  background: linear-gradient(135deg, #dc143c 0%, #b01030 100%);
+  padding: 0.625rem 1.25rem;
+  background: var(--color-primary);
   border: none;
   border-radius: 8px;
   color: var(--color-white);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
+  transition: all 0.15s ease;
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  box-shadow: 0 2px 10px rgba(220, 20, 60, 0.35), 0 0 0 0 rgba(220, 20, 60, 0.5);
-  position: relative;
-  overflow: hidden;
-}
-
-.create-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.create-btn:hover::before {
-  left: 100%;
+  gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .create-btn:hover {
-  background: linear-gradient(135deg, #c41e3a 0%, #9e0f2a 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.45), 0 0 0 3px rgba(220, 20, 60, 0.1);
+  background: #c41e3a;
 }
 
 .create-btn:active {
-  transform: translateY(0);
+  transform: scale(0.97);
 }
 
-/* Artists Grid */
+.create-btn i {
+  font-size: 0.65rem;
+}
+
+/* Artists Grid - Same as Events */
 .artists-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1rem;
 }
 
+/* ============================================
+   ARTIST CARD - Matching Events Card Style
+   ============================================ */
 .artist-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  display: flex;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
   overflow: hidden;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  min-height: 180px;
 }
 
 .artist-card:hover {
-  border-color: rgba(220, 20, 60, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.artist-card__image {
+/* Visual / Image Section */
+.artist-card__visual {
+  width: 160px;
+  flex-shrink: 0;
   position: relative;
-  height: 180px;
-  background: rgba(0, 0, 0, 0.3);
   overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
 }
 
-.artist-card__image img {
+.artist-card__visual img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center top;
+  transition: transform 0.4s ease;
 }
 
-.artist-card__placeholder {
+.artist-card:hover .artist-card__visual img {
+  transform: scale(1.03);
+}
+
+.artist-card__no-image {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
+  background: rgba(255, 255, 255, 0.02);
   color: rgba(255, 255, 255, 0.15);
+  font-size: 1.75rem;
 }
 
-.artist-card__badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+/* Content Section */
+.artist-card__content {
+  flex: 1;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* Top Row */
+.artist-card__top {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  backdrop-filter: blur(8px);
-}
-
-.artist-card__badge--star {
-  background: rgba(234, 179, 8, 0.95);
-  color: white;
-}
-
-.artist-card__badge--fire {
-  background: rgba(239, 68, 68, 0.95);
-  color: white;
-}
-
-.artist-card__badge--premium {
-  background: rgba(168, 85, 247, 0.95);
-  color: white;
-}
-
-.artist-card__content {
-  padding: 1.25rem;
-}
-
-.artist-card__header {
-  display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
-  gap: 0.75rem;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
 }
 
+.artist-card__tag {
+  padding: 0.2rem 0.5rem;
+  background: rgba(var(--color-primary-rgb), 0.12);
+  color: var(--color-primary);
+  border-radius: 3px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.artist-card__indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.artist-card__indicator i {
+  font-size: 0.35rem;
+}
+
+.artist-card__indicator--active {
+  color: #22c55e;
+}
+
+.artist-card__indicator--active i {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.artist-card__indicator--hidden {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Name */
 .artist-card__name {
   font-family: var(--font-heading);
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--color-white);
   margin: 0;
-  flex: 1;
   line-height: 1.3;
-}
-
-.artist-card__status {
-  flex-shrink: 0;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  font-size: 0.7rem;
-  cursor: help;
-}
-
-.status-badge--visible {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-}
-
-.status-badge--hidden {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-}
-
-.artist-card__role {
-  font-size: 0.75rem;
-  color: rgba(220, 20, 60, 0.9);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 0.75rem;
-}
-
-.artist-card__desc {
-  font-size: 0.825rem;
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.5;
-  margin-bottom: 1rem;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* Details */
+.artist-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.artist-card__details .detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.artist-card__details .detail i {
+  width: 14px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.artist-card__details .detail span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Stats Row */
 .artist-card__stats {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
-  padding-top: 0.85rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 1rem;
+  margin-top: auto;
 }
 
-.artist-card__instagram {
-  color: rgba(220, 20, 60, 0.8);
-  font-size: 1.15rem;
-  transition: all 0.15s ease;
-}
-
-.artist-card__instagram:hover {
-  color: var(--color-primary);
-  transform: none;
-}
-
-.artist-card__actions {
+.artist-card__stats .stat {
   display: flex;
-  gap: 0.5rem;
-  padding: 0.85rem 1.25rem;
-  background: rgba(0, 0, 0, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
 }
 
-.action-btn {
-  flex: 1;
-  padding: 0.6rem;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 0.85rem;
+.artist-card__stats .stat i {
+  font-size: 0.65rem;
 }
 
-.action-btn--edit:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.4);
-  color: #3b82f6;
+.artist-card__stats .stat--link {
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 0.15s ease;
 }
 
-.action-btn--delete:hover {
+.artist-card__stats .stat--link:hover {
+  color: var(--color-primary);
+}
+
+.artist-card__stats .stat--badge {
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.artist-card__stats .stat--badge-star {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+
+.artist-card__stats .stat--badge-fire {
   background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.4);
   color: #ef4444;
 }
 
-/* Empty State */
+.artist-card__stats .stat--badge-premium {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+/* Actions - Matching Events Style */
+.artist-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-action i {
+  font-size: 0.65rem;
+}
+
+.btn-action--secondary:hover {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.btn-action--icon {
+  padding: 0.5rem;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.btn-action--icon:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Empty State - Glass Effect */
 .empty-state {
   text-align: center;
   padding: 5rem 2rem;
-  color: rgba(255, 255, 255, 0.6);
+  background: rgba(15, 15, 15, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  margin: 2rem 0;
 }
 
 .empty-state__icon {
   font-size: 4rem;
   margin-bottom: 1.5rem;
-  color: rgba(220, 20, 60, 0.4);
+  color: rgba(var(--color-primary-rgb), 0.4);
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
 }
 
 .empty-state__title {
@@ -760,273 +858,15 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Modal */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
+/* ============================================
+   MODAL - Uses shared dashboard-modals.css
+   ============================================ */
 
-.modal-content {
-  background: #1a1a1a;
-  border: 1px solid rgba(220, 20, 60, 0.3);
-  border-radius: 8px;
-  padding: 2rem;
-  max-width: 700px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
+/* All form styles are in dashboard-modals.css */
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
-}
-
-.modal-title {
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-white);
-}
-
-.modal-close {
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-  background: rgba(231, 76, 60, 0.2);
-  border-color: #e74c3c;
-  color: #e74c3c;
-}
-
-/* Form */
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.form-row--single {
-  grid-template-columns: 1fr;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.form-label i {
-  color: var(--color-primary);
-  width: 16px;
-}
-
-.required {
-  color: var(--color-primary);
-}
-
-.form-input,
-.form-textarea,
-.form-select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: var(--color-white);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-primary);
-}
-
-.form-textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-/* Checkbox Styles */
-.checkbox-group {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-}
-
-.form-checkbox {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--color-primary);
-  cursor: pointer;
-  margin-top: 2px;
-}
-
-.checkbox-label {
-  flex: 1;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  cursor: pointer;
-}
-
-.checkbox-label i {
-  color: var(--color-primary);
-  margin-right: 0.5rem;
-}
-
-.checkbox-help {
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1.4;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(220, 20, 60, 0.2);
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: none;
-}
-
-.btn--primary {
-  background: var(--color-primary);
-  color: var(--color-white);
-}
-
-.btn--primary:hover:not(:disabled) {
-  background: #c41e3a;
-}
-
-.btn--primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn--outline {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.btn--outline:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--color-primary);
-}
-
-/* Language Tabs */
-.language-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding: 0.25rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  width: fit-content;
-}
-
-.language-tab {
-  padding: 0.5rem 1rem;
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.language-tab:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.language-tab.active {
-  background: var(--color-primary);
-  color: var(--color-white);
-  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.3);
-}
-
-.language-inputs {
-  position: relative;
-}
-
-/* Modal Transitions */
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
+/* ============================================
+   RESPONSIVE - Matching Events Style
+   ============================================ */
 @media (max-width: 1024px) {
   .artists-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1035,86 +875,139 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .page-header {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
     margin-bottom: 1.75rem;
-    padding-bottom: 0.875rem;
-    gap: 1rem;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .page-header__left {
+    gap: 0.5rem;
   }
 
   .page-header__title {
     font-size: 1.5rem;
-    flex: 1;
+    font-weight: 700;
   }
 
-  .create-btn {
-    padding: 0.65rem 1.25rem;
+  .page-header__count {
     font-size: 0.8rem;
-    gap: 0.45rem;
-    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.5);
   }
 
-  .create-btn span {
-    display: inline;
+  /* Premium Create Button - Mobile */
+  .create-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, #e01a3d 100%);
+    box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
+    gap: 0.625rem;
+  }
+
+  .create-btn:hover {
+    background: linear-gradient(135deg, #e01a3d 0%, var(--color-primary) 100%);
+  }
+
+  .create-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 10px rgba(220, 20, 60, 0.2);
+  }
+
+  .create-btn i {
+    font-size: 0.75rem;
   }
 
   .artists-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.875rem;
   }
 
-  .artist-card__image {
-    height: 160px;
+  /* Horizontal layout on tablet */
+  .artist-card {
+    border-radius: 12px;
+    min-height: 140px;
+  }
+
+  .artist-card__visual {
+    width: 110px;
   }
 
   .artist-card__content {
-    padding: 1.125rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .artist-card__name {
+    font-size: 0.95rem;
+  }
+
+  .artist-card__tag {
+    font-size: 0.55rem;
+  }
+
+  .artist-card__details .detail {
+    font-size: 0.75rem;
+  }
+
+  /* Action buttons - Touch friendly */
+  .artist-card__actions {
+    gap: 0.5rem;
+    padding-top: 0.625rem;
+  }
+
+  .btn-action {
+    min-height: 36px;
+    font-size: 0.75rem;
+  }
+
+  .btn-action--icon {
+    width: 36px;
+    height: 36px;
   }
 
   .empty-state {
-    padding: 4rem 1.5rem;
+    padding: 3.5rem 1.5rem;
+    border-radius: 12px;
   }
 
   .empty-state__icon {
-    font-size: 3.5rem;
+    font-size: 3rem;
   }
 
   .empty-state__title {
-    font-size: 1.25rem;
-  }
-}
-
-@media (max-width: 580px) {
-  .page-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.875rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .page-header__title {
-    font-size: 1.4rem;
-  }
-
-  .create-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
+    font-size: 1.2rem;
   }
 }
 
 @media (max-width: 480px) {
   .page-header {
-    padding-bottom: 0.75rem;
+    gap: 1.25rem;
   }
 
   .page-header__title {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
   }
 
-  .artist-card__image {
-    height: 150px;
+  .create-btn {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+
+  /* Vertical layout on small screens */
+  .artist-card {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .artist-card__visual {
+    width: 100%;
+    height: 180px;
   }
 
   .artist-card__content {
@@ -1125,32 +1018,41 @@ onMounted(() => {
     font-size: 1.05rem;
   }
 
-  .artist-card__role {
-    font-size: 0.7rem;
+  .artist-card__tag {
+    font-size: 0.6rem;
   }
 
-  .artist-card__desc {
-    font-size: 0.8rem;
+  .artist-card__details .detail {
+    font-size: 0.75rem;
+  }
+
+  .artist-card__stats .stat {
+    font-size: 0.65rem;
   }
 
   .artist-card__actions {
-    padding: 0.75rem 1rem;
+    padding-top: 0.75rem;
+    gap: 0.5rem;
   }
 
-  .action-btn {
-    padding: 0.55rem;
+  .btn-action {
+    min-height: 40px;
+    font-size: 0.8rem;
+    flex: 1;
+  }
+
+  .btn-action--icon {
+    width: 40px;
+    height: 40px;
+    flex: 0;
   }
 
   .empty-state {
     padding: 3rem 1rem;
   }
 
-  .empty-state__icon {
-    font-size: 3rem;
-  }
-
   .empty-state__title {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
   }
 
   .empty-state__text {

@@ -65,6 +65,14 @@ Met vriendelijke groeten`
       stayInformed: 'Blijf op de hoogte'
     }
   },
+  historique: {
+    label: 'RETROSPECTIEF',
+    title: 'Onze afgelopen evenementen',
+    description: 'Herbeleef de magie van onze afgelopen evenementen',
+    loadMore: 'Meer evenementen laden',
+    noEvents: 'Nog geen afgelopen evenementen',
+    error: 'Fout bij het laden van afgelopen evenementen'
+  },
   team: {
     label: 'Artiesten',
     title: 'Onze Talenten',
@@ -153,39 +161,6 @@ Met vriendelijke groeten`
     hot: 'Niet te missen',
     free: 'Gratis',
     vip: 'VIP'
-  },
-  mockData: {
-    events: {
-      event1: {
-        title: 'Nata Shqiptare 2024',
-        description: 'Het grootste Albanese evenement van het jaar met internationale artiesten',
-        location: 'Palais des Congrès'
-      },
-      event2: {
-        title: 'Folkloristisch Festival',
-        description: 'Tradities, dansen en authentieke gastronomie',
-        location: 'Cultureel Centrum'
-      },
-      event3: {
-        title: 'Nieuwjaar 2025',
-        description: 'Premium gala met internationale DJ',
-        location: 'Grand Hotel'
-      }
-    },
-    djs: {
-      dj1: {
-        role: 'Resident DJ',
-        description: 'Specialist in moderne Albanese muziek en electro remixes'
-      },
-      dj2: {
-        role: 'Club DJ',
-        description: 'Expert in feestelijke sferen en actuele Albanese hits'
-      },
-      dj3: {
-        role: 'Live Performer',
-        description: 'Live mixen en visuele performances voor premium evenementen'
-      }
-    }
   },
   eventDetail: {
     badge: {
@@ -285,6 +260,9 @@ Met vriendelijke groeten`
     started: 'Evenement is begonnen!'
   },
   auth: {
+    welcome: 'Welkom',
+    adminAccess: 'Beheerders toegang',
+    backToHome: 'Terug naar home',
     email: 'E-mail',
     emailPlaceholder: "jouw{'@'}email.com",
     password: 'Wachtwoord',
@@ -421,6 +399,153 @@ Met vriendelijke groeten`
         addFeature: 'Voordeel toevoegen',
         isActive: 'Actief pakket'
       }
+    },
+    users: {
+      title: 'Gebruikers',
+      count: 'gebruiker(s)',
+      createNew: 'Nieuwe gebruiker',
+      editUser: 'Gebruiker bewerken',
+      noUsers: 'Geen gebruikers',
+      noUsersDesc: 'Begin met het maken van je eerste gebruiker',
+      createFirst: 'Maak mijn eerste gebruiker',
+      confirmDelete: 'Weet je zeker dat je deze gebruiker wilt verwijderen?',
+      active: 'Actief',
+      inactive: 'Inactief',
+      cannotDeleteSelf: 'Je kunt je eigen account niet verwijderen',
+      cannotEditSelfRole: 'Je kunt je eigen super admin rol niet bewerken',
+      filterByRole: 'Filter op rol',
+      filterByStatus: 'Filter op status',
+      allRoles: 'Alle rollen',
+      allStatuses: 'Alle statussen',
+      statusActive: 'Actief',
+      statusInactive: 'Inactief',
+      createdAt: 'Aangemaakt op',
+      lastLogin: 'Laatste login',
+      loadError: 'Fout bij laden van gebruikers',
+      createSuccess: 'Gebruiker succesvol aangemaakt',
+      updateSuccess: 'Gebruiker succesvol bijgewerkt',
+      deleteSuccess: 'Gebruiker succesvol verwijderd',
+      saveError: 'Fout bij opslaan',
+      deleteError: 'Fout bij verwijderen',
+      roles: {
+        super_admin: 'Super Admin',
+        admin: 'Admin',
+        steward: 'Steward'
+      },
+      form: {
+        username: 'Gebruikersnaam',
+        usernamePlaceholder: 'Bijv: john.doe',
+        usernameHint: 'Kan niet worden gewijzigd na aanmaak',
+        email: 'E-mail',
+        emailPlaceholder: "gebruiker{'@'}voorbeeld.nl",
+        password: 'Wachtwoord',
+        passwordPlaceholder: 'Minimaal 8 tekens',
+        passwordHint: 'Minimaal 8 tekens met hoofdletter, kleine letter, cijfer en speciaal teken',
+        passwordReq: {
+          minLength: '8 tekens minimum',
+          uppercase: 'Eén hoofdletter',
+          lowercase: 'Eén kleine letter',
+          number: 'Eén cijfer',
+          special: 'Eén speciaal teken'
+        },
+        passwordStrength: {
+          weak: 'Zwak',
+          medium: 'Gemiddeld',
+          strong: 'Sterk'
+        },
+        passwordTooWeak: 'Wachtwoord voldoet niet aan alle beveiligingseisen',
+        name: 'Volledige naam',
+        namePlaceholder: 'Jan Jansen',
+        phone: 'Telefoon',
+        phonePlaceholder: '+31 6 12 34 56 78',
+        role: 'Rol',
+        selectRole: 'Selecteer een rol',
+        roleHint: 'Bepaalt gebruikersrechten',
+        status: 'Status',
+        isActive: 'Actieve gebruiker',
+        statusHint: 'Als uitgevinkt, kan de gebruiker niet inloggen'
+      }
+    },
+    orders: {
+      title: 'Bestellingen',
+      count: 'bestelling(en)',
+      noOrders: 'Geen bestellingen',
+      noOrdersDesc: 'Geen bestellingen gevonden met deze criteria',
+      stats: {
+        revenue: 'Omzet',
+        completed: 'Betaald',
+        pending: 'In afwachting',
+        failed: 'Mislukt'
+      },
+      filters: {
+        allEvents: 'Alle evenementen',
+        allStatuses: 'Alle statussen',
+        search: 'Zoeken op e-mail of bestelnummer...'
+      },
+      status: {
+        pending: 'In afwachting',
+        completed: 'Betaald',
+        failed: 'Mislukt',
+        refunded: 'Terugbetaald',
+        cancelled: 'Geannuleerd'
+      },
+      table: {
+        orderNumber: 'Bestelnr.',
+        customer: 'Klant',
+        event: 'Evenement',
+        pack: 'Pakket',
+        amount: 'Bedrag',
+        status: 'Status',
+        date: 'Datum',
+        actions: 'Acties'
+      },
+      pagination: {
+        page: 'Pagina'
+      },
+      actions: {
+        view: 'Details bekijken',
+        resendEmail: 'E-mail opnieuw verzenden',
+        refund: 'Terugbetalen'
+      },
+      detail: {
+        customer: 'Klant',
+        name: 'Naam',
+        email: 'E-mail',
+        phone: 'Telefoon',
+        event: 'Evenement',
+        eventName: 'Evenement',
+        eventDate: 'Datum',
+        pack: 'Pakket',
+        payment: 'Betaling',
+        amount: 'Bedrag',
+        createdAt: 'Aangemaakt op',
+        paidAt: 'Betaald op',
+        ccvRef: 'CCV Ref.',
+        tickets: 'Tickets',
+        scanned: 'Gescand',
+        notUsed: 'Niet gebruikt',
+        cancelled: 'Geannuleerd',
+        guest: 'Gast'
+      },
+      refund: {
+        title: 'Bevestig terugbetaling',
+        warning: 'Deze actie is onomkeerbaar. Het bedrag wordt teruggestort naar de betaalmethode van de klant en de tickets worden geannuleerd.',
+        amount: 'Terug te betalen bedrag',
+        amountHint: 'Laat leeg voor volledige terugbetaling ({max} €)',
+        reason: 'Reden voor terugbetaling',
+        reasonPlaceholder: 'Optioneel - Bijv: Annulering evenement',
+        confirm: 'Bevestig terugbetaling'
+      },
+      success: {
+        emailSent: 'E-mail succesvol verzonden',
+        refunded: 'Bestelling succesvol terugbetaald'
+      },
+      errors: {
+        loadFailed: 'Fout bij laden van bestellingen',
+        detailFailed: 'Fout bij laden van besteldetails',
+        emailFailed: 'Fout bij verzenden van e-mail',
+        refundFailed: 'Fout bij terugbetaling'
+      }
     }
   },
   common: {
@@ -431,10 +556,13 @@ Met vriendelijke groeten`
     edit: 'Bewerken',
     view: 'Bekijken',
     loading: 'Laden...',
+    sending: 'Verzenden...',
+    processing: 'Verwerken...',
     error: 'Er is een fout opgetreden',
     retry: 'Opnieuw proberen',
     confirm: 'Bevestigen',
-    close: 'Sluiten'
+    close: 'Sluiten',
+    free: 'GRATIS'
   },
   reservation: {
     badge: 'Reservering',
@@ -443,6 +571,7 @@ Met vriendelijke groeten`
     firstNamePlaceholder: 'Uw voornaam',
     lastName: 'Achternaam',
     lastNamePlaceholder: 'Uw achternaam',
+    phone: 'Telefoon',
     numberOfPeople: 'Aantal personen',
     submit: 'Verstuur via WhatsApp',
     note: 'Uw gegevens worden niet opgeslagen en worden alleen gebruikt voor uw reservering.',
@@ -453,6 +582,35 @@ Met vriendelijke groeten`
       closing: 'Bevestig alstublieft mijn reservering.'
     }
   },
+  booking: {
+    title: 'Reservering',
+    selectTickets: 'Selecteer uw tickets',
+    yourInfo: 'Uw informatie',
+    firstName: 'Voornaam',
+    firstNamePlaceholder: 'Uw voornaam',
+    lastName: 'Achternaam',
+    lastNamePlaceholder: 'Uw achternaam',
+    email: 'E-mail',
+    phone: 'Telefoon',
+    optional: 'optioneel',
+    soldOut: 'Uitverkocht',
+    ticket: 'ticket',
+    tickets: 'tickets',
+    total: 'Totaal',
+    payNow: 'Betalen',
+    reserveNow: 'Nu reserveren',
+    redirecting: 'Doorsturen naar betaling...',
+    confirmingReservation: 'Uw reservering bevestigen...',
+    securePayment: 'Veilige betaling',
+    instantConfirmation: 'Directe bevestiging',
+    error: 'Er is een fout opgetreden',
+    reserve: 'Reserveren',
+    validation: {
+      firstNameMin: 'Minimaal 2 tekens',
+      lastNameMin: 'Minimaal 2 tekens',
+      emailInvalid: 'Ongeldig e-mailadres'
+    }
+  },
   seo: {
     title: 'Baba Event - Premium Albanese Culturele Evenementen | Concerten, Festivals, Bruiloften',
     description: 'Maker van onvergetelijke Albanese culturele ervaringen: exclusieve feesten, authentieke festivals, uitzonderlijke bruiloften en gedenkwaardige concerten door heel Europa.',
@@ -461,6 +619,64 @@ Met vriendelijke groeten`
     ogDescription: 'Maker van onvergetelijke Albanese culturele ervaringen: concerten, festivals, exclusieve feesten en uitzonderlijke bruiloften door heel Europa.',
     twitterTitle: 'Baba Event - Premium Albanese Culturele Evenementen',
     twitterDescription: 'Maker van onvergetelijke Albanese culturele ervaringen: concerten, festivals, exclusieve feesten en uitzonderlijke bruiloften.'
+  },
+  payment: {
+    checking: 'Uw betaling controleren...',
+    pleaseWait: 'Even geduld terwijl we uw bestelling bevestigen.',
+    orderNumber: 'Bestelnummer',
+    event: 'Evenement',
+    quantity: 'Aantal',
+    ticket: 'ticket',
+    tickets: 'tickets',
+    total: 'Totaal',
+    confirmed: 'Bevestigd',
+    yourTickets: 'Uw tickets',
+    moreTickets: 'meer tickets',
+    emailSent: 'Een bevestigingsmail is verzonden naar {email}',
+    viewEvent: 'Evenement bekijken',
+    backToHome: 'Terug naar home',
+    tryAgain: 'Opnieuw proberen',
+    refresh: 'Vernieuwen',
+    autoRefresh: 'Automatisch vernieuwen...',
+    success: {
+      title: 'Betaling geslaagd!',
+      titleFree: 'Reservering bevestigd!',
+      subtitle: 'Uw bestelling is succesvol bevestigd.',
+      subtitleFree: 'Uw reservering is succesvol bevestigd.'
+    },
+    pending: {
+      title: 'Betaling in behandeling...',
+      subtitle: 'Uw betaling wordt verwerkt. Even geduld.'
+    },
+    failed: {
+      title: 'Betaling mislukt',
+      subtitle: 'Er is een fout opgetreden tijdens de betaling. Probeer het opnieuw.'
+    },
+    error: {
+      title: 'Fout',
+      notFound: 'Bestelling niet gevonden of ongeldig bestelnummer.'
+    }
+  },
+  scanner: {
+    title: 'QR Scanner',
+    selectEvent: 'Selecteer een evenement',
+    allEvents: 'Alle evenementen',
+    scanHint: 'Plaats de QR-code in het kader',
+    startCamera: 'Camera starten',
+    stopCamera: 'Camera stoppen',
+    cameraError: 'Geen toegang tot camera',
+    ticketCode: 'Ticketcode',
+    holderName: 'Naam houder',
+    event: 'Evenement',
+    pack: 'Pakket',
+    scannedAt: 'Gescand op',
+    scanNext: 'Volgende scannen',
+    recentScans: 'Recente scans',
+    stats: {
+      totalScans: 'Totaal',
+      validScans: 'Geldig',
+      invalidScans: 'Ongeldig'
+    }
   }
 }
 

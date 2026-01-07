@@ -23,7 +23,7 @@ function encodeImageUrl(url: string): string {
     const decoded = decodeURIComponent(url)
     // Then encode it properly for wsrv.nl
     return encodeURIComponent(decoded)
-  } catch (error) {
+  } catch {
     // If decoding fails (malformed URL), try encoding as-is
     return encodeURIComponent(url)
   }
@@ -85,6 +85,7 @@ export function getOptimizedImageUrl(url: string, width: number = IMAGE_WIDTHS.L
 
 /**
  * Generates a srcset string for responsive images
+ * ✅ Now works with all image URLs (including wsrv.nl optimized images)
  * @param url The original image URL
  * @param widths Array of widths to generate
  * @returns srcset string
@@ -92,10 +93,11 @@ export function getOptimizedImageUrl(url: string, width: number = IMAGE_WIDTHS.L
 export function generateSrcSet(url: string, widths: number[] = [IMAGE_WIDTHS.SMALL, IMAGE_WIDTHS.LARGE, IMAGE_WIDTHS.XLARGE]): string {
   if (!url) return ''
 
-  // Only generate srcset for supported providers
-  if (!url.includes('images.pexels.com') && !url.includes('images.unsplash.com')) {
-    return ''
-  }
+  // Skip data URIs and relative paths
+  if (url.startsWith('data:') || !url.startsWith('http')) return ''
+
+  // Skip already optimized wsrv.nl URLs (they already have specific width)
+  if (url.includes('wsrv.nl')) return ''
 
   return widths
     .map(w => `${getOptimizedImageUrl(url, w)} ${w}w`)

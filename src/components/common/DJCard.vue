@@ -546,6 +546,51 @@ const displayDescription = computed(() => {
   .dj-card {
     aspect-ratio: 3 / 4;
     border-radius: 16px;
+    will-change: auto !important;
+  }
+
+  /* 🚀 PERFORMANCE: Disable backdrop-filter on mobile */
+  .dj-card__badge,
+  .dj-card__social-link,
+  .dj-card__social-placeholder {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(10, 10, 15, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  /* 🚀 PERFORMANCE: Disable continuous animations on mobile */
+  .dj-card__role-dot,
+  .dj-card__badge--fire i,
+  .dj-card__placeholder-pattern {
+    animation: none !important;
+  }
+
+  /* 🚀 Static state for role dot */
+  .dj-card__role-dot {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+  }
+
+  /* 🚀 Disable hover transforms on mobile */
+  .dj-card:hover {
+    transform: none !important;
+  }
+
+  .dj-card:hover .dj-card__image {
+    transform: none !important;
+  }
+
+  .dj-card:hover .dj-card__glow,
+  .dj-card:hover .dj-card__border-glow {
+    opacity: 0 !important;
+  }
+
+  /* 🚀 Simpler transitions */
+  .dj-card,
+  .dj-card__image,
+  .dj-card__overlay {
+    transition: opacity 0.2s ease !important;
   }
 
   .dj-card::before {

@@ -7,51 +7,19 @@ export interface User {
   id: string
   email: string
   name?: string
-  role?: 'admin' | 'user'
+  role?: 'admin' | 'super_admin' | 'steward' | 'user'
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const getStorageItem = (key: string): string | null => {
-    try {
-      return localStorage.getItem(key)
-    } catch (error) {
-      logger.error('localStorage access error:', error)
-      return null
-    }
-  }
-  
-  const setStorageItem = (key: string, value: string): void => {
-    try {
-      localStorage.setItem(key, value)
-    } catch (error) {
-      logger.error('localStorage write error:', error)
-    }
-  }
-  
-  const removeStorageItem = (key: string): void => {
-    try {
-      localStorage.removeItem(key)
-    } catch (error) {
-      logger.error('localStorage remove error:', error)
-    }
-  }
-
-  const token = ref<string | null>(getStorageItem('auth_token'))
+  // State - no token stored (in httpOnly cookie now)
   const user = ref<User | null>(null)
   const isLoading = ref(false)
   const isInitialized = ref(false)
 
-  const isAuthenticated = computed(() => !!token.value && !!user.value)
-  const isAdmin = computed(() => user.value?.role === 'admin')
-
-  function setToken(newToken: string | null) {
-    token.value = newToken
-    if (newToken) {
-      setStorageItem('auth_token', newToken)
-    } else {
-      removeStorageItem('auth_token')
-    }
-  }
+  const isAuthenticated = computed(() => !!user.value)
+  const isAdmin = computed(() => {
+    return user.value?.role === 'admin' || user.value?.role === 'super_admin'
+  })
 
   function setUser(newUser: User | null) {
     user.value = newUser
@@ -61,12 +29,39 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = loading
   }
 
+  /**
+   * Automatically refreshes the access token using the refresh token cookie.
+   * Called when API returns 401 and we have a user (token expired).
+   */
+  async function refreshToken(): Promise<boolean> {
+    try {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.REFRESH), {
+        method: 'POST',
+        credentials: 'include', // Send cookies
+        headers: getAuthHeaders()
+      })
+
+      if (response.ok) {
+        logger.log('Token refreshed successfully')
+        return true
+      }
+
+      // Refresh failed - user needs to login again
+      logger.warn('Token refresh failed')
+      return false
+    } catch (error) {
+      logger.error('Token refresh error:', error)
+      return false
+    }
+  }
+
   async function login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
     setLoading(true)
-    
+
     try {
       const response = await fetch(buildApiUrl(API_ENDPOINTS.LOGIN), {
         method: 'POST',
+        credentials: 'include', // ✅ Include cookies in request/response
         headers: getAuthHeaders(),
         body: JSON.stringify({ email, password })
       })
@@ -87,23 +82,20 @@ export const useAuthStore = defineStore('auth', () => {
 
       const data = await response.json()
 
-      if (!data.access_token || !data.user) {
+      // ✅ Backend now sets httpOnly cookies (access_token, refresh_token)
+      // ✅ Only user data is returned in response body
+      if (!data.user) {
         throw new Error('Invalid response data')
       }
 
-      setToken(data.access_token)
       setUser(data.user)
 
-      if (data.user.email) {
-        setStorageItem('user_email', data.user.email)
-      }
-      
       return { success: true }
     } catch (error) {
       logger.error('Login error:', error)
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'auth.loginError' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'auth.loginError'
       }
     } finally {
       setLoading(false)
@@ -111,42 +103,56 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    if (token.value) {
-      try {
-        await fetch(buildApiUrl(API_ENDPOINTS.LOGOUT), {
-          method: 'POST',
-          headers: getAuthHeaders(token.value)
-        })
-      } catch (error) {
-        logger.error('Logout backend error:', error)
-      }
+    try {
+      // ✅ Backend will clear httpOnly cookies
+      await fetch(buildApiUrl(API_ENDPOINTS.LOGOUT), {
+        method: 'POST',
+        credentials: 'include', // ✅ Send cookies to be cleared
+        headers: getAuthHeaders()
+      })
+    } catch (error) {
+      logger.error('Logout backend error:', error)
     }
 
-    setToken(null)
+    // Clear user state
     setUser(null)
-    removeStorageItem('user_email')
   }
 
   function setInitialized(value: boolean) {
     isInitialized.value = value
   }
 
-  async function checkAuth(): Promise<boolean> {
-    if (!token.value) {
-      setInitialized(true)
-      return false
-    }
-
+  /**
+   * Check if user is authenticated by calling /me endpoint
+   * @param retryCount - Internal counter to prevent infinite loops (max 1 retry after token refresh)
+   */
+  async function checkAuth(retryCount = 0): Promise<boolean> {
     setLoading(true)
-    
+
     try {
+      // ✅ Token is in httpOnly cookie, sent automatically
       const response = await fetch(buildApiUrl(API_ENDPOINTS.ME), {
         method: 'GET',
-        headers: getAuthHeaders(token.value)
+        credentials: 'include', // ✅ Include cookies
+        headers: getAuthHeaders()
       })
 
       if (!response.ok) {
-        throw new Error('Token invalid')
+        // Token might be expired, try refresh ONLY if:
+        // 1. We had a user before (don't try refresh for users who were never logged in)
+        // 2. We haven't already retried (prevent infinite loop)
+        if (response.status === 401 && user.value && retryCount < 1) {
+          const refreshed = await refreshToken()
+          if (refreshed) {
+            // Retry with new token (increment retryCount to prevent loop)
+            return await checkAuth(retryCount + 1)
+          }
+        }
+
+        // Not authenticated (normal for non-logged users)
+        setUser(null)
+        setInitialized(true)
+        return false
       }
 
       const userData = await response.json()
@@ -155,7 +161,7 @@ export const useAuthStore = defineStore('auth', () => {
       return true
     } catch (error) {
       logger.error('Auth check error:', error)
-      logout()
+      setUser(null)
       setInitialized(true)
       return false
     } finally {
@@ -164,7 +170,6 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    token,
     user,
     isLoading,
     isInitialized,
@@ -173,7 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     checkAuth,
-    setToken,
+    refreshToken,
     setUser,
     setLoading,
     setInitialized

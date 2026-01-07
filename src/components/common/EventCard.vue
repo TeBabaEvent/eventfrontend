@@ -1,11 +1,11 @@
 <template>
   <article
     :class="cardClasses"
-    @click="goToDetail"
-    @mouseenter="prefetchEvent"
-    :aria-label="`${t('event.viewDetails')}: ${displayTitle}`"
-    role="button"
-    tabindex="0"
+    @click="!isPastVariant && goToDetail()"
+    @mouseenter="!isPastVariant && prefetchEvent()"
+    :aria-label="isPastVariant ? displayTitle : `${t('event.viewDetails')}: ${displayTitle}`"
+    :role="isPastVariant ? 'article' : 'button'"
+    :tabindex="isPastVariant ? undefined : 0"
   >
     <!-- Image Layer - Full Coverage -->
     <div class="event-card__image-container">
@@ -39,8 +39,98 @@
 
     <!-- Content Layer - Overlay on Image -->
     <div class="event-card__content">
+      <!-- Past Event Content (Simplified) -->
+      <template v-if="isPastVariant && !isComingSoon">
+        <!-- No top section for past events -->
+
+        <!-- Bottom Section: Simplified Info -->
+        <div class="event-card__bottom">
+          <h3 class="event-card__title">{{ displayTitle }}</h3>
+
+          <div class="event-card__meta">
+            <div class="event-card__meta-item">
+              <i class="fas fa-calendar"></i>
+              <span>{{ formatFullDate(event.date) }}</span>
+            </div>
+            <div class="event-card__meta-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>{{ event.city }}</span>
+            </div>
+          </div>
+
+          <!-- Artists Section (limited to 4) -->
+          <div v-if="event.artists && event.artists.length > 0" class="event-card__artists">
+            <div class="event-card__artists-list">
+              <span v-for="(artist, index) in displayedArtists" :key="artist.id" class="event-card__artist">
+                {{ artist.name }}<template v-if="index < displayedArtists.length - 1">, </template>
+              </span>
+              <span v-if="hasMoreArtists" class="event-card__artist event-card__artist--more">
+                +{{ event.artists.length - maxArtistsToShow }}
+              </span>
+            </div>
+          </div>
+
+          <!-- After Movie Footer (only if links exist) -->
+          <div v-if="hasAfterMovieLinks" class="event-card__after-movie">
+            <!-- Single link: direct button -->
+            <a
+              v-if="hasSingleAfterMovieLink"
+              :href="afterMovieSingleLink"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="event-card__after-movie-btn"
+              @click.stop
+            >
+              <i :class="afterMovieSingleIcon"></i>
+              <span>{{ afterMovieSingleLabel }}</span>
+              <i class="fas fa-external-link-alt event-card__after-movie-external"></i>
+            </a>
+
+            <!-- Multiple links: dropdown button -->
+            <div v-else class="event-card__after-movie-dropdown" @click.stop>
+              <button
+                class="event-card__after-movie-btn"
+                @click="toggleAfterMovieDropdown"
+              >
+                <i class="fas fa-video"></i>
+                <span>After Movie</span>
+                <i :class="['fas', isAfterMovieDropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
+              </button>
+
+              <!-- Dropdown menu -->
+              <Transition name="dropdown">
+                <div v-if="isAfterMovieDropdownOpen" class="event-card__after-movie-menu">
+                  <a
+                    v-if="event.youtube_shorts_url"
+                    :href="event.youtube_shorts_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="event-card__after-movie-menu-item"
+                  >
+                    <i class="fab fa-youtube"></i>
+                    <span>YouTube Shorts</span>
+                    <i class="fas fa-external-link-alt"></i>
+                  </a>
+                  <a
+                    v-if="event.instagram_reels_url"
+                    :href="event.instagram_reels_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="event-card__after-movie-menu-item"
+                  >
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram Reels</span>
+                    <i class="fas fa-external-link-alt"></i>
+                  </a>
+                </div>
+              </Transition>
+            </div>
+          </div>
+        </div>
+      </template>
+
       <!-- Regular Event Content -->
-      <template v-if="!isComingSoon">
+      <template v-else-if="!isComingSoon">
         <!-- Top Section: Category Badge -->
         <div class="event-card__top">
           <div class="event-card__category-badge">
@@ -110,7 +200,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, type PropType } from 'vue'
+import { computed, ref, watch, onUnmounted, type PropType } from 'vue'
 import { useRouter } from 'vue-router'
 import { formatPrice } from '@/utils'
 import { getOptimizedImageUrl, IMAGE_WIDTHS } from '@/utils/image'
@@ -122,8 +212,9 @@ import { api } from '@/services/api'
 const { t, locale } = useI18n()
 const router = useRouter()
 const isPrefetched = ref(false)
+const isAfterMovieDropdownOpen = ref(false)
 
-type CardVariant = 'large' | 'medium'
+type CardVariant = 'large' | 'medium' | 'past'
 
 const props = defineProps({
   event: {
@@ -141,6 +232,18 @@ const props = defineProps({
 })
 
 // Computed properties
+const isPastVariant = computed(() => props.variant === 'past')
+
+// Artists display limit for past events
+const maxArtistsToShow = 4
+const displayedArtists = computed(() => {
+  if (!props.event.artists) return []
+  return props.event.artists.slice(0, maxArtistsToShow)
+})
+const hasMoreArtists = computed(() => {
+  return props.event.artists && props.event.artists.length > maxArtistsToShow
+})
+
 const cardClasses = computed(() => [
   'event-card',
   `event-card--${props.variant}`,
@@ -216,6 +319,68 @@ const prefetchEvent = () => {
   }
 }
 
+// After Movie computed properties
+const hasAfterMovieLinks = computed(() => {
+  return !!(props.event.youtube_shorts_url || props.event.instagram_reels_url)
+})
+
+const hasSingleAfterMovieLink = computed(() => {
+  const hasYoutube = !!props.event.youtube_shorts_url
+  const hasInstagram = !!props.event.instagram_reels_url
+  return hasYoutube !== hasInstagram // XOR: only one is true
+})
+
+const afterMovieSingleLink = computed(() => {
+  return props.event.youtube_shorts_url || props.event.instagram_reels_url || ''
+})
+
+const afterMovieSingleIcon = computed(() => {
+  if (props.event.youtube_shorts_url) return 'fab fa-youtube'
+  if (props.event.instagram_reels_url) return 'fab fa-instagram'
+  return 'fas fa-video'
+})
+
+const afterMovieSingleLabel = computed(() => {
+  if (props.event.youtube_shorts_url) return 'YouTube Shorts'
+  if (props.event.instagram_reels_url) return 'Instagram Reels'
+  return 'After Movie'
+})
+
+// After Movie dropdown methods
+const toggleAfterMovieDropdown = () => {
+  isAfterMovieDropdownOpen.value = !isAfterMovieDropdownOpen.value
+}
+
+const closeAfterMovieDropdown = () => {
+  isAfterMovieDropdownOpen.value = false
+}
+
+// Close dropdown when clicking outside
+// ✅ Only add listener when dropdown is open to avoid memory leaks with many cards
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (!target.closest('.event-card__after-movie-dropdown')) {
+    closeAfterMovieDropdown()
+  }
+}
+
+// Watch dropdown state to add/remove listener only when needed
+watch(isAfterMovieDropdownOpen, (isOpen) => {
+  if (isOpen) {
+    // Use capture to handle click before it bubbles
+    document.addEventListener('click', handleClickOutside, { capture: true })
+  } else {
+    document.removeEventListener('click', handleClickOutside, { capture: true })
+  }
+})
+
+// Cleanup on unmount (in case dropdown is open when component unmounts)
+onUnmounted(() => {
+  if (isAfterMovieDropdownOpen.value) {
+    document.removeEventListener('click', handleClickOutside, { capture: true })
+  }
+})
+
 // Methods
 const goToDetail = () => {
   if (!props.isComingSoon) {
@@ -287,6 +452,48 @@ const goToDetail = () => {
 
 .event-card--coming-soon:hover {
   transform: translateY(-4px);
+}
+
+/* Past Event State - Archive style with horizontal ratio */
+.event-card--past {
+  cursor: default;
+  aspect-ratio: 16 / 10;
+}
+
+.event-card--past:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.event-card--past:hover::before {
+  opacity: 0.8;
+}
+
+.event-card--past .event-card__glow,
+.event-card--past .event-card__border-glow {
+  display: none;
+}
+
+/* Archive effect - subtle desaturation */
+.event-card--past .event-card__image {
+  filter: saturate(0.7) brightness(0.95);
+  transition: filter 0.5s ease, transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-card--past:hover .event-card__image {
+  filter: saturate(0.85) brightness(1);
+  transform: scale(1.05);
+}
+
+/* Cooler overlay for past events */
+.event-card--past .event-card__overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(5, 10, 20, 0.75) 40%,
+    rgba(10, 15, 25, 0.4) 70%,
+    rgba(15, 20, 30, 0.2) 100%
+  );
 }
 
 /* ============================================
@@ -706,6 +913,164 @@ const goToDetail = () => {
 }
 
 /* ============================================
+   ARTISTS SECTION - Past Events Only
+   ============================================ */
+.event-card__artists {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.event-card__artists-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  align-items: center;
+}
+
+.event-card__artist {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
+}
+
+.event-card__artist--more {
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+/* ============================================
+   AFTER MOVIE SECTION - Past Events Only
+   ============================================ */
+.event-card__after-movie {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.event-card__after-movie-dropdown {
+  position: relative;
+}
+
+/* After Movie Button - Glassmorphism Style */
+.event-card__after-movie-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.event-card__after-movie-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(220, 20, 60, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.2);
+}
+
+.event-card__after-movie-btn i:first-child {
+  font-size: 12px;
+  color: var(--color-primary);
+}
+
+.event-card__after-movie-btn i:last-child {
+  font-size: 9px;
+  transition: transform 0.3s ease;
+}
+
+.event-card__after-movie-external {
+  opacity: 0.6;
+}
+
+/* Dropdown Menu */
+.event-card__after-movie-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 8px;
+  min-width: 180px;
+  background: rgba(20, 20, 25, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+}
+
+.event-card__after-movie-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.event-card__after-movie-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.event-card__after-movie-menu-item i:first-child {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.event-card__after-movie-menu-item i.fa-youtube {
+  color: #FF0000;
+}
+
+.event-card__after-movie-menu-item i.fa-instagram {
+  color: #E4405F;
+}
+
+.event-card__after-movie-menu-item i.fa-external-link-alt {
+  margin-left: auto;
+  font-size: 9px;
+  opacity: 0.5;
+}
+
+/* Dropdown Animation */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 1024px) {
@@ -717,6 +1082,19 @@ const goToDetail = () => {
   .event-card--large .event-card__title {
     font-size: 24px;
   }
+
+  /* Past variant keeps horizontal ratio on tablet */
+  .event-card--past {
+    aspect-ratio: 16 / 10;
+  }
+
+  .event-card--past .event-card__title {
+    font-size: 20px;
+  }
+
+  .event-card--past .event-card__content {
+    padding: 20px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -726,6 +1104,57 @@ const goToDetail = () => {
     border-radius: 16px;
     /* ✅ Transitions safe - opacity et transform uniquement */
     transition: opacity 0.3s ease, transform 0.2s ease;
+  }
+
+  /* Past variant - horizontal ratio on mobile too */
+  .event-card--past {
+    aspect-ratio: 16 / 9;
+  }
+
+  .event-card--past .event-card__title {
+    font-size: 18px;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+
+  .event-card--past .event-card__meta {
+    gap: 12px;
+  }
+
+  .event-card--past .event-card__meta-item {
+    font-size: 12px;
+  }
+
+  .event-card--past .event-card__artists {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .event-card--past .event-card__artist {
+    font-size: 10px;
+  }
+
+  .event-card--past .event-card__content {
+    padding: 16px;
+  }
+
+  /* After Movie responsive */
+  .event-card__after-movie-btn {
+    padding: 8px 14px;
+    font-size: 10px;
+  }
+
+  .event-card__after-movie-btn i:first-child {
+    font-size: 11px;
+  }
+
+  .event-card__after-movie-menu {
+    min-width: 160px;
+  }
+
+  .event-card__after-movie-menu-item {
+    padding: 8px 10px;
+    font-size: 11px;
   }
 
   /* ✅ Feedback tactile au tap */
@@ -763,12 +1192,14 @@ const goToDetail = () => {
     gap: 8px;
   }
 
+  /* ✅ Disable backdrop-filter on mobile for performance */
   .event-card__category-badge {
     padding: 8px 14px;
     font-size: 10px;
     letter-spacing: 1.2px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(12px);
+    background: rgba(20, 20, 25, 0.95);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .event-card__title {
@@ -858,12 +1289,14 @@ const goToDetail = () => {
   }
 
   /* Coming Soon responsive - même structure que event card */
+  /* ✅ Disable heavy backdrop-filter on mobile for performance */
   .event-card__cs-badge {
     padding: 8px 14px;
     font-size: 10px;
     letter-spacing: 1.2px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(12px);
+    background: rgba(20, 20, 25, 0.95);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .event-card__cs-category {
@@ -919,12 +1352,34 @@ const goToDetail = () => {
     font-size: 12px;
   }
 
-  /* Mobile performance: disable all GPU hints */
+  /* 🚀 Mobile performance: disable all GPU hints */
   .event-card,
   .event-card__image,
   .event-card__overlay,
   .event-card__content {
     will-change: auto !important;
+  }
+
+  /* 🚀 Disable Coming Soon continuous animations on mobile */
+  .event-card__cs-mesh {
+    animation: none !important;
+    opacity: 0.8 !important;
+  }
+
+  .event-card__cs-line {
+    animation: none !important;
+    opacity: 0.3 !important;
+  }
+
+  .event-card__cs-badge i {
+    animation: none !important;
+  }
+
+  /* 🚀 Disable backdrop-filter on Coming Soon elements */
+  .event-card__cs-badge,
+  .event-card__cs-hint {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   /* ✅ Hover désactivé - mobile utilise :active */
@@ -954,6 +1409,19 @@ const goToDetail = () => {
   /* Garde le ratio 4:5 même sur petits écrans */
   .event-card {
     aspect-ratio: 4 / 5;
+  }
+
+  /* Past variant stays horizontal */
+  .event-card--past {
+    aspect-ratio: 16 / 9;
+  }
+
+  .event-card--past .event-card__title {
+    font-size: 16px;
+  }
+
+  .event-card--past .event-card__content {
+    padding: 14px;
   }
 
   .event-card__content {

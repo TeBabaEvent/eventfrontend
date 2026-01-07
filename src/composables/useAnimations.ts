@@ -1,4 +1,4 @@
-import { ref, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { logger } from '@/services/logger'
 import type gsap from 'gsap'
 import type { ScrollTrigger as ScrollTriggerType } from 'gsap/ScrollTrigger'
@@ -7,6 +7,8 @@ let gsapInstance: typeof gsap | null = null
 let ScrollTriggerInstance: typeof ScrollTriggerType | null = null
 let isInitialized = false
 let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null
+// ✅ Store resize handler reference for proper cleanup
+let resizeHandler: (() => void) | null = null
 
 const activeContexts = new Set<gsap.Context>()
 
@@ -78,9 +80,11 @@ export function useAnimations() {
   }
 
   function setupResizeDebounce() {
-    if (!ScrollTriggerInstance) return
+    // ✅ Prevent duplicate listeners
+    if (!ScrollTriggerInstance || resizeHandler) return
 
-    window.addEventListener('resize', () => {
+    // ✅ Store handler reference for cleanup
+    resizeHandler = () => {
       if (resizeDebounceTimer) {
         clearTimeout(resizeDebounceTimer)
       }
@@ -90,7 +94,9 @@ export function useAnimations() {
           ScrollTriggerInstance.refresh()
         }
       }, 250)
-    }, { passive: true })
+    }
+
+    window.addEventListener('resize', resizeHandler, { passive: true })
   }
 
   /**
@@ -145,6 +151,12 @@ export function useAnimations() {
         resizeDebounceTimer = null
       }
 
+      // ✅ Remove resize listener properly
+      if (resizeHandler) {
+        window.removeEventListener('resize', resizeHandler)
+        resizeHandler = null
+      }
+
       if (ScrollTriggerInstance) {
         ScrollTriggerInstance.getAll().forEach(st => st.kill())
       }
@@ -152,8 +164,6 @@ export function useAnimations() {
       logger.error('Error during global animation cleanup:', error)
     }
   }
-
-  onUnmounted(() => {})
 
   return {
     isReady,

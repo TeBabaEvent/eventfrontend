@@ -162,7 +162,7 @@ let animationContext: ReturnType<typeof createContext> | null = null
 let animationsInitialized = false
 
 // Data
-const events = computed(() => dataStore.getUpcomingEvents())
+const events = computed(() => dataStore.upcomingEvents)
 
 const stats = computed(() => [
   { label: t('stats.participants'), value: 50000 },
@@ -172,31 +172,12 @@ const stats = computed(() => [
 
 const animatedStats = ref<Record<string, number>>({})
 
-// Computed - Get the closest event (by date)
+// Computed - Get the closest event (first in the list, already sorted by backend)
 const featuredEvent = computed(() => {
-  const allEvents = events.value
-  if (allEvents.length === 0) return null
-
-  const now = new Date()
-  now.setHours(0, 0, 0, 0) // Reset time to compare only dates
-
-  // Sort events by date (closest first)
-  const sortedEvents = [...allEvents].sort((a, b) => {
-    const dateA = new Date(a.date)
-    const dateB = new Date(b.date)
-    dateA.setHours(0, 0, 0, 0)
-    dateB.setHours(0, 0, 0, 0)
-    return dateA.getTime() - dateB.getTime()
-  })
-
-  // Find the first upcoming event
-  const upcomingEvent = sortedEvents.find(event => {
-    const eventDate = new Date(event.date)
-    eventDate.setHours(0, 0, 0, 0)
-    return eventDate >= now
-  })
-
-  return upcomingEvent || sortedEvents[0] || null
+  // Le backend retourne les événements:
+  // - Triés par date (le plus proche en premier)
+  // - Filtrés: date >= aujourd'hui (visible jusqu'à 23:59, disparaît le lendemain à 00:00)
+  return events.value[0] || null
 })
 
 const optimizedHeroImage = computed(() => {

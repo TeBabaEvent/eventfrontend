@@ -124,7 +124,7 @@ const animateDJCards = () => {
   if (!animationContext || !animationContext.gsap) return
   animationsInitialized = true
 
-  const { gsap, ScrollTrigger } = animationContext
+  const { gsap } = animationContext
 
   const cards = gridRef.value?.querySelectorAll('.dj-card')
   if (!cards || cards.length === 0) return
@@ -286,7 +286,13 @@ onUnmounted(() => {
 /* Ensure cards are visible by default (GSAP will override) */
 .team__grid :deep(.dj-card) {
   opacity: 1;
-  will-change: transform, opacity;
+}
+
+/* Desktop only: Enable will-change for smooth animations */
+@media (min-width: 1025px) {
+  .team__grid :deep(.dj-card) {
+    will-change: transform, opacity;
+  }
 }
 
 .team__empty,
@@ -351,6 +357,47 @@ onUnmounted(() => {
   .team__grid {
     max-width: 100%;
     padding: 0 4px;
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  /* 🚀 PERFORMANCE: Disable backdrop-filter on badges */
+  .team__badge {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(30, 30, 35, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+
+  /* ✅ Subtle pulse animation (slower for mobile) */
+  .team__badge-icon {
+    animation: badge-pulse 3s ease-in-out infinite !important;
+  }
+
+  /* 🚀 CSS fade-in animations for mobile (no GSAP) */
+  .team__badge {
+    animation: teamFadeInUp 0.6s ease-out 0.1s backwards;
+  }
+
+  .team__title {
+    animation: teamFadeInUp 0.8s ease-out 0.2s backwards;
+  }
+
+  @keyframes teamFadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Disable will-change on mobile */
+  .team__grid :deep(.dj-card) {
+    will-change: auto !important;
   }
 }
 </style>

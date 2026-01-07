@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 
@@ -15,6 +14,20 @@ const router = createRouter({
       path: '/events/:id',
       name: 'event-detail',
       component: () => import('@/views/EventDetail.vue')
+    },
+    {
+      path: '/payment/complete',
+      name: 'payment-complete',
+      component: () => import('@/views/PaymentComplete.vue')
+    },
+    {
+      path: '/scanner',
+      name: 'scanner',
+      component: () => import('@/views/ScannerView.vue'),
+      meta: {
+        requiresAuth: true,
+        hideLayout: true
+      }
     },
     {
       path: '/login',
@@ -53,6 +66,16 @@ const router = createRouter({
           component: () => import('@/views/dashboard/PacksView.vue')
         },
         {
+          path: 'orders',
+          name: 'dashboard-orders',
+          component: () => import('@/views/dashboard/OrdersView.vue')
+        },
+        {
+          path: 'users',
+          name: 'dashboard-users',
+          component: () => import('@/views/dashboard/UsersView.vue')
+        },
+        {
           path: 'settings',
           name: 'dashboard-settings',
           component: () => import('@/views/dashboard/DashboardView.vue')
@@ -86,36 +109,30 @@ router.beforeEach(async (to, from, next) => {
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
-  if (!requiresAuth) {
-    // Non-blocking auth check for public routes
-    if (!authStore.isInitialized) {
-      authStore.checkAuth().catch(() => {})
-    }
-
-    if (to.path === '/login' && authStore.isAuthenticated) {
-      return next({ path: '/dashboard' })
-    }
-
+  // For public routes, no auth check needed
+  if (!requiresAuth && to.path !== '/login') {
     return next()
   }
 
-  // Protected routes: wait for auth with timeout
+  // For /login page, check auth to redirect if already logged in
+  if (to.path === '/login') {
+    if (!authStore.isInitialized) {
+      await authStore.checkAuth()
+    }
+    if (authStore.isAuthenticated) {
+      // Rediriger les stewards vers le scanner, les autres vers le dashboard
+      const redirectPath = authStore.user?.role === 'steward' ? '/scanner' : '/dashboard'
+      return next({ path: redirectPath })
+    }
+    return next()
+  }
+
+  // Protected routes: check auth if not initialized
   if (!authStore.isInitialized) {
     appStore.startLoading('Vérification...')
 
     await Promise.race([
-      new Promise<void>((resolve) => {
-        const unwatch = watch(
-          () => authStore.isInitialized,
-          (isInit) => {
-            if (isInit) {
-              unwatch()
-              resolve()
-            }
-          },
-          { immediate: true }
-        )
-      }),
+      authStore.checkAuth(),
       new Promise<void>((resolve) => setTimeout(resolve, 3000))
     ])
   }
@@ -131,17 +148,28 @@ router.beforeEach(async (to, from, next) => {
     return next({ path: '/' })
   }
 
-  appStore.startLoading('Chargement...')
+  // Dashboard routes use skeleton loaders, no global spinner needed
+  // Only show global loading for non-dashboard protected routes
+  if (!to.path.startsWith('/dashboard')) {
+    appStore.startLoading('Chargement...')
+  }
+
   next()
 })
 
-router.afterEach(() => {
+router.afterEach((to) => {
   const appStore = useAppStore()
 
+  // Always stop loading after navigation (in case it was started elsewhere)
   if (appStore.isLoading) {
-    requestAnimationFrame(() => {
+    // Dashboard routes handle their own loading state, stop immediately
+    if (to.path.startsWith('/dashboard')) {
       appStore.stopLoading()
-    })
+    } else {
+      requestAnimationFrame(() => {
+        appStore.stopLoading()
+      })
+    }
   }
 })
 

@@ -29,8 +29,10 @@ export interface Event {
   }
   image?: string
   image_url?: string
-  featured?: boolean
+  youtube_shorts_url?: string
+  instagram_reels_url?: string
   status?: 'upcoming' | 'past' | 'cancelled'
+  featured?: boolean
   tags?: string[]
   capacity?: number
   availableTickets?: number
@@ -110,15 +112,6 @@ export interface Artist {
  */
 export type DJ = Artist
 
-export interface GalleryItem {
-  id: string
-  title: string
-  category: string
-  image: string
-  type: 'concert' | 'festival' | 'wedding' | 'party' | 'other'
-  date?: string
-}
-
 export interface ContactInfo {
   email: string
   phone: string
@@ -167,4 +160,318 @@ export interface CardProps {
   variant?: 'default' | 'elevated' | 'outlined'
   padding?: 'none' | 'small' | 'medium' | 'large'
   hoverable?: boolean
+}
+
+// Types pour le système de paiement
+export interface CheckoutData {
+  event_id: string
+  pack_id: string
+  quantity: number
+  customer_name: string
+  customer_email: string
+  customer_phone?: string
+}
+
+export interface CheckoutResponse {
+  order_number: string
+  pay_url: string
+}
+
+// Types pour le checkout multi-pack
+export interface CartCheckoutData {
+  items: Array<{
+    event_id: string
+    pack_id: string
+    quantity: number
+  }>
+  customer_name: string
+  customer_email: string
+  customer_phone?: string
+}
+
+export interface CartCheckoutResponse {
+  order_number: string
+  pay_url: string
+  amount: number
+  total_items: number
+}
+
+export interface Order {
+  id: string
+  order_number: string
+  customer_name: string
+  customer_email: string
+  customer_phone?: string
+  event_id: string
+  /** @deprecated Legacy single-pack only */
+  pack_id?: string
+  /** @deprecated Use pack_display instead */
+  pack_name?: string
+  /** Multi-pack formatted display (e.g., "VIP x2, Standard x3") */
+  pack_display?: string
+  /** Structured pack breakdown for detailed views */
+  pack_items?: PackItemSummary[]
+  /** @deprecated Use total_quantity instead */
+  quantity?: number
+  /** Total tickets across all packs */
+  total_quantity?: number
+  amount: number // En centimes
+  status: 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled'
+  ccv_reference?: string
+  mollie_payment_id?: string
+  created_at: string
+  paid_at?: string
+  event?: Event
+  pack?: Pack
+  tickets?: Ticket[]
+}
+
+export interface Ticket {
+  id: string
+  ticket_code: string
+  holder_name: string
+  holder_email?: string
+  status: 'valid' | 'used' | 'cancelled' | 'expired'
+  scanned_at?: string
+  qr_data: string
+}
+
+// Types pour le système de scan
+export interface ScanRequest {
+  qr_data: string
+  event_id?: string  // Optionnel - détecté automatiquement depuis le QR code
+}
+
+export interface ScanResponse {
+  /** True si le scan a réussi (entrée validée) */
+  valid: boolean
+  /** Résultat du scan: success, already_used, invalid, cancelled, expired, wrong_event, error */
+  result: 'success' | 'already_used' | 'invalid' | 'cancelled' | 'expired' | 'wrong_event' | 'error'
+  /** Message à afficher au steward */
+  message: string
+  /** Nom du titulaire du billet */
+  holder?: string
+  /** Code du ticket (BABA-XXXXXXXX) */
+  ticket_code?: string
+  /** Type de pack (VIP, Standard, etc.) */
+  pack_name?: string
+  /** Heure du scan (ISO string) */
+  scanned_at?: string
+  /** ID de l'événement détecté depuis le QR code */
+  event_id?: string
+  /** Nom de l'événement détecté depuis le QR code */
+  event_name?: string
+}
+
+export interface ScanLog {
+  id: string
+  ticket_code?: string
+  holder?: string
+  event_id: string
+  event_name?: string
+  result: 'success' | 'already_used' | 'invalid' | 'cancelled' | 'expired' | 'wrong_event'
+  scanned_at: string
+  steward_name?: string
+}
+
+export interface ScanStats {
+  /** ID de l'événement */
+  event_id: string
+  /** Nom de l'événement */
+  event_name: string
+  /** Nombre total de tickets pour cet événement */
+  total_tickets: number
+  /** Nombre de tickets scannés (status = used) */
+  scanned_tickets: number
+  /** Taux de scan en pourcentage */
+  scan_rate: number
+  /** Résultats par type */
+  results_by_type: Record<string, number>
+  /** Scans par heure (pour graphiques) */
+  scans_by_hour: Record<number, number>
+  /** Nombre de scans réussis */
+  success_count: number
+  /** Nombre de scans "déjà utilisé" */
+  already_used_count: number
+  /** Nombre de scans invalides */
+  invalid_count: number
+}
+
+export interface User {
+  id: string
+  username: string
+  email: string
+  name: string
+  role: 'admin' | 'steward' | 'super_admin'
+  phone: string | null
+  is_active: boolean
+  created_at: string
+  last_login: string | null
+}
+
+// ============== ADMIN - ORDERS ==============
+
+export interface PackItemSummary {
+  /** Pack name - backend sends as 'name' */
+  name: string
+  quantity: number
+  price: number
+}
+
+export interface OrderListItem {
+  id: string
+  order_number: string
+  customer_name: string
+  customer_email: string
+  event_id: string
+  event_title: string
+  /** @deprecated Use pack_display instead */
+  pack_name: string
+  /** Multi-pack formatted display (e.g., "VIP x2, Standard x3") */
+  pack_display: string
+  /** Structured pack breakdown for detailed views */
+  pack_items: PackItemSummary[]
+  /** @deprecated Use total_quantity instead */
+  quantity: number
+  /** Total tickets across all packs */
+  total_quantity: number
+  amount: number // En EUR
+  status: 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled'
+  ccv_reference?: string
+  mollie_payment_id?: string
+  created_at: string
+  paid_at?: string
+}
+
+export interface TicketDetail {
+  id: string
+  ticket_code: string
+  holder_name: string
+  holder_email?: string
+  status: 'valid' | 'used' | 'cancelled' | 'expired'
+  scanned_at?: string
+  scanned_by?: string
+}
+
+export interface OrderDetail {
+  id: string
+  order_number: string
+  customer_name: string
+  customer_email: string
+  customer_phone?: string
+  event_id: string
+  event_title: string
+  event_date: string
+  /** @deprecated Legacy single-pack only */
+  pack_id?: string
+  /** @deprecated Use pack_display instead */
+  pack_name: string
+  /** Multi-pack formatted display (e.g., "VIP x2, Standard x3") */
+  pack_display: string
+  /** Structured pack breakdown for detailed views */
+  pack_items: PackItemSummary[]
+  /** @deprecated Use total_quantity instead */
+  quantity: number
+  /** Total tickets across all packs */
+  total_quantity: number
+  amount: number // En EUR
+  status: 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled'
+  ccv_reference?: string
+  mollie_payment_id?: string
+  payment_failure_reason?: string
+  created_at: string
+  paid_at?: string
+  tickets: TicketDetail[]
+}
+
+export interface PaginatedEventsResponse {
+  items: Event[]
+  total: number
+  offset: number
+  limit: number
+  has_more: boolean
+}
+
+export interface OrdersListResponse {
+  orders: OrderListItem[]
+  total: number
+  page: number
+  limit: number
+  total_pages: number
+  // Stats globales (toutes les commandes, pas filtrées)
+  global_revenue: number
+  global_completed: number
+  global_pending: number
+  global_failed: number
+}
+
+export interface OrderFilters {
+  event_id?: string
+  status?: string
+  search?: string
+  date_from?: string
+  date_to?: string
+  page?: number
+  limit?: number
+}
+
+export interface RefundRequest {
+  amount?: number
+  reason?: string
+}
+
+export interface RefundResponse {
+  success: boolean
+  message: string
+  refund_amount: number
+  order_status: string
+}
+
+export interface ResendEmailResponse {
+  success: boolean
+  message: string
+}
+
+export interface EventStats {
+  event_id: string
+  event_title: string
+  total_orders: number
+  total_revenue: number
+  tickets_sold: number
+  tickets_scanned: number
+  scan_rate: number
+  orders_by_status: Record<string, number>
+  sales_by_pack: Array<{
+    pack_name: string
+    orders: number
+    tickets: number
+    revenue: number
+  }>
+  sales_by_day: Array<{
+    date: string
+    orders: number
+    revenue: number
+  }>
+}
+
+export interface TopEventStats {
+  event_id: string
+  event_title: string
+  event_date: string
+  revenue: number
+  tickets_sold: number
+  orders_count: number
+}
+
+export interface GlobalStats {
+  total_revenue: number
+  total_orders: number
+  completed_orders: number
+  pending_orders: number
+  failed_orders: number
+  refunded_orders: number
+  tickets_sold: number
+  tickets_scanned: number
+  scan_rate: number
+  top_events: TopEventStats[]
 }

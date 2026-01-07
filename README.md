@@ -174,7 +174,8 @@ La langue est:
 
 **Store**: `src/stores/auth.ts`
 
-- **JWT** stocké dans localStorage (`auth_token`)
+- **JWT** stocké dans cookies httpOnly (sécurisé contre XSS)
+- **Refresh token** automatique via endpoint `/api/auth/refresh`
 - **Protection des routes** via navigation guards (`src/router/index.ts`)
 - **Vérification automatique** au chargement de l'app
 - **Routes admin** (`/dashboard/*`) réservées aux admins

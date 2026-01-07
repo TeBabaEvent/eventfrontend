@@ -65,6 +65,14 @@ Cordialement`
       stayInformed: 'Restez informé'
     }
   },
+  historique: {
+    label: 'RÉTROSPECTIVE',
+    title: 'Nos événements passés',
+    description: 'Revivez la magie de nos événements passés',
+    loadMore: 'Voir plus d\'événements',
+    noEvents: 'Aucun événement passé pour le moment',
+    error: 'Erreur lors du chargement des événements passés'
+  },
   team: {
     label: 'Artistes',
     title: 'Nos Talents',
@@ -153,39 +161,6 @@ Cordialement`
     hot: 'À ne pas manquer',
     free: 'Gratuit',
     vip: 'VIP'
-  },
-  mockData: {
-    events: {
-      event1: {
-        title: 'Nata Shqiptare 2024',
-        description: 'La plus grande soirée albanaise de l\'année avec des artistes internationaux',
-        location: 'Palais des Congrès'
-      },
-      event2: {
-        title: 'Festival Folklorique',
-        description: 'Traditions, danses et gastronomie authentique',
-        location: 'Centre Culturel'
-      },
-      event3: {
-        title: 'Nouvel An 2025',
-        description: 'Gala premium avec DJ international',
-        location: 'Grand Hôtel'
-      }
-    },
-    djs: {
-      dj1: {
-        role: 'Resident DJ',
-        description: 'Spécialiste de la musique albanaise moderne et des remixes électro'
-      },
-      dj2: {
-        role: 'Club DJ',
-        description: 'Expert en ambiances festives et hits albanais actuels'
-      },
-      dj3: {
-        role: 'Live Performer',
-        description: 'Mixage live et performances visuelles pour événements premium'
-      }
-    }
   },
   eventDetail: {
     badge: {
@@ -285,6 +260,9 @@ Cordialement`
     started: 'L\'événement a commencé !'
   },
   auth: {
+    welcome: 'Bienvenue',
+    adminAccess: 'Accès administrateur',
+    backToHome: 'Retour à l\'accueil',
     email: 'Email',
     emailPlaceholder: "votre{'@'}email.com",
     password: 'Mot de passe',
@@ -421,6 +399,153 @@ Cordialement`
         addFeature: 'Ajouter un avantage',
         isActive: 'Pack actif'
       }
+    },
+    users: {
+      title: 'Utilisateurs',
+      count: 'utilisateur(s)',
+      createNew: 'Nouvel utilisateur',
+      editUser: 'Modifier l\'utilisateur',
+      noUsers: 'Aucun utilisateur',
+      noUsersDesc: 'Commencez par créer votre premier utilisateur',
+      createFirst: 'Créer mon premier utilisateur',
+      confirmDelete: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
+      active: 'Actif',
+      inactive: 'Inactif',
+      cannotDeleteSelf: 'Vous ne pouvez pas supprimer votre propre compte',
+      cannotEditSelfRole: 'Vous ne pouvez pas modifier votre propre rôle super admin',
+      filterByRole: 'Filtrer par rôle',
+      filterByStatus: 'Filtrer par statut',
+      allRoles: 'Tous les rôles',
+      allStatuses: 'Tous les statuts',
+      statusActive: 'Actifs',
+      statusInactive: 'Inactifs',
+      createdAt: 'Créé le',
+      lastLogin: 'Dernière connexion',
+      loadError: 'Erreur lors du chargement des utilisateurs',
+      createSuccess: 'Utilisateur créé avec succès',
+      updateSuccess: 'Utilisateur mis à jour avec succès',
+      deleteSuccess: 'Utilisateur supprimé avec succès',
+      saveError: 'Erreur lors de l\'enregistrement',
+      deleteError: 'Erreur lors de la suppression',
+      roles: {
+        super_admin: 'Super Admin',
+        admin: 'Admin',
+        steward: 'Steward'
+      },
+      form: {
+        username: 'Nom d\'utilisateur',
+        usernamePlaceholder: 'Ex: john.doe',
+        usernameHint: 'Ne peut pas être modifié après création',
+        email: 'Email',
+        emailPlaceholder: "utilisateur{'@'}example.com",
+        password: 'Mot de passe',
+        passwordPlaceholder: 'Minimum 8 caractères',
+        passwordHint: 'Minimum 8 caractères avec majuscule, minuscule, chiffre et caractère spécial',
+        passwordReq: {
+          minLength: '8 caractères minimum',
+          uppercase: 'Une majuscule',
+          lowercase: 'Une minuscule',
+          number: 'Un chiffre',
+          special: 'Un caractère spécial'
+        },
+        passwordStrength: {
+          weak: 'Faible',
+          medium: 'Moyen',
+          strong: 'Fort'
+        },
+        passwordTooWeak: 'Le mot de passe ne remplit pas tous les critères de sécurité',
+        name: 'Nom complet',
+        namePlaceholder: 'Jean Dupont',
+        phone: 'Téléphone',
+        phonePlaceholder: '+33 6 12 34 56 78',
+        role: 'Rôle',
+        selectRole: 'Sélectionner un rôle',
+        roleHint: 'Définit les permissions de l\'utilisateur',
+        status: 'Statut',
+        isActive: 'Utilisateur actif',
+        statusHint: 'Si décoché, l\'utilisateur ne pourra pas se connecter'
+      }
+    },
+    orders: {
+      title: 'Commandes',
+      count: 'commande(s)',
+      noOrders: 'Aucune commande',
+      noOrdersDesc: 'Aucune commande trouvée avec ces critères',
+      stats: {
+        revenue: 'Revenus',
+        completed: 'Payées',
+        pending: 'En attente',
+        failed: 'Échouées'
+      },
+      filters: {
+        allEvents: 'Tous les événements',
+        allStatuses: 'Tous les statuts',
+        search: 'Rechercher par email ou N° commande...'
+      },
+      status: {
+        pending: 'En attente',
+        completed: 'Payée',
+        failed: 'Échouée',
+        refunded: 'Remboursée',
+        cancelled: 'Annulée'
+      },
+      table: {
+        orderNumber: 'N° Commande',
+        customer: 'Client',
+        event: 'Événement',
+        pack: 'Pack',
+        amount: 'Montant',
+        status: 'Statut',
+        date: 'Date',
+        actions: 'Actions'
+      },
+      pagination: {
+        page: 'Page'
+      },
+      actions: {
+        view: 'Voir les détails',
+        resendEmail: 'Renvoyer l\'email',
+        refund: 'Rembourser'
+      },
+      detail: {
+        customer: 'Client',
+        name: 'Nom',
+        email: 'Email',
+        phone: 'Téléphone',
+        event: 'Événement',
+        eventName: 'Événement',
+        eventDate: 'Date',
+        pack: 'Pack',
+        payment: 'Paiement',
+        amount: 'Montant',
+        createdAt: 'Créée le',
+        paidAt: 'Payée le',
+        ccvRef: 'Réf. CCV',
+        tickets: 'Billets',
+        scanned: 'Scanné',
+        notUsed: 'Non utilisé',
+        cancelled: 'Annulé',
+        guest: 'Invité'
+      },
+      refund: {
+        title: 'Confirmer le remboursement',
+        warning: 'Cette action est irréversible. Le montant sera remboursé sur le moyen de paiement du client et les billets seront annulés.',
+        amount: 'Montant à rembourser',
+        amountHint: 'Laissez vide pour un remboursement total ({max} €)',
+        reason: 'Raison du remboursement',
+        reasonPlaceholder: 'Optionnel - Ex: Annulation de l\'événement',
+        confirm: 'Confirmer le remboursement'
+      },
+      success: {
+        emailSent: 'Email envoyé avec succès',
+        refunded: 'Commande remboursée avec succès'
+      },
+      errors: {
+        loadFailed: 'Erreur lors du chargement des commandes',
+        detailFailed: 'Erreur lors du chargement des détails',
+        emailFailed: 'Erreur lors de l\'envoi de l\'email',
+        refundFailed: 'Erreur lors du remboursement'
+      }
     }
   },
   common: {
@@ -431,10 +556,13 @@ Cordialement`
     edit: 'Modifier',
     view: 'Voir',
     loading: 'Chargement...',
+    sending: 'Envoi...',
+    processing: 'Traitement...',
     error: 'Une erreur est survenue',
     retry: 'Réessayer',
     confirm: 'Confirmer',
-    close: 'Fermer'
+    close: 'Fermer',
+    free: 'GRATUIT'
   },
   reservation: {
     badge: 'Réservation',
@@ -443,6 +571,7 @@ Cordialement`
     firstNamePlaceholder: 'Votre prénom',
     lastName: 'Nom',
     lastNamePlaceholder: 'Votre nom de famille',
+    phone: 'Téléphone',
     numberOfPeople: 'Nombre de personnes',
     submit: 'Envoyer sur WhatsApp',
     note: 'Vos données ne sont pas stockées et sont uniquement utilisées pour votre réservation.',
@@ -453,6 +582,35 @@ Cordialement`
       closing: 'Merci de confirmer ma reservation.'
     }
   },
+  booking: {
+    title: 'Réservation',
+    selectTickets: 'Sélectionnez vos billets',
+    yourInfo: 'Vos informations',
+    firstName: 'Prénom',
+    firstNamePlaceholder: 'Votre prénom',
+    lastName: 'Nom',
+    lastNamePlaceholder: 'Votre nom de famille',
+    email: 'Email',
+    phone: 'Téléphone',
+    optional: 'optionnel',
+    soldOut: 'Complet',
+    ticket: 'billet',
+    tickets: 'billets',
+    total: 'Total',
+    payNow: 'Payer',
+    reserveNow: 'Réserver maintenant',
+    redirecting: 'Redirection vers le paiement...',
+    confirmingReservation: 'Confirmation de votre réservation...',
+    securePayment: 'Paiement sécurisé',
+    instantConfirmation: 'Confirmation immédiate',
+    error: 'Une erreur est survenue',
+    reserve: 'Réserver',
+    validation: {
+      firstNameMin: 'Minimum 2 caractères',
+      lastNameMin: 'Minimum 2 caractères',
+      emailInvalid: 'Email invalide'
+    }
+  },
   seo: {
     title: 'Baba Event - Événements Culturels Albanais Premium | Concerts, Festivals, Mariages',
     description: 'Créateur d\'expériences culturelles albanaises inoubliables : soirées exclusives, festivals authentiques, mariages d\'exception et concerts mémorables à travers l\'Europe.',
@@ -461,6 +619,64 @@ Cordialement`
     ogDescription: 'Créateur d\'expériences culturelles albanaises inoubliables : concerts, festivals, soirées exclusives et mariages d\'exception à travers l\'Europe.',
     twitterTitle: 'Baba Event - Événements Culturels Albanais Premium',
     twitterDescription: 'Créateur d\'expériences culturelles albanaises inoubliables : concerts, festivals, soirées exclusives et mariages d\'exception.'
+  },
+  payment: {
+    checking: 'Vérification de votre paiement...',
+    pleaseWait: 'Veuillez patienter pendant que nous confirmons votre commande.',
+    orderNumber: 'Numéro de commande',
+    event: 'Événement',
+    quantity: 'Quantité',
+    ticket: 'billet',
+    tickets: 'billets',
+    total: 'Total',
+    confirmed: 'Confirmé',
+    yourTickets: 'Vos billets',
+    moreTickets: 'billets supplémentaires',
+    emailSent: 'Un email de confirmation a été envoyé à {email}',
+    viewEvent: 'Voir l\'événement',
+    backToHome: 'Retour à l\'accueil',
+    tryAgain: 'Réessayer',
+    refresh: 'Actualiser',
+    autoRefresh: 'Actualisation automatique en cours...',
+    success: {
+      title: 'Paiement réussi !',
+      titleFree: 'Réservation confirmée !',
+      subtitle: 'Votre commande a été confirmée avec succès.',
+      subtitleFree: 'Votre réservation a été confirmée avec succès.'
+    },
+    pending: {
+      title: 'Paiement en cours...',
+      subtitle: 'Votre paiement est en cours de traitement. Veuillez patienter.'
+    },
+    failed: {
+      title: 'Paiement échoué',
+      subtitle: 'Une erreur est survenue lors du paiement. Veuillez réessayer.'
+    },
+    error: {
+      title: 'Erreur',
+      notFound: 'Commande introuvable ou numéro de commande invalide.'
+    }
+  },
+  scanner: {
+    title: 'Scanner QR',
+    selectEvent: 'Sélectionner un événement',
+    allEvents: 'Tous les événements',
+    scanHint: 'Placez le QR code dans le cadre',
+    startCamera: 'Démarrer la caméra',
+    stopCamera: 'Arrêter la caméra',
+    cameraError: 'Impossible d\'accéder à la caméra',
+    ticketCode: 'Code billet',
+    holderName: 'Nom du titulaire',
+    event: 'Événement',
+    pack: 'Formule',
+    scannedAt: 'Scanné le',
+    scanNext: 'Scanner le suivant',
+    recentScans: 'Scans récents',
+    stats: {
+      totalScans: 'Total',
+      validScans: 'Valides',
+      invalidScans: 'Invalides'
+    }
   }
 }
 

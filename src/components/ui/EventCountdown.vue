@@ -50,18 +50,18 @@ const updateCountdown = () => {
   const now = new Date().getTime()
   const eventTime = new Date(props.eventDate).getTime()
   const distance = eventTime - now
-  
+
   if (distance < 0) {
     isExpired.value = true
     if (intervalId) clearInterval(intervalId)
     return
   }
-  
+
   const d = Math.floor(distance / (1000 * 60 * 60 * 24))
   const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
   const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
   const s = Math.floor((distance % (1000 * 60)) / 1000)
-  
+
   days.value = String(d).padStart(2, '0')
   hours.value = String(h).padStart(2, '0')
   minutes.value = String(m).padStart(2, '0')
@@ -104,7 +104,8 @@ onUnmounted(() => {
   width: 72px;
   max-width: 72px;
   flex-shrink: 0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 🚀 Only transition transform and border-color (not 'all') */
+  transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
 }
 
 /* Gradient border */
@@ -183,23 +184,37 @@ onUnmounted(() => {
     gap: 0.375rem;
     margin: 1rem 0;
   }
-  
+
   .countdown__item {
     min-width: 60px;
     width: 60px;
     max-width: 60px;
     padding: 0.75rem 0.375rem;
     border-radius: 12px;
+    /* 🚀 Disable backdrop-filter on mobile */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(20, 20, 25, 0.95) !important;
+    /* 🚀 Disable hover transitions on mobile */
+    transition: none !important;
   }
 
   .countdown__item::before {
     border-radius: 12px;
+    /* 🚀 Disable gradient border effect on mobile */
+    display: none !important;
   }
-  
+
+  /* 🚀 Disable hover effects on mobile */
+  .countdown__item:hover {
+    transform: none !important;
+    background: rgba(20, 20, 25, 0.95) !important;
+  }
+
   .countdown__number {
     font-size: 1.375rem;
   }
-  
+
   .countdown__label {
     font-size: 0.4375rem;
     letter-spacing: 1px;
@@ -211,7 +226,7 @@ onUnmounted(() => {
     gap: 0.25rem;
     margin: 0.875rem 0;
   }
-  
+
   .countdown__item {
     min-width: 52px;
     width: 52px;
@@ -223,11 +238,11 @@ onUnmounted(() => {
   .countdown__item::before {
     border-radius: 10px;
   }
-  
+
   .countdown__number {
     font-size: 1.125rem;
   }
-  
+
   .countdown__label {
     font-size: 0.375rem;
     letter-spacing: 0.5px;

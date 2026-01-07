@@ -84,6 +84,8 @@ export function usePerformance() {
   function observeCLS() {
     try {
       let clsValue = 0
+      let lastLoggedCls = 0
+      let clsLogTimeout: ReturnType<typeof setTimeout> | null = null
 
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
@@ -92,7 +94,16 @@ export function usePerformance() {
           if (!layoutShiftEntry.hadRecentInput && layoutShiftEntry.value) {
             clsValue += layoutShiftEntry.value
             metrics.value.cls = clsValue
-            logger.info(`CLS: ${clsValue.toFixed(4)}`)
+
+            // Debounce CLS logging - only log when stable (no changes for 1s)
+            // and only if value changed significantly (> 0.01)
+            if (clsLogTimeout) clearTimeout(clsLogTimeout)
+            clsLogTimeout = setTimeout(() => {
+              if (Math.abs(clsValue - lastLoggedCls) > 0.01) {
+                logger.info(`CLS: ${clsValue.toFixed(4)}`)
+                lastLoggedCls = clsValue
+              }
+            }, 1000)
           }
         })
       })

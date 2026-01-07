@@ -1,21 +1,24 @@
 <template>
   <div class="events-view">
-    <!-- Loading State -->
-    <LoadingSpinner v-if="isPageLoading" :message="'Chargement des événements...'" />
-
-    <!-- Content -->
-    <template v-else>
-      <!-- Page Header -->
-      <div class="page-header">
-      <h1 class="page-header__title">Événements</h1>
-      <button class="create-event-btn" @click="showCreateModal">
+    <!-- Page Header - Always visible -->
+    <div class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-header__title">Événements</h1>
+        <p class="page-header__count">{{ events.length }} événement(s)</p>
+      </div>
+      <button class="create-btn" @click="showCreateModal">
         <i class="fas fa-plus"></i>
         <span>Nouvel événement</span>
       </button>
     </div>
 
+    <!-- Skeleton Loading State -->
+    <div v-if="isInitialLoading" class="events-grid">
+      <SkeletonCard v-for="n in 4" :key="n" variant="event" />
+    </div>
+
     <!-- Empty State -->
-    <div v-if="events.length === 0" class="empty-state">
+    <div v-else-if="events.length === 0" class="empty-state">
       <div class="empty-state__icon">
         <i class="fas fa-calendar-times"></i>
       </div>
@@ -25,57 +28,81 @@
 
     <!-- Events Grid -->
     <div v-else class="events-grid">
-        <div v-for="event in sortedEvents" :key="event.id" class="event-card">
-          <!-- Event Image -->
-          <div class="event-card__image">
+        <article v-for="event in sortedEvents" :key="event.id" class="event-card" :class="{ 'event-card--past': !isUpcoming(event) }">
+          <!-- Image -->
+          <div class="event-card__visual">
             <img v-if="event.image_url" :src="event.image_url" :alt="event.title">
-            <div v-else class="event-card__placeholder">
-              <i class="fas fa-calendar-alt"></i>
+            <div v-else class="event-card__no-image">
+              <i class="fas fa-image"></i>
             </div>
-            <span :class="['event-card__status', getStatusClass(event)]">
-              {{ getStatusLabel(event) }}
-            </span>
-            <span class="event-card__category">{{ getCategoryLabel(event.category) }}</span>
           </div>
 
-          <!-- Event Content -->
+          <!-- Content -->
           <div class="event-card__content">
+            <!-- Top Row: Category + Status -->
+            <div class="event-card__top">
+              <span class="event-card__tag">{{ getCategoryLabel(event.category) }}</span>
+              <span :class="['event-card__indicator', isUpcoming(event) ? 'event-card__indicator--active' : 'event-card__indicator--past']">
+                <i :class="isUpcoming(event) ? 'fas fa-circle' : 'fas fa-check'"></i>
+                {{ getStatusLabel(event) }}
+              </span>
+            </div>
+
+            <!-- Title -->
             <h3 class="event-card__title">{{ event.title }}</h3>
 
-            <div class="event-card__info">
-              <div class="info-item">
-                <i class="fas fa-calendar"></i>
-                <span>{{ formatDate(event.date) }} à {{ event.time }}</span>
+            <!-- Details -->
+            <div class="event-card__details">
+              <div class="detail">
+                <i class="fas fa-calendar-alt"></i>
+                <span>{{ formatDate(event.date) }} · {{ event.time }}</span>
               </div>
-              <div class="info-item">
+              <div class="detail">
                 <i class="fas fa-map-marker-alt"></i>
-                <span>{{ event.location }}, {{ event.city }}</span>
-              </div>
-              <div class="info-item" v-if="event.packs && event.packs.length > 0">
-                <i class="fas fa-ticket-alt"></i>
-                <span>À partir de {{ Math.min(...event.packs.map((p: any) => p.price)) }}€</span>
-              </div>
-              <div class="info-item" v-if="event.artists && event.artists.length > 0">
-                <i class="fas fa-user-music"></i>
-                <span>{{ event.artists.length }} artiste(s)</span>
+                <span>{{ event.location }}</span>
               </div>
             </div>
-          </div>
 
-          <!-- Event Actions -->
-          <div class="event-card__actions">
-            <button class="action-btn action-btn--view" @click="viewEvent(event)" title="Voir">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button class="action-btn action-btn--edit" @click="editEvent(event)" title="Modifier">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="action-btn action-btn--delete" @click="deleteEvent(event)" title="Supprimer">
-              <i class="fas fa-trash"></i>
-            </button>
+            <!-- Stats Row -->
+            <div class="event-card__stats">
+              <div class="stat" v-if="event.artists && event.artists.length > 0">
+                <i class="fas fa-microphone"></i>
+                <span>{{ event.artists.length }} artiste(s)</span>
+              </div>
+              <div class="stat" v-if="event.packs && event.packs.length > 0">
+                <i class="fas fa-ticket-alt"></i>
+                <span>{{ Math.min(...event.packs.map((p: any) => p.price)) }}€</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="event-card__actions">
+              <button class="btn-action btn-action--stats" @click="openStats(event)" title="Statistiques">
+                <i class="fas fa-chart-bar"></i>
+              </button>
+              <button class="btn-action btn-action--primary" @click="editEvent(event)">
+                <i class="fas fa-pen"></i>
+                Modifier
+              </button>
+              <button class="btn-action btn-action--view" @click="viewEvent(event)" title="Voir la page publique">
+                <i class="fas fa-external-link-alt"></i>
+                Voir
+              </button>
+              <button class="btn-action btn-action--icon" @click="deleteEvent(event)" title="Supprimer">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
           </div>
-        </div>
+        </article>
       </div>
+
+    <!-- Stats Drawer -->
+    <EventStatsDrawer
+      :is-open="isStatsDrawerOpen"
+      :event-id="selectedEventForStats?.id ?? null"
+      :event-date="selectedEventForStats?.date"
+      @close="closeStatsDrawer"
+    />
 
     <!-- Create/Edit Modal -->
     <Transition name="modal">
@@ -127,7 +154,7 @@
               </div>
             </div>
 
-            <!-- Category -->
+            <!-- Category & Date -->
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">
@@ -136,17 +163,13 @@
                   <span class="required">*</span>
                 </label>
                 <select v-model="formData.category" class="form-select" required>
-                  <option value="">Sélectionner une catégorie</option>
+                  <option value="">Sélectionner</option>
                   <option value="concert">Concert</option>
                   <option value="festival">Festival</option>
                   <option value="party">Soirée</option>
                   <option value="wedding">Mariage</option>
                 </select>
               </div>
-            </div>
-
-            <!-- Date & Time -->
-            <div class="form-row">
               <div class="form-group">
                 <label class="form-label">
                   <i class="fas fa-calendar"></i>
@@ -155,6 +178,10 @@
                 </label>
                 <input v-model="formData.date" type="date" class="form-input" required>
               </div>
+            </div>
+
+            <!-- Time & Capacity -->
+            <div class="form-row">
               <div class="form-group">
                 <label class="form-label">
                   <i class="fas fa-clock"></i>
@@ -162,6 +189,13 @@
                   <span class="required">*</span>
                 </label>
                 <input v-model="formData.time" type="time" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-users"></i>
+                  Capacité
+                </label>
+                <input v-model.number="formData.capacity" type="number" class="form-input" min="0" placeholder="Ex: 500">
               </div>
             </div>
 
@@ -173,7 +207,7 @@
                   Lieu
                   <span class="required">*</span>
                 </label>
-                <input v-model="formData.location" type="text" class="form-input" required>
+                <input v-model="formData.location" type="text" class="form-input" placeholder="Nom du lieu" required>
               </div>
               <div class="form-group">
                 <label class="form-label">
@@ -181,25 +215,18 @@
                   Ville
                   <span class="required">*</span>
                 </label>
-                <input v-model="formData.city" type="text" class="form-input" required>
+                <input v-model="formData.city" type="text" class="form-input" placeholder="Ex: Paris" required>
               </div>
             </div>
 
-            <!-- Capacity and Address -->
-            <div class="form-row">
+            <!-- Address -->
+            <div class="form-row form-row--single">
               <div class="form-group">
                 <label class="form-label">
-                  <i class="fas fa-users"></i>
-                  Capacité
-                </label>
-                <input v-model.number="formData.capacity" type="number" class="form-input" min="0">
-              </div>
-              <div class="form-group">
-                <label class="form-label">
-                  <i class="fas fa-map-marker-alt"></i>
+                  <i class="fas fa-location-arrow"></i>
                   Adresse complète
                 </label>
-                <input v-model="formData.address" type="text" class="form-input">
+                <input v-model="formData.address" type="text" class="form-input" placeholder="Rue, numéro, code postal...">
               </div>
             </div>
 
@@ -269,6 +296,26 @@
               </div>
             </div>
 
+            <!-- After Movie Links -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fab fa-youtube"></i>
+                  URL YouTube Shorts (After Movie)
+                </label>
+                <input v-model="formData.youtube_shorts_url" type="url" class="form-input" placeholder="https://youtube.com/shorts/...">
+                <small class="form-help">Lien vers l'after movie YouTube Shorts de l'événement (optionnel)</small>
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fab fa-instagram"></i>
+                  URL Instagram Reels (After Movie)
+                </label>
+                <input v-model="formData.instagram_reels_url" type="url" class="form-input" placeholder="https://instagram.com/reel/...">
+                <small class="form-help">Lien vers l'after movie Instagram Reels de l'événement (optionnel)</small>
+              </div>
+            </div>
+
             <!-- Artistes -->
             <div class="form-section">
               <h3 class="form-section-title">
@@ -290,32 +337,26 @@
 
               <!-- Horaires des artistes sélectionnés -->
               <div v-if="formData.selectedArtists.length > 0" class="selected-artists-schedule">
-                <h4 class="schedule-title">Horaires de passage</h4>
+                <div class="schedule-header">
+                  <span class="schedule-header__artist">Artiste</span>
+                  <span class="schedule-header__time">Horaire</span>
+                </div>
                 <div v-for="(selectedArtist, index) in formData.selectedArtists" :key="selectedArtist.id || selectedArtist.artist_id" class="schedule-item">
                   <div class="schedule-item__info">
                     <span class="schedule-item__name">{{ selectedArtist.name }}</span>
-                    <span class="schedule-item__role">{{ selectedArtist.role }}</span>
                   </div>
                   <div class="schedule-item__times">
-                    <div class="time-input-group">
-                      <label>Début</label>
-                      <input
-                        v-model="formData.selectedArtists[index].start_time"
-                        type="time"
-                        class="form-input form-input--small"
-                        placeholder="21:00"
-                      >
-                    </div>
-                    <span class="time-separator">-</span>
-                    <div class="time-input-group">
-                      <label>Fin</label>
-                      <input
-                        v-model="formData.selectedArtists[index].end_time"
-                        type="time"
-                        class="form-input form-input--small"
-                        placeholder="23:00"
-                      >
-                    </div>
+                    <input
+                      v-model="formData.selectedArtists[index].start_time"
+                      type="time"
+                      class="form-input--time"
+                    >
+                    <span class="time-arrow">→</span>
+                    <input
+                      v-model="formData.selectedArtists[index].end_time"
+                      type="time"
+                      class="form-input--time"
+                    >
                   </div>
                 </div>
               </div>
@@ -341,32 +382,19 @@
               </div>
             </div>
 
-            <!-- Options -->
-            <div class="form-row">
-              <div class="form-group">
-                <label class="checkbox-label">
-                  <input v-model="formData.featured" type="checkbox">
-                  <span>Événement à la une</span>
-                </label>
-              </div>
-            </div>
-
             <!-- Actions -->
             <div class="form-actions">
-              <button type="button" class="btn btn--outline btn--large" @click="closeModal">
-                <span>Annuler</span>
-                <i class="fas fa-times"></i>
+              <button type="button" class="btn btn--outline" @click="closeModal">
+                Annuler
               </button>
-              <button type="submit" class="btn btn--primary btn--large">
-                <span>{{ editingEvent ? 'Enregistrer' : 'Créer' }}</span>
-                <i class="fas" :class="editingEvent ? 'fa-save' : 'fa-plus'"></i>
+              <button type="submit" class="btn btn--primary">
+                {{ editingEvent ? 'Enregistrer' : 'Créer' }}
               </button>
             </div>
           </form>
         </div>
       </div>
     </Transition>
-    </template>
   </div>
 </template>
 
@@ -374,13 +402,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
-import { useAuthStore } from '@/stores/auth'
+import { useAdminDataStore } from '@/stores/adminData'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import SkeletonCard from '@/components/ui/SkeletonCard.vue'
+import EventStatsDrawer from '@/components/dashboard/EventStatsDrawer.vue'
 import type { Event, Artist } from '@/types'
 
-const authStore = useAuthStore()
+const adminStore = useAdminDataStore()
 const toast = useToast()
 
 // Languages
@@ -391,17 +420,31 @@ const languages = [
   { code: 'sq', label: 'SQ' }
 ]
 
-// State
-const events = ref<Event[]>([])
+// State - Use store for cached data
+const events = computed(() => adminStore.events)
 const artists = ref<Artist[]>([])
 const packs = ref<any[]>([])
 const isModalOpen = ref(false)
 const editingEvent = ref<Event | null>(null)
-const isSubmitting = ref(false) // Renommé pour plus de clarté
-const isPageLoading = ref(true)
+const isSubmitting = ref(false)
+const isInitialLoading = ref(!adminStore.eventsLoaded) // Show skeleton only on first load
 const submitError = ref<string | null>(null)
 const currentTitleLang = ref('fr')
 const currentDescLang = ref('fr')
+
+// Stats drawer
+const isStatsDrawerOpen = ref(false)
+const selectedEventForStats = ref<Event | null>(null)
+
+function openStats(event: Event) {
+  selectedEventForStats.value = event
+  isStatsDrawerOpen.value = true
+}
+
+function closeStatsDrawer() {
+  isStatsDrawerOpen.value = false
+  selectedEventForStats.value = null
+}
 
 const formData = ref({
   title: '',
@@ -427,7 +470,8 @@ const formData = ref({
   },
   image_url: '',
   maps_embed_url: '',
-  featured: false,
+  youtube_shorts_url: '',
+  instagram_reels_url: '',
   status: 'upcoming',
   selectedArtists: [] as any[],
   selectedPacks: [] as any[]
@@ -442,14 +486,10 @@ const sortedEvents = computed(() => {
   })
 })
 
-// Fetch data
-async function fetchEvents() {
+// Fetch data using store cache-first strategy
+async function fetchEvents(force = false) {
   try {
-    const response = await fetch(buildApiUrl(API_ENDPOINTS.EVENTS))
-    if (!response.ok) {
-      throw new Error('Erreur lors du chargement des événements')
-    }
-    events.value = await response.json()
+    await adminStore.fetchEvents(force)
   } catch (error) {
     logger.error('Erreur:', error)
     toast.error('Impossible de charger les événements')
@@ -518,7 +558,8 @@ async function editEvent(event: Event) {
     },
     image_url: event.image_url || event.image || '',
     maps_embed_url: event.maps_embed_url || '',
-    featured: event.featured || false,
+    youtube_shorts_url: event.youtube_shorts_url || '',
+    instagram_reels_url: event.instagram_reels_url || '',
     status: event.status || 'upcoming',
     selectedArtists: event.artists || [],
     selectedPacks: event.packs || []
@@ -527,7 +568,9 @@ async function editEvent(event: Event) {
 }
 
 function viewEvent(event: Event) {
-  alert(`Événement: ${event.title}\nDate: ${event.date}\nLieu: ${event.location}, ${event.city}`)
+  // Open event detail page in new tab
+  const url = `/events/${event.id}`
+  window.open(url, '_blank')
 }
 
 async function deleteEvent(event: Event) {
@@ -536,7 +579,8 @@ async function deleteEvent(event: Event) {
   try {
     const response = await fetch(buildApiUrl(API_ENDPOINTS.EVENT_BY_ID(event.id)), {
       method: 'DELETE',
-      headers: getAuthHeaders(authStore.token)
+      credentials: 'include', // ✅ Send auth cookie
+      headers: getAuthHeaders()
     })
 
     if (!response.ok) {
@@ -544,7 +588,8 @@ async function deleteEvent(event: Event) {
       throw new Error(errorData.message || 'Erreur lors de la suppression')
     }
 
-    await fetchEvents()
+    adminStore.invalidateEvents()
+    await fetchEvents(true)
     toast.success('Événement supprimé avec succès')
   } catch (error) {
     logger.error('Erreur:', error)
@@ -584,8 +629,9 @@ async function handleSubmit() {
       city: formData.value.city,
       maps_embed_url: formData.value.maps_embed_url,
       image_url: formData.value.image_url,
+      youtube_shorts_url: formData.value.youtube_shorts_url,
+      instagram_reels_url: formData.value.instagram_reels_url,
       capacity: formData.value.capacity,
-      featured: formData.value.featured,
       status: formData.value.status,
       artists: formData.value.selectedArtists.map((a: any, index: number) => ({
         artist_id: a.id || a.artist_id,
@@ -607,7 +653,8 @@ async function handleSubmit() {
 
     const response = await fetch(url, {
       method,
-      headers: getAuthHeaders(authStore.token),
+      credentials: 'include', // ✅ Send auth cookie
+      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
 
@@ -616,7 +663,8 @@ async function handleSubmit() {
       throw new Error(errorData.message || 'Erreur lors de la sauvegarde')
     }
 
-    await fetchEvents()
+    adminStore.invalidateEvents()
+    await fetchEvents(true)
     toast.success(editingEvent.value ? 'Événement modifié avec succès' : 'Événement créé avec succès')
     closeModal()
   } catch (error) {
@@ -659,7 +707,8 @@ function resetForm() {
     },
     image_url: '',
     maps_embed_url: '',
-    featured: false,
+    youtube_shorts_url: '',
+    instagram_reels_url: '',
     status: 'upcoming',
     selectedArtists: [],
     selectedPacks: []
@@ -732,12 +781,16 @@ function handleMapsPaste(event: ClipboardEvent) {
 
 // Initialize - charger toutes les données une seule fois
 onMounted(async () => {
+  // Load data with cache-first strategy
   await Promise.all([
     fetchEvents(),
     fetchArtists(),
     fetchPacks()
   ])
-  isPageLoading.value = false
+  isInitialLoading.value = false
+
+  // Refresh in background if cache is stale
+  adminStore.refreshInBackground('events')
 })
 
 function formatDate(date: string): string {
@@ -758,291 +811,405 @@ function getCategoryLabel(category: string): string {
   return labels[category] || category
 }
 
-function getStatusClass(event: Event): string {
-  const eventDate = new Date(event.date)
-  const now = new Date()
-  return eventDate > now ? 'event-status--upcoming' : 'event-status--past'
+function isUpcoming(event: Event): boolean {
+  return new Date(event.date) > new Date()
 }
 
 function getStatusLabel(event: Event): string {
-  const eventDate = new Date(event.date)
-  const now = new Date()
-  return eventDate > now ? 'À venir' : 'Passé'
+  return isUpcoming(event) ? 'À venir' : 'Passé'
 }
 </script>
 
 <style scoped>
 @import '@/assets/styles/dashboard-modals.css';
 
-/* Page Header */
+/* ============================================
+   EVENTS VIEW - Matching Dashboard Style
+   ============================================ */
+.events-view {
+  max-width: 1400px;
+  animation: pageIn 0.6s ease-out;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   PAGE HEADER - Premium Style
+   ============================================ */
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.page-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .page-header__title {
   font-family: var(--font-heading);
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-white);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+  margin: 0;
 }
 
-.create-event-btn {
-  padding: 0.8rem 1.75rem;
-  background: linear-gradient(135deg, #dc143c 0%, #b01030 100%);
+.page-header__count {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+/* Create Button - Premium Style */
+.create-btn {
+  padding: 0.625rem 1.25rem;
+  background: var(--color-primary);
   border: none;
   border-radius: 8px;
   color: var(--color-white);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
+  transition: all 0.15s ease;
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  box-shadow: 0 2px 10px rgba(220, 20, 60, 0.35), 0 0 0 0 rgba(220, 20, 60, 0.5);
-  position: relative;
-  overflow: hidden;
+  gap: 0.5rem;
+  white-space: nowrap;
 }
 
-.create-event-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+.create-btn:hover {
+  background: #c41e3a;
 }
 
-.create-event-btn:hover::before {
-  left: 100%;
+.create-btn:active {
+  transform: scale(0.97);
 }
 
-.create-event-btn:hover {
-  background: linear-gradient(135deg, #c41e3a 0%, #9e0f2a 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.45), 0 0 0 3px rgba(220, 20, 60, 0.1);
+.create-btn i {
+  font-size: 0.65rem;
 }
 
-.create-event-btn:active {
-  transform: translateY(0);
-}
-
-/* Events Grid */
+/* ============================================
+   EVENTS GRID
+   ============================================ */
 .events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1rem;
 }
 
-/* Event Card */
+/* ============================================
+   EVENT CARD - Premium Professional Design
+   ============================================ */
 .event-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  display: flex;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
   overflow: hidden;
   transition: all 0.2s ease;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  min-height: 180px;
 }
 
 .event-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(220, 20, 60, 0.3);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-/* Event Image */
-.event-card__image {
+.event-card--past {
+  opacity: 0.6;
+}
+
+.event-card--past:hover {
+  opacity: 0.75;
+}
+
+/* Visual / Image Section */
+.event-card__visual {
+  width: 160px;
+  flex-shrink: 0;
   position: relative;
-  height: 180px;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.3);
 }
 
-.event-card__image img {
+.event-card__visual img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: none;
+  object-position: center top;
+  transition: transform 0.4s ease;
 }
 
-.event-card:hover .event-card__image img {
-  transform: none;
+.event-card:hover .event-card__visual img {
+  transform: scale(1.03);
 }
 
-.event-card__placeholder {
+.event-card__no-image {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
+  background: rgba(255, 255, 255, 0.02);
   color: rgba(255, 255, 255, 0.15);
-  background: rgba(0, 0, 0, 0.3);
+  font-size: 1.75rem;
 }
 
-.event-card__status {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 0.4rem 0.75rem;
-  border-radius: 5px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  backdrop-filter: blur(8px);
-  z-index: 2;
-  border: none;
-}
-
-.event-card__status.event-status--upcoming {
-  background: rgba(16, 185, 129, 0.95);
-  color: white;
-}
-
-.event-card__status.event-status--past {
-  background: rgba(107, 114, 128, 0.95);
-  color: white;
-}
-
-.event-card__category {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 0.4rem 0.75rem;
-  background: rgba(220, 20, 60, 0.95);
-  color: white;
-  border-radius: 5px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  backdrop-filter: blur(8px);
-  z-index: 2;
-  border: none;
-}
-
-/* Event Content */
+/* Content Section */
 .event-card__content {
-  padding: 1.25rem;
   flex: 1;
+  padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
+/* Top Row */
+.event-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.event-card__tag {
+  padding: 0.2rem 0.5rem;
+  background: rgba(var(--color-primary-rgb), 0.12);
+  color: var(--color-primary);
+  border-radius: 3px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.event-card__indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.event-card__indicator i {
+  font-size: 0.35rem;
+}
+
+.event-card__indicator--active {
+  color: #22c55e;
+}
+
+.event-card__indicator--active i {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.event-card__indicator--past {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Title */
 .event-card__title {
   font-family: var(--font-heading);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--color-white);
-  margin-bottom: 1rem;
-  line-height: 1.4;
+  margin: 0;
+  line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.event-card__info {
+/* Details */
+.event-card__details {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.25rem;
 }
 
-.info-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.4;
-}
-
-.info-item i {
-  color: rgba(220, 20, 60, 0.8);
-  font-size: 0.85rem;
-  width: 14px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-/* Event Actions */
-.event-card__actions {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.85rem 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(0, 0, 0, 0.15);
-}
-
-.action-btn {
-  flex: 1;
-  height: 34px;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+.detail {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.detail i {
+  width: 12px;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+/* Stats Row */
+.event-card__stats {
+  display: flex;
+  gap: 0.875rem;
+  margin-top: auto;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.stat i {
+  font-size: 0.6rem;
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+/* Actions */
+.event-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
+  border: none;
 }
 
-.action-btn:hover {
-  color: var(--color-white);
-  transform: none;
+.btn-action i {
+  font-size: 0.6rem;
 }
 
-.action-btn--view:hover {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #10b981;
+.btn-action--primary {
+  background: var(--color-primary);
+  color: white;
 }
 
-.action-btn--edit:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.4);
-  color: #3b82f6;
+.btn-action--primary:hover {
+  background: #b91c3a;
 }
 
-.action-btn--delete:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.4);
+.btn-action--secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-action--secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+.btn-action--view {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.5rem 0.75rem;
+}
+
+.btn-action--view:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+}
+
+.btn-action--view i {
+  font-size: 0.55rem;
+}
+
+.btn-action--icon {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.3);
+  margin-left: auto;
+  border-radius: 6px;
+}
+
+.btn-action--icon:hover {
+  background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
 }
 
-/* Responsive Grid */
-@media (max-width: 1200px) {
-  .events-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  }
+.btn-action--stats {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
-/* Empty State */
+.btn-action--stats:hover {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+/* Empty State - Glass Effect */
 .empty-state {
   text-align: center;
   padding: 5rem 2rem;
-  color: rgba(255, 255, 255, 0.6);
+  background: rgba(15, 15, 15, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  margin: 2rem 0;
 }
 
 .empty-state__icon {
   font-size: 4rem;
   margin-bottom: 1.5rem;
-  color: rgba(220, 20, 60, 0.4);
+  color: rgba(var(--color-primary-rgb), 0.4);
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
 }
 
 .empty-state__title {
@@ -1059,438 +1226,9 @@ function getStatusLabel(event: Event): string {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Modal */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  overflow-y: auto;
-}
-
-.modal-content {
-  background: #1a1a1a;
-  border: 1px solid rgba(220, 20, 60, 0.3);
-  border-radius: 8px;
-  padding: 2rem;
-  max-width: 800px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
-}
-
-.modal-title {
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-white);
-}
-
-.modal-close {
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-  background: rgba(231, 76, 60, 0.2);
-  border-color: #e74c3c;
-  color: #e74c3c;
-}
-
-/* Form */
-.event-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.form-row--single {
-  grid-template-columns: 1fr;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.form-label i {
-  color: var(--color-primary);
-  width: 16px;
-}
-
-.required {
-  color: var(--color-primary);
-}
-
-.form-input,
-.form-textarea,
-.form-select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: var(--color-white);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.form-input::placeholder,
-.form-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-primary);
-}
-
-.form-textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-.form-select {
-  cursor: pointer;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(220, 20, 60, 0.2);
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: none;
-}
-
-.btn--primary {
-  background: var(--color-primary);
-  color: var(--color-white);
-}
-
-.btn--primary:hover {
-  background: #c41e3a;
-}
-
-.btn--outline {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.btn--outline:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--color-primary);
-  color: var(--color-white);
-}
-
-.btn--large {
-  padding: 0.875rem 1.75rem;
-}
-
-/* Form Section */
-.form-section {
-  margin: 1.5rem 0;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(220, 20, 60, 0.15);
-  border-radius: 8px;
-}
-
-.form-section-title {
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-white);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
-}
-
-.form-section-title i {
-  color: var(--color-primary);
-}
-
-.form-empty {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-  text-align: center;
-  padding: 1rem;
-}
-
-.link {
-  color: var(--color-primary);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
-/* Language Tabs */
-.language-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding: 0.25rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  width: fit-content;
-}
-
-.language-tab {
-  padding: 0.5rem 1rem;
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.language-tab:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.language-tab.active {
-  background: var(--color-primary);
-  color: var(--color-white);
-  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.3);
-}
-
-.language-inputs {
-  position: relative;
-}
-
-/* Selectors */
-.artists-selector,
-.packs-selector {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.75rem;
-}
-
-.selector-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.selector-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(220, 20, 60, 0.3);
-}
-
-.selector-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  cursor: pointer;
-}
-
-.selector-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.selector-name {
-  flex: 1;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-white);
-}
-
-.selector-role,
-.selector-price {
-  font-size: 0.75rem;
-  color: var(--color-primary);
-}
-
-/* Selected Artists Schedule */
-.selected-artists-schedule {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-}
-
-.schedule-title {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 1rem;
-}
-
-.schedule-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  margin-bottom: 0.75rem;
-}
-
-.schedule-item:last-child {
-  margin-bottom: 0;
-}
-
-.schedule-item__info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.schedule-item__name {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-white);
-}
-
-.schedule-item__role {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.schedule-item__times {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.time-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.time-input-group label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.time-separator {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 1rem;
-  padding-top: 1rem;
-}
-
-.form-input--small {
-  width: 90px;
-  padding: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
-  cursor: pointer;
-}
-
-/* Modal Transitions */
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-active .modal-content,
-.modal-leave-active .modal-content {
-  transition: transform 0.3s ease;
-}
-
-.modal-enter-from .modal-content,
-.modal-leave-to .modal-content {
-  transform: scale(0.9);
-}
-
-/* Responsive */
+/* ============================================
+   RESPONSIVE - UNIFIED
+   ============================================ */
 @media (max-width: 1024px) {
   .events-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1499,107 +1237,114 @@ function getStatusLabel(event: Event): string {
 
 @media (max-width: 768px) {
   .page-header {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
     margin-bottom: 1.75rem;
-    padding-bottom: 0.875rem;
-    gap: 1rem;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .page-header__left {
+    gap: 0.5rem;
   }
 
   .page-header__title {
     font-size: 1.5rem;
-    flex: 1;
+    font-weight: 700;
   }
 
-  .create-event-btn {
-    padding: 0.65rem 1.25rem;
+  .page-header__count {
     font-size: 0.8rem;
-    gap: 0.45rem;
-    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.5);
   }
 
-  .create-event-btn span {
-    display: inline;
+  /* Premium Create Button - Mobile */
+  .create-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, #e01a3d 100%);
+    box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
+    gap: 0.625rem;
+  }
+
+  .create-btn:hover {
+    background: linear-gradient(135deg, #e01a3d 0%, var(--color-primary) 100%);
+  }
+
+  .create-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 10px rgba(220, 20, 60, 0.2);
+  }
+
+  .create-btn i {
+    font-size: 0.75rem;
   }
 
   .events-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .event-card__image {
-    height: 160px;
-  }
-
-  .event-card__content {
-    padding: 1.125rem;
-  }
-
-  .empty-state {
-    padding: 4rem 1.5rem;
-  }
-
-  .empty-state__icon {
-    font-size: 3.5rem;
-  }
-
-  .empty-state__title {
-    font-size: 1.25rem;
-  }
-}
-
-@media (max-width: 580px) {
-  .page-header {
-    flex-direction: column;
-    align-items: stretch;
     gap: 0.875rem;
-    margin-bottom: 1.5rem;
   }
 
-  .page-header__title {
-    font-size: 1.4rem;
+  .event-card {
+    border-radius: 12px;
   }
 
-  .create-event-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-header {
-    padding-bottom: 0.75rem;
+  .event-card::before {
+    border-radius: 12px;
   }
 
-  .page-header__title {
-    font-size: 1.3rem;
+  .event-card:active {
+    transform: scale(0.99);
   }
 
-  .event-card__image {
-    height: 150px;
+  .event-card:hover {
+    transform: none;
+  }
+
+  .event-card__visual {
+    width: 110px;
+    min-height: 140px;
   }
 
   .event-card__content {
-    padding: 1rem;
+    padding: 0.875rem 1rem;
   }
 
   .event-card__title {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
+  /* Actions - Touch friendly */
   .event-card__actions {
-    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    margin-top: 0.875rem;
+    padding-top: 0.875rem;
   }
 
-  .action-btn {
-    height: 32px;
-    font-size: 0.8rem;
+  .btn-action {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    min-height: 36px;
+    border-radius: 8px;
+  }
+
+  .btn-action i {
+    font-size: 0.65rem;
+  }
+
+  .btn-action--icon {
+    width: 36px;
+    height: 36px;
   }
 
   .empty-state {
-    padding: 3rem 1rem;
+    padding: 3.5rem 1.5rem;
+    border-radius: 12px;
   }
 
   .empty-state__icon {
@@ -1607,7 +1352,98 @@ function getStatusLabel(event: Event): string {
   }
 
   .empty-state__title {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    gap: 1.25rem;
+  }
+
+  .page-header__title {
+    font-size: 1.35rem;
+  }
+
+  .create-btn {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+
+  /* Stack card vertically */
+  .event-card {
+    flex-direction: column;
+  }
+
+  .event-card__visual {
+    width: 100%;
+    height: 180px;
+    min-height: auto;
+  }
+
+  .event-card__content {
+    padding: 1rem 1.125rem;
+  }
+
+  .event-card__top {
+    margin-bottom: 0.375rem;
+  }
+
+  .event-card__tag {
+    font-size: 0.6rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .event-card__title {
+    font-size: 1.05rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    margin-bottom: 0.5rem;
+  }
+
+  .detail {
+    font-size: 0.75rem;
+  }
+
+  .detail i {
+    font-size: 0.65rem;
+    width: 14px;
+  }
+
+  .stat {
+    font-size: 0.7rem;
+  }
+
+  /* Buttons - Extra touch friendly on small screens */
+  .event-card__actions {
+    gap: 0.625rem;
+  }
+
+  .btn-action {
+    flex: 1;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8rem;
+    min-height: 40px;
+    justify-content: center;
+  }
+
+  .btn-action i {
+    font-size: 0.7rem;
+  }
+
+  .btn-action--icon {
+    flex: 0;
+    width: 40px;
+    height: 40px;
+  }
+
+  .empty-state {
+    padding: 3rem 1rem;
+  }
+
+  .empty-state__title {
+    font-size: 1.1rem;
   }
 
   .empty-state__text {
@@ -1615,4 +1451,5 @@ function getStatusLabel(event: Event): string {
   }
 }
 </style>
+
 

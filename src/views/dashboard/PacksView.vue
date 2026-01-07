@@ -1,21 +1,24 @@
 <template>
   <div class="packs-view">
-    <!-- Loading State -->
-    <LoadingSpinner v-if="isPageLoading" :message="'Chargement des packs...'" />
-
-    <!-- Content -->
-    <template v-else>
-      <!-- Page Header -->
-      <div class="page-header">
-      <h1 class="page-header__title">Packs de réservation</h1>
+    <!-- Page Header - Always visible -->
+    <div class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-header__title">Packs</h1>
+        <p class="page-header__count">{{ packs.length }} pack(s)</p>
+      </div>
       <button class="create-btn" @click="showCreateModal">
         <i class="fas fa-plus"></i>
         <span>Nouveau pack</span>
       </button>
     </div>
 
+    <!-- Skeleton Loading State -->
+    <div v-if="isInitialLoading" class="packs-grid">
+      <SkeletonCard v-for="n in 4" :key="n" variant="pack" />
+    </div>
+
     <!-- Empty State -->
-    <div v-if="packs.length === 0" class="empty-state">
+    <div v-else-if="packs.length === 0" class="empty-state">
       <div class="empty-state__icon">
         <i class="fas fa-ticket-alt"></i>
       </div>
@@ -23,39 +26,53 @@
       <p class="empty-state__text">Créez vos premiers packs de réservation</p>
     </div>
 
+    <!-- Packs Grid -->
     <div v-else class="packs-grid">
-      <div v-for="pack in packs" :key="pack.id" class="pack-card" :class="`pack-card--${pack.type}`">
-        <div class="pack-card__header">
+      <article v-for="pack in packs" :key="pack.id" class="pack-card">
+        <!-- Visual / Type Badge -->
+        <div class="pack-card__visual" :class="`pack-card__visual--${pack.type}`">
+          <i :class="getTypeIcon(pack.type)"></i>
+          <span class="pack-card__type">{{ getTypeLabel(pack.type) }}</span>
+        </div>
+
+        <!-- Content -->
+        <div class="pack-card__content">
+          <!-- Top Row: Type Tag + Status -->
+          <div class="pack-card__top">
+            <span class="pack-card__price-tag">{{ pack.price }}{{ pack.currency }}<span v-if="pack.unit"> {{ pack.unit }}</span></span>
+            <span :class="['pack-card__indicator', pack.is_active ? 'pack-card__indicator--active' : 'pack-card__indicator--inactive']">
+              <i :class="pack.is_active ? 'fas fa-circle' : 'fas fa-circle-xmark'"></i>
+              {{ pack.is_active ? 'Actif' : 'Inactif' }}
+            </span>
+          </div>
+
+          <!-- Name -->
           <h3 class="pack-card__name">{{ pack.name }}</h3>
-          <div class="pack-card__price">
-            {{ pack.price }}{{ pack.currency }}
-            <span v-if="pack.unit" class="pack-card__unit">{{ pack.unit }}</span>
+
+          <!-- Details -->
+          <div class="pack-card__details">
+            <div class="detail" v-if="pack.description">
+              <i class="fas fa-info-circle"></i>
+              <span>{{ pack.description }}</span>
+            </div>
+            <div class="detail" v-if="pack.features && pack.features.length > 0">
+              <i class="fas fa-check-circle"></i>
+              <span>{{ pack.features.length }} caractéristique(s)</span>
+            </div>
           </div>
-        </div>
 
-        <p v-if="pack.description" class="pack-card__desc">{{ pack.description }}</p>
-
-        <div v-if="pack.features && pack.features.length" class="pack-card__features">
-          <div v-for="(feature, idx) in pack.features" :key="idx" class="feature">
-            <i class="fas fa-check"></i>
-            <span>{{ feature }}</span>
-          </div>
-        </div>
-
-        <div class="pack-card__footer">
-          <span :class="['pack-card__status', pack.is_active ? 'active' : 'inactive']">
-            {{ pack.is_active ? 'Actif' : 'Inactif' }}
-          </span>
+          <!-- Actions -->
           <div class="pack-card__actions">
-            <button class="action-btn action-btn--edit" @click="editPack(pack)">
-              <i class="fas fa-edit"></i>
+            <button class="btn-action btn-action--secondary" @click="editPack(pack)">
+              <i class="fas fa-pen"></i>
+              Modifier
             </button>
-            <button class="action-btn action-btn--delete" @click="deletePack(pack)">
-              <i class="fas fa-trash"></i>
+            <button class="btn-action btn-action--icon" @click="deletePack(pack)" title="Supprimer">
+              <i class="fas fa-trash-alt"></i>
             </button>
           </div>
         </div>
-      </div>
+      </article>
     </div>
 
     <!-- Create/Edit Modal -->
@@ -108,6 +125,7 @@
               </div>
             </div>
 
+            <!-- Type & Prix -->
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">
@@ -121,23 +139,24 @@
                   <option value="vip">VIP</option>
                 </select>
               </div>
-            </div>
-
-            <div class="form-row">
               <div class="form-group">
                 <label class="form-label">
                   <i class="fas fa-euro-sign"></i>
                   Prix
                   <span class="required">*</span>
                 </label>
-                <input v-model.number="formData.price" type="number" class="form-input" min="0" step="0.01" required>
+                <input v-model.number="formData.price" type="number" class="form-input" min="0" step="0.01" placeholder="0.00" required>
               </div>
+            </div>
+
+            <!-- Unité -->
+            <div class="form-row form-row--single">
               <div class="form-group">
                 <label class="form-label">
-                  <i class="fas fa-users"></i>
-                  Unité
+                  <i class="fas fa-tag"></i>
+                  Unité de prix
                 </label>
-                <input v-model="formData.unit" type="text" class="form-input" placeholder="/ personne">
+                <input v-model="formData.unit" type="text" class="form-input" placeholder="Ex: / personne, / table, / groupe...">
               </div>
             </div>
 
@@ -221,43 +240,41 @@
             </div>
 
             <div class="form-row form-row--single">
-              <div class="form-group">
-                <label class="checkbox-label">
-                  <input v-model="formData.is_active" type="checkbox" class="form-checkbox">
-                  <span>Pack actif</span>
-                </label>
-              </div>
+              <label class="checkbox-label">
+                <span class="checkbox-label__content">
+                  <i class="fas fa-toggle-on"></i>
+                  Pack actif
+                </span>
+                <input v-model="formData.is_active" type="checkbox">
+              </label>
             </div>
 
             <div class="form-actions">
               <button type="button" class="btn btn--outline" @click="closeModal">
-                <span>Annuler</span>
+                Annuler
               </button>
               <button type="submit" class="btn btn--primary" :disabled="isSubmitting">
-                <span v-if="isSubmitting">Chargement...</span>
-                <span v-else>{{ editingPack ? 'Enregistrer' : 'Créer' }}</span>
-                <i v-if="!isSubmitting" class="fas" :class="editingPack ? 'fa-save' : 'fa-plus'"></i>
+                {{ isSubmitting ? 'Chargement...' : (editingPack ? 'Enregistrer' : 'Créer') }}
               </button>
             </div>
           </form>
         </div>
       </div>
     </Transition>
-    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
-import { useAuthStore } from '@/stores/auth'
+import { useAdminDataStore } from '@/stores/adminData'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import SkeletonCard from '@/components/ui/SkeletonCard.vue'
 import type { Pack } from '@/types'
 
-const authStore = useAuthStore()
+const adminStore = useAdminDataStore()
 const toast = useToast()
 
 // Languages
@@ -268,12 +285,12 @@ const languages = [
   { code: 'sq', label: 'SQ' }
 ]
 
-// State
-const packs = ref<Pack[]>([])
+// State - Use store for cached data
+const packs = computed(() => adminStore.packs)
 const isModalOpen = ref(false)
 const editingPack = ref<Pack | null>(null)
-const isSubmitting = ref(false) // Renommé pour plus de clarté
-const isPageLoading = ref(true)
+const isSubmitting = ref(false)
+const isInitialLoading = ref(!adminStore.packsLoaded)
 const submitError = ref<string | null>(null)
 const currentNameLang = ref('fr')
 const currentDescLang = ref('fr')
@@ -309,18 +326,14 @@ const formData = ref({
 })
 
 // Fetch packs
-async function fetchPacks() {
+async function fetchPacks(force = false) {
   try {
-    const response = await fetch(buildApiUrl(API_ENDPOINTS.PACKS) + '?active_only=false')
-    if (!response.ok) {
-      throw new Error('Erreur lors du chargement des packs')
-    }
-    packs.value = await response.json()
+    await adminStore.fetchPacks(force)
   } catch (error) {
     logger.error('Erreur lors de la récupération des packs:', error)
     toast.error('Impossible de charger les packs')
   } finally {
-    isPageLoading.value = false
+    isInitialLoading.value = false
   }
 }
 
@@ -369,7 +382,8 @@ async function handleSubmit() {
 
     const response = await fetch(url, {
       method,
-      headers: getAuthHeaders(authStore.token),
+      credentials: 'include', // ✅ Send auth cookie
+      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
 
@@ -378,7 +392,8 @@ async function handleSubmit() {
       throw new Error(errorData.message || 'Erreur lors de la sauvegarde')
     }
 
-    await fetchPacks()
+    adminStore.invalidatePacks()
+    await fetchPacks(true)
     toast.success(editingPack.value ? 'Pack modifié avec succès' : 'Pack créé avec succès')
     closeModal()
   } catch (error) {
@@ -432,7 +447,8 @@ async function deletePack(pack: Pack) {
   try {
     const response = await fetch(buildApiUrl(API_ENDPOINTS.PACK_BY_ID(pack.id)), {
       method: 'DELETE',
-      headers: getAuthHeaders(authStore.token)
+      credentials: 'include', // ✅ Send auth cookie
+      headers: getAuthHeaders()
     })
 
     if (!response.ok) {
@@ -440,7 +456,8 @@ async function deletePack(pack: Pack) {
       throw new Error(errorData.message || 'Erreur lors de la suppression')
     }
 
-    await fetchPacks()
+    adminStore.invalidatePacks()
+    await fetchPacks(true)
     toast.success('Pack supprimé avec succès')
   } catch (error) {
     logger.error('Erreur:', error)
@@ -518,8 +535,28 @@ function removeFeatureTranslation(lang: string, idx: number) {
   }
 }
 
-onMounted(() => {
-  fetchPacks()
+function getTypeIcon(type: string): string {
+  const icons: Record<string, string> = {
+    standard: 'fas fa-ticket-alt',
+    premium: 'fas fa-gem',
+    vip: 'fas fa-crown'
+  }
+  return icons[type] || 'fas fa-ticket-alt'
+}
+
+function getTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    standard: 'Standard',
+    premium: 'Premium',
+    vip: 'VIP'
+  }
+  return labels[type] || type
+}
+
+onMounted(async () => {
+  await fetchPacks()
+  // Refresh in background if cache is stale
+  adminStore.refreshInBackground('packs')
 })
 </script>
 
@@ -530,313 +567,304 @@ onMounted(() => {
   max-width: 1400px;
 }
 
+/* ============================================
+   PAGE HEADER - Matching Events/Artists Style
+   ============================================ */
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.page-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .page-header__title {
   font-family: var(--font-heading);
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-white);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
+.page-header__count {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+/* Create Button - Matching Events/Artists Style */
 .create-btn {
-  padding: 0.8rem 1.75rem;
-  background: linear-gradient(135deg, #dc143c 0%, #b01030 100%);
+  padding: 0.625rem 1.25rem;
+  background: var(--color-primary);
   border: none;
   border-radius: 8px;
   color: var(--color-white);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  box-shadow: 0 2px 10px rgba(220, 20, 60, 0.35), 0 0 0 0 rgba(220, 20, 60, 0.5);
-  position: relative;
-  overflow: hidden;
-}
-
-.create-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.create-btn:hover::before {
-  left: 100%;
-}
-
-.create-btn:hover {
-  background: linear-gradient(135deg, #c41e3a 0%, #9e0f2a 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.45), 0 0 0 3px rgba(220, 20, 60, 0.1);
-}
-
-.create-btn:active {
-  transform: translateY(0);
-}
-
-/* Packs Grid */
-.packs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
-}
-
-.pack-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border: 1px solid;
-  border-radius: 10px;
-  padding: 1.75rem;
-  transition: all 0.2s ease;
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.pack-card--standard {
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-.pack-card--premium {
-  border-color: rgba(220, 20, 60, 0.3);
-}
-
-.pack-card--vip {
-  border-color: rgba(234, 179, 8, 0.3);
-}
-
-.pack-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-.pack-card--standard:hover {
-  border-color: rgba(59, 130, 246, 0.5);
-}
-
-.pack-card--premium:hover {
-  border-color: rgba(220, 20, 60, 0.5);
-}
-
-.pack-card--vip:hover {
-  border-color: rgba(234, 179, 8, 0.5);
-}
-
-.pack-card__header {
-  text-align: center;
-  margin-bottom: 1.25rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.pack-card__name {
-  font-family: var(--font-heading);
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--color-white);
-  margin-bottom: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.pack-card__price {
-  font-family: var(--font-heading);
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: var(--color-primary);
-  line-height: 1;
-}
-
-.pack-card__unit {
-  display: block;
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.55);
-  margin-top: 0.5rem;
-  font-weight: 500;
-  text-transform: lowercase;
-}
-
-.pack-card__desc {
-  font-size: 0.825rem;
-  color: rgba(255, 255, 255, 0.65);
-  margin-bottom: 1.25rem;
-  text-align: center;
-  line-height: 1.5;
-}
-
-.pack-card__features {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  margin-bottom: 1.25rem;
-}
-
-.feature {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.4;
-}
-
-.feature i {
-  color: rgba(220, 20, 60, 0.8);
-  font-size: 0.7rem;
-  margin-top: 2px;
-}
-
-.pack-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 0.85rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.pack-card__status {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.4rem 0.75rem;
-  border-radius: 5px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.pack-card__status.active {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-}
-
-.pack-card__status.inactive {
-  background: rgba(107, 114, 128, 0.2);
-  color: #9ca3af;
-}
-
-.pack-card__actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
 }
 
-.action-btn--edit:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.4);
+.create-btn:hover {
+  background: #c41e3a;
+}
+
+.create-btn:active {
+  transform: scale(0.97);
+}
+
+.create-btn i {
+  font-size: 0.65rem;
+}
+
+/* ============================================
+   PACKS GRID - Matching Events/Artists Style
+   ============================================ */
+.packs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1rem;
+}
+
+/* ============================================
+   PACK CARD - Matching Events/Artists Style
+   ============================================ */
+.pack-card {
+  display: flex;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  min-height: 180px;
+}
+
+.pack-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Visual / Type Section */
+.pack-card__visual {
+  width: 120px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.pack-card__visual i {
+  font-size: 1.75rem;
+  opacity: 0.8;
+}
+
+.pack-card__visual--standard {
   color: #3b82f6;
 }
 
-.action-btn--delete:hover {
+.pack-card__visual--premium {
+  color: var(--color-primary);
+}
+
+.pack-card__visual--vip {
+  color: #eab308;
+}
+
+.pack-card__type {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+
+/* Content Section */
+.pack-card__content {
+  flex: 1;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* Top Row */
+.pack-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.pack-card__price-tag {
+  padding: 0.2rem 0.5rem;
+  background: rgba(var(--color-primary-rgb), 0.12);
+  color: var(--color-primary);
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.pack-card__indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pack-card__indicator i {
+  font-size: 0.35rem;
+}
+
+.pack-card__indicator--active {
+  color: #22c55e;
+}
+
+.pack-card__indicator--active i {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.pack-card__indicator--inactive {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Name */
+.pack-card__name {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-white);
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Details */
+.pack-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pack-card__details .detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.pack-card__details .detail i {
+  width: 14px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.pack-card__details .detail span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Actions */
+.pack-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-action i {
+  font-size: 0.65rem;
+}
+
+.btn-action--secondary:hover {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.btn-action--icon {
+  padding: 0.5rem;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.btn-action--icon:hover {
   background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.4);
   color: #ef4444;
 }
 
-/* Features Input */
-.features-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+/* Features Input - Uses shared dashboard-modals.css */
 
-.feature-input {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.remove-feature-btn {
-  width: 38px;
-  height: 38px;
-  background: rgba(231, 76, 60, 0.1);
-  border: 1px solid rgba(231, 76, 60, 0.3);
-  border-radius: 6px;
-  color: #e74c3c;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.remove-feature-btn:hover {
-  background: rgba(231, 76, 60, 0.2);
-}
-
-.add-feature-btn {
-  width: 100%;
-  padding: 0.625rem;
-  background: rgba(220, 20, 60, 0.1);
-  border: 1px dashed rgba(220, 20, 60, 0.3);
-  border-radius: 6px;
-  color: var(--color-primary);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.add-feature-btn:hover {
-  background: rgba(220, 20, 60, 0.15);
-  border-color: var(--color-primary);
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
-  cursor: pointer;
-}
-
-.form-checkbox {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-}
-
-/* Empty State */
+/* Empty State - Glass Effect */
 .empty-state {
   text-align: center;
   padding: 5rem 2rem;
-  color: rgba(255, 255, 255, 0.6);
+  background: rgba(15, 15, 15, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  margin: 2rem 0;
 }
 
 .empty-state__icon {
   font-size: 4rem;
   margin-bottom: 1.5rem;
-  color: rgba(220, 20, 60, 0.4);
+  color: rgba(var(--color-primary-rgb), 0.4);
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
 }
 
 .empty-state__title {
@@ -853,230 +881,14 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Modal */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
+/* ============================================
+   MODAL - Uses shared dashboard-modals.css
+   ============================================ */
+/* All modal and form styles are in dashboard-modals.css */
 
-.modal-content {
-  background: #1a1a1a;
-  border: 1px solid rgba(220, 20, 60, 0.3);
-  border-radius: 8px;
-  padding: 2rem;
-  max-width: 700px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
-}
-
-.modal-title {
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-white);
-}
-
-.modal-close {
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-  background: rgba(231, 76, 60, 0.2);
-  border-color: #e74c3c;
-  color: #e74c3c;
-}
-
-/* Form styles (shared with ArtistsView) */
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.form-row--single {
-  grid-template-columns: 1fr;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.form-label i {
-  color: var(--color-primary);
-  width: 16px;
-}
-
-.required {
-  color: var(--color-primary);
-}
-
-.form-input,
-.form-textarea,
-.form-select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: var(--color-white);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-primary);
-}
-
-.form-textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(220, 20, 60, 0.2);
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: none;
-}
-
-.btn--primary {
-  background: var(--color-primary);
-  color: var(--color-white);
-}
-
-.btn--primary:hover:not(:disabled) {
-  background: #c41e3a;
-}
-
-.btn--primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn--outline {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.btn--outline:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Language Tabs */
-.language-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding: 0.25rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  width: fit-content;
-}
-
-.language-tab {
-  padding: 0.5rem 1rem;
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.language-tab:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.language-tab.active {
-  background: var(--color-primary);
-  color: var(--color-white);
-  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.3);
-}
-
-.language-inputs {
-  position: relative;
-}
-
-/* Modal Transitions */
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
+/* ============================================
+   RESPONSIVE - Matching Events/Artists Style
+   ============================================ */
 @media (max-width: 1024px) {
   .packs-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1085,130 +897,110 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .page-header {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
     margin-bottom: 1.75rem;
-    padding-bottom: 0.875rem;
-    gap: 1rem;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .page-header__left {
+    gap: 0.5rem;
   }
 
   .page-header__title {
     font-size: 1.5rem;
-    flex: 1;
+    font-weight: 700;
   }
 
-  .create-btn {
-    padding: 0.65rem 1.25rem;
+  .page-header__count {
     font-size: 0.8rem;
-    gap: 0.45rem;
-    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.5);
   }
 
-  .create-btn span {
-    display: inline;
+  /* Premium Create Button - Mobile */
+  .create-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, #e01a3d 100%);
+    box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
+    gap: 0.625rem;
+  }
+
+  .create-btn:hover {
+    background: linear-gradient(135deg, #e01a3d 0%, var(--color-primary) 100%);
+  }
+
+  .create-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 10px rgba(220, 20, 60, 0.2);
+  }
+
+  .create-btn i {
+    font-size: 0.75rem;
   }
 
   .packs-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .pack-card {
-    padding: 1.5rem;
-  }
-
-  .pack-card__header {
-    margin-bottom: 1.125rem;
-    padding-bottom: 1.125rem;
-  }
-
-  .pack-card__name {
-    font-size: 1.2rem;
-  }
-
-  .pack-card__price {
-    font-size: 2.1rem;
-  }
-
-  .empty-state {
-    padding: 4rem 1.5rem;
-  }
-
-  .empty-state__icon {
-    font-size: 3.5rem;
-  }
-
-  .empty-state__title {
-    font-size: 1.25rem;
-  }
-}
-
-@media (max-width: 580px) {
-  .page-header {
-    flex-direction: column;
-    align-items: stretch;
     gap: 0.875rem;
-    margin-bottom: 1.5rem;
   }
 
-  .page-header__title {
-    font-size: 1.4rem;
-  }
-
-  .create-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-header {
-    padding-bottom: 0.75rem;
-  }
-
-  .page-header__title {
-    font-size: 1.3rem;
-  }
-
+  /* Pack Card - Horizontal layout on tablet */
   .pack-card {
-    padding: 1.25rem;
+    border-radius: 12px;
+    min-height: 140px;
   }
 
-  .pack-card__header {
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
+  .pack-card__visual {
+    width: 90px;
+    padding: 0.75rem;
+  }
+
+  .pack-card__visual i {
+    font-size: 1.5rem;
+  }
+
+  .pack-card__content {
+    padding: 0.875rem 1rem;
   }
 
   .pack-card__name {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
   }
 
-  .pack-card__price {
-    font-size: 1.9rem;
+  .pack-card__price-tag {
+    font-size: 0.65rem;
   }
 
-  .pack-card__desc {
-    font-size: 0.8rem;
+  .pack-card__details .detail {
+    font-size: 0.75rem;
   }
 
-  .feature {
-    font-size: 0.775rem;
+  /* Action buttons - Touch friendly */
+  .pack-card__actions {
+    gap: 0.5rem;
+    padding-top: 0.625rem;
   }
 
-  .pack-card__footer {
-    padding-top: 0.75rem;
+  .btn-action {
+    min-height: 36px;
+    font-size: 0.75rem;
   }
 
-  .action-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 0.8rem;
+  .btn-action--icon {
+    width: 36px;
+    height: 36px;
   }
 
+  /* Empty State */
   .empty-state {
-    padding: 3rem 1rem;
+    padding: 3.5rem 1.5rem;
+    border-radius: 12px;
   }
 
   .empty-state__icon {
@@ -1216,7 +1008,81 @@ onMounted(() => {
   }
 
   .empty-state__title {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    gap: 1.25rem;
+  }
+
+  .page-header__title {
+    font-size: 1.35rem;
+  }
+
+  .create-btn {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+
+  /* Vertical layout on small screens */
+  .pack-card {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .pack-card__visual {
+    width: 100%;
+    height: 100px;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .pack-card__visual i {
+    font-size: 1.75rem;
+  }
+
+  .pack-card__content {
+    padding: 1rem;
+  }
+
+  .pack-card__name {
+    font-size: 1.05rem;
+  }
+
+  .pack-card__price-tag {
+    font-size: 0.6rem;
+  }
+
+  .pack-card__details .detail {
+    font-size: 0.75rem;
+  }
+
+  .pack-card__actions {
+    padding-top: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .btn-action {
+    min-height: 40px;
+    font-size: 0.8rem;
+    flex: 1;
+  }
+
+  .btn-action--icon {
+    width: 40px;
+    height: 40px;
+    flex: 0;
+  }
+
+  .empty-state {
+    padding: 3rem 1rem;
+  }
+
+  .empty-state__title {
+    font-size: 1.1rem;
   }
 
   .empty-state__text {

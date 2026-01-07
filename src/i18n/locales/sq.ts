@@ -65,6 +65,14 @@ Me respekt`
       stayInformed: 'Qëndroni të informuar'
     }
   },
+  historique: {
+    label: 'RETROSPEKTIVË',
+    title: 'Eventet tona të kaluara',
+    description: 'Rijetoni magjinë e eventeve tona të kaluara',
+    loadMore: 'Ngarko më shumë evente',
+    noEvents: 'Nuk ka evente të kaluara ende',
+    error: 'Gabim në ngarkimin e eventeve të kaluara'
+  },
   team: {
     label: 'Artistët',
     title: 'Talentet Tona',
@@ -153,39 +161,6 @@ Me respekt`
     hot: 'Mos e humbisni',
     free: 'Falas',
     vip: 'VIP'
-  },
-  mockData: {
-    events: {
-      event1: {
-        title: 'Nata Shqiptare 2024',
-        description: 'Nata më e madhe shqiptare e vitit me artistë ndërkombëtarë',
-        location: 'Palais des Congrès'
-      },
-      event2: {
-        title: 'Festivali Folklorik',
-        description: 'Tradita, valle dhe gastronomia autentike',
-        location: 'Qendra Kulturore'
-      },
-      event3: {
-        title: 'Viti i Ri 2025',
-        description: 'Gala premium me DJ ndërkombëtar',
-        location: 'Grand Hotel'
-      }
-    },
-    djs: {
-      dj1: {
-        role: 'Resident DJ',
-        description: 'Specialist i muzikës moderne shqiptare dhe remixeve elektro'
-      },
-      dj2: {
-        role: 'Club DJ',
-        description: 'Ekspert në atmosfera festive dhe hitet aktuale shqiptare'
-      },
-      dj3: {
-        role: 'Live Performer',
-        description: 'Miksim live dhe performanca vizuale për evente premium'
-      }
-    }
   },
   eventDetail: {
     badge: {
@@ -285,6 +260,9 @@ Me respekt`
     started: 'Eventi ka filluar!'
   },
   auth: {
+    welcome: 'Mirë se vini',
+    adminAccess: 'Qasje e administratorit',
+    backToHome: 'Kthehu në ballina',
     email: 'Email',
     emailPlaceholder: "email{'@'}juaj.com",
     password: 'Fjalëkalimi',
@@ -421,6 +399,153 @@ Me respekt`
         addFeature: 'Shto përfitim',
         isActive: 'Paketë aktive'
       }
+    },
+    users: {
+      title: 'Përdoruesit',
+      count: 'përdorues',
+      createNew: 'Përdorues i ri',
+      editUser: 'Modifiko përdoruesin',
+      noUsers: 'Nuk ka përdorues',
+      noUsersDesc: 'Fillo duke krijuar përdoruesin tënd të parë',
+      createFirst: 'Krijo përdoruesin tim të parë',
+      confirmDelete: 'Jeni i sigurt që dëshironi të fshini këtë përdorues?',
+      active: 'Aktiv',
+      inactive: 'Jo aktiv',
+      cannotDeleteSelf: 'Ju nuk mund të fshini llogarinë tuaj',
+      cannotEditSelfRole: 'Ju nuk mund të modifikoni rolin tuaj super admin',
+      filterByRole: 'Filtro sipas rolit',
+      filterByStatus: 'Filtro sipas statusit',
+      allRoles: 'Të gjitha rolet',
+      allStatuses: 'Të gjitha statuset',
+      statusActive: 'Aktiv',
+      statusInactive: 'Jo aktiv',
+      createdAt: 'Krijuar më',
+      lastLogin: 'Hyrja e fundit',
+      loadError: 'Gabim gjatë ngarkimit të përdoruesve',
+      createSuccess: 'Përdoruesi u krijua me sukses',
+      updateSuccess: 'Përdoruesi u përditësua me sukses',
+      deleteSuccess: 'Përdoruesi u fshi me sukses',
+      saveError: 'Gabim gjatë ruajtjes',
+      deleteError: 'Gabim gjatë fshirjes',
+      roles: {
+        super_admin: 'Super Admin',
+        admin: 'Admin',
+        steward: 'Steward'
+      },
+      form: {
+        username: 'Emri i përdoruesit',
+        usernamePlaceholder: 'Shembull: john.doe',
+        usernameHint: 'Nuk mund të modifikohet pas krijimit',
+        email: 'Email',
+        emailPlaceholder: "perdoruesi{'@'}shembull.com",
+        password: 'Fjalëkalimi',
+        passwordPlaceholder: 'Minimumi 8 karaktere',
+        passwordHint: 'Minimumi 8 karaktere me shkronjë të madhe, të vogël, numër dhe karakter special',
+        passwordReq: {
+          minLength: '8 karaktere minimum',
+          uppercase: 'Një shkronjë e madhe',
+          lowercase: 'Një shkronjë e vogël',
+          number: 'Një numër',
+          special: 'Një karakter special'
+        },
+        passwordStrength: {
+          weak: 'Dobët',
+          medium: 'Mesatar',
+          strong: 'Fortë'
+        },
+        passwordTooWeak: 'Fjalëkalimi nuk plotëson të gjitha kërkesat e sigurisë',
+        name: 'Emri i plotë',
+        namePlaceholder: 'Filan Fisteku',
+        phone: 'Telefoni',
+        phonePlaceholder: '+355 69 123 4567',
+        role: 'Roli',
+        selectRole: 'Zgjidh një rol',
+        roleHint: 'Përcakton lejet e përdoruesit',
+        status: 'Statusi',
+        isActive: 'Përdorues aktiv',
+        statusHint: 'Nëse çshënohet, përdoruesi nuk do të mund të hyjë'
+      }
+    },
+    orders: {
+      title: 'Porositë',
+      count: 'porosi',
+      noOrders: 'Nuk ka porosi',
+      noOrdersDesc: 'Nuk u gjetën porosi me këto kritere',
+      stats: {
+        revenue: 'Të ardhurat',
+        completed: 'Të paguara',
+        pending: 'Në pritje',
+        failed: 'Të dështuara'
+      },
+      filters: {
+        allEvents: 'Të gjitha eventet',
+        allStatuses: 'Të gjitha statuset',
+        search: 'Kërko me email ose numër porosie...'
+      },
+      status: {
+        pending: 'Në pritje',
+        completed: 'E paguar',
+        failed: 'E dështuar',
+        refunded: 'E rimbursuar',
+        cancelled: 'E anuluar'
+      },
+      table: {
+        orderNumber: 'Nr. Porosie',
+        customer: 'Klienti',
+        event: 'Eventi',
+        pack: 'Paketa',
+        amount: 'Shuma',
+        status: 'Statusi',
+        date: 'Data',
+        actions: 'Veprimet'
+      },
+      pagination: {
+        page: 'Faqja'
+      },
+      actions: {
+        view: 'Shiko detajet',
+        resendEmail: 'Ridërgo emailin',
+        refund: 'Rimburso'
+      },
+      detail: {
+        customer: 'Klienti',
+        name: 'Emri',
+        email: 'Email',
+        phone: 'Telefoni',
+        event: 'Eventi',
+        eventName: 'Eventi',
+        eventDate: 'Data',
+        pack: 'Paketa',
+        payment: 'Pagesa',
+        amount: 'Shuma',
+        createdAt: 'Krijuar më',
+        paidAt: 'Paguar më',
+        ccvRef: 'Ref. CCV',
+        tickets: 'Biletat',
+        scanned: 'Skanuar',
+        notUsed: 'E papërdorur',
+        cancelled: 'E anuluar',
+        guest: 'Mysafir'
+      },
+      refund: {
+        title: 'Konfirmo rimbursimin',
+        warning: 'Ky veprim është i pakthyeshëm. Shuma do të rimbursohet në metodën e pagesës së klientit dhe biletat do të anulohen.',
+        amount: 'Shuma për rimbursim',
+        amountHint: 'Lëreni bosh për rimbursim të plotë ({max} €)',
+        reason: 'Arsyeja e rimbursimit',
+        reasonPlaceholder: 'Opsionale - Shembull: Anulimi i eventit',
+        confirm: 'Konfirmo rimbursimin'
+      },
+      success: {
+        emailSent: 'Emaili u dërgua me sukses',
+        refunded: 'Porosia u rimbursua me sukses'
+      },
+      errors: {
+        loadFailed: 'Gabim gjatë ngarkimit të porosive',
+        detailFailed: 'Gabim gjatë ngarkimit të detajeve',
+        emailFailed: 'Gabim gjatë dërgimit të emailit',
+        refundFailed: 'Gabim gjatë rimbursimit'
+      }
     }
   },
   common: {
@@ -431,10 +556,13 @@ Me respekt`
     edit: 'Modifiko',
     view: 'Shiko',
     loading: 'Duke ngarkuar...',
+    sending: 'Duke dërguar...',
+    processing: 'Duke procesuar...',
     error: 'Ndodhi një gabim',
     retry: 'Provo përsëri',
     confirm: 'Konfirmo',
-    close: 'Mbyll'
+    close: 'Mbyll',
+    free: 'FALAS'
   },
   reservation: {
     badge: 'Rezervim',
@@ -443,6 +571,7 @@ Me respekt`
     firstNamePlaceholder: 'Emri juaj',
     lastName: 'Mbiemri',
     lastNamePlaceholder: 'Mbiemri juaj',
+    phone: 'Telefoni',
     numberOfPeople: 'Numri i personave',
     submit: 'Dërgo në WhatsApp',
     note: 'Të dhënat tuaja nuk ruhen dhe përdoren vetëm për rezervimin tuaj.',
@@ -453,6 +582,35 @@ Me respekt`
       closing: 'Ju lutem konfirmoni rezervimin tim.'
     }
   },
+  booking: {
+    title: 'Rezervim',
+    selectTickets: 'Zgjidhni biletat tuaja',
+    yourInfo: 'Informacionet tuaja',
+    firstName: 'Emri',
+    firstNamePlaceholder: 'Emri juaj',
+    lastName: 'Mbiemri',
+    lastNamePlaceholder: 'Mbiemri juaj',
+    email: 'Email',
+    phone: 'Telefoni',
+    optional: 'opsionale',
+    soldOut: 'Shitur',
+    ticket: 'biletë',
+    tickets: 'bileta',
+    total: 'Totali',
+    payNow: 'Paguaj',
+    reserveNow: 'Rezervo tani',
+    redirecting: 'Po ridrejtohet në pagesë...',
+    confirmingReservation: 'Duke konfirmuar rezervimin tuaj...',
+    securePayment: 'Pagesë e sigurt',
+    instantConfirmation: 'Konfirmim i menjëhershëm',
+    error: 'Ndodhi një gabim',
+    reserve: 'Rezervo',
+    validation: {
+      firstNameMin: 'Minimumi 2 karaktere',
+      lastNameMin: 'Minimumi 2 karaktere',
+      emailInvalid: 'Email i pavlefshëm'
+    }
+  },
   seo: {
     title: 'Baba Event - Ngjarje Premium Kulturore Shqiptare | Koncerte, Festivale, Dasma',
     description: 'Krijues i përvojave kulturore shqiptare të paharrueshme: festa ekskluzive, festivale autentike, dasma të jashtëzakonshme dhe koncerte të paharrueshme në të gjithë Evropën.',
@@ -461,6 +619,64 @@ Me respekt`
     ogDescription: 'Krijues i përvojave kulturore shqiptare të paharrueshme: koncerte, festivale, festa ekskluzive dhe dasma të jashtëzakonshme në të gjithë Evropën.',
     twitterTitle: 'Baba Event - Ngjarje Premium Kulturore Shqiptare',
     twitterDescription: 'Krijues i përvojave kulturore shqiptare të paharrueshme: koncerte, festivale, festa ekskluzive dhe dasma të jashtëzakonshme.'
+  },
+  payment: {
+    checking: 'Duke verifikuar pagesën tuaj...',
+    pleaseWait: 'Ju lutem prisni derisa të konfirmojmë porosinë tuaj.',
+    orderNumber: 'Numri i porosisë',
+    event: 'Ngjarje',
+    quantity: 'Sasia',
+    ticket: 'biletë',
+    tickets: 'bileta',
+    total: 'Totali',
+    confirmed: 'Konfirmuar',
+    yourTickets: 'Biletat tuaja',
+    moreTickets: 'bileta të tjera',
+    emailSent: 'Një email konfirmimi u dërgua në {email}',
+    viewEvent: 'Shiko ngjarjen',
+    backToHome: 'Kthehu në fillim',
+    tryAgain: 'Provo përsëri',
+    refresh: 'Rifresko',
+    autoRefresh: 'Duke u rifreskuar automatikisht...',
+    success: {
+      title: 'Pagesa e suksesshme!',
+      titleFree: 'Rezervimi u konfirmua!',
+      subtitle: 'Porosia juaj u konfirmua me sukses.',
+      subtitleFree: 'Rezervimi juaj u konfirmua me sukses.'
+    },
+    pending: {
+      title: 'Pagesa në proces...',
+      subtitle: 'Pagesa juaj po përpunohet. Ju lutem prisni.'
+    },
+    failed: {
+      title: 'Pagesa dështoi',
+      subtitle: 'Ndodhi një gabim gjatë pagesës. Ju lutem provoni përsëri.'
+    },
+    error: {
+      title: 'Gabim',
+      notFound: 'Porosi e pa gjetur ose numër porosis i pavlefshëm.'
+    }
+  },
+  scanner: {
+    title: 'Skaneri QR',
+    selectEvent: 'Zgjidhni një ngjarje',
+    allEvents: 'Të gjitha ngjarjet',
+    scanHint: 'Vendosni kodin QR në kornizë',
+    startCamera: 'Fillo kamerën',
+    stopCamera: 'Ndalo kamerën',
+    cameraError: 'Nuk mund të hyjë në kamerë',
+    ticketCode: 'Kodi i biletës',
+    holderName: 'Emri i zotëruesit',
+    event: 'Ngjarje',
+    pack: 'Paketa',
+    scannedAt: 'Skanuar më',
+    scanNext: 'Skano tjetrin',
+    recentScans: 'Skanimet e fundit',
+    stats: {
+      totalScans: 'Totali',
+      validScans: 'Të vlefshme',
+      invalidScans: 'Të pavlefshme'
+    }
   }
 }
 

@@ -6,6 +6,9 @@
     <!-- Events Section -->
     <EventsSection @loaded="onEventsLoaded" />
 
+    <!-- Past Events Section (Historique) -->
+    <PastEventsSection @loaded="onHistoriqueLoaded" />
+
     <!-- Team Section -->
     <TeamSection @loaded="onTeamLoaded" />
 
@@ -19,6 +22,7 @@ import { ref, onMounted } from 'vue'
 import { useDataStore } from '@/stores/data'
 import HeroSection from '@/components/sections/HeroSection.vue'
 import EventsSection from '@/components/sections/EventsSection.vue'
+import PastEventsSection from '@/components/sections/PastEventsSection.vue'
 import TeamSection from '@/components/sections/TeamSection.vue'
 
 const dataStore = useDataStore()
@@ -27,6 +31,7 @@ const dataStore = useDataStore()
 const sectionsLoaded = ref({
   hero: false,
   events: false,
+  historique: false,
   team: false
 })
 
@@ -35,6 +40,7 @@ onMounted(async () => {
   sectionsLoaded.value = {
     hero: false,
     events: false,
+    historique: false,
     team: false
   }
 
@@ -51,6 +57,10 @@ const onHeroLoaded = () => {
 
 const onEventsLoaded = () => {
   sectionsLoaded.value.events = true
+}
+
+const onHistoriqueLoaded = () => {
+  sectionsLoaded.value.historique = true
 }
 
 const onTeamLoaded = () => {

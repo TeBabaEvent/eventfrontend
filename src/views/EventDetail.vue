@@ -218,8 +218,12 @@
                 <div v-for="artist in event.artists" :key="artist.id" class="lineup-item">
                     <img
                     v-if="artist.image_url"
-                      :src="artist.image_url"
+                      :src="getOptimizedArtistImage(artist.image_url)"
                       :alt="artist.name"
+                      loading="lazy"
+                      decoding="async"
+                      width="64"
+                      height="64"
                     />
                   <div v-else class="lineup-item__placeholder">
                     <i class="fas fa-user"></i>
@@ -328,15 +332,17 @@
                       <i class="fas fa-check"></i> {{ feature }}
                     </li>
                   </ul>
-                  <BaseButton
-                    variant="outline"
-                    size="small"
-                    icon="fas fa-arrow-right"
-                    :disabled="pack.is_soldout"
-                    @click="openReservationModal(pack)"
-                  >
-                    {{ pack.is_soldout ? t('eventDetail.booking.soldOut') : t('eventDetail.booking.choose') }}
-                  </BaseButton>
+                  <div class="ticket-option__actions">
+                    <BaseButton
+                      variant="primary"
+                      size="small"
+                      icon="fas fa-ticket-alt"
+                      :disabled="pack.is_soldout"
+                      @click="openBookingDrawer(pack)"
+                    >
+                      {{ pack.is_soldout ? t('eventDetail.booking.soldOut') : t('booking.reserve') }}
+                    </BaseButton>
+                  </div>
                 </div>
               </div>
 
@@ -406,21 +412,18 @@
       </div>
     </div>
 
-    <!-- Reservation Modal -->
-    <ReservationModal
-      :is-open="isReservationModalOpen"
-      :pack-name="selectedPack ? getPackName(selectedPack, locale) : ''"
-      :pack-price="selectedPack ? formatPrice(selectedPack.price, selectedPack.currency) : ''"
-      :event-title="displayTitle"
-      :whatsapp-message="''"
-      @close="closeReservationModal"
-      @submit="handleReservationSubmit"
+    <!-- Booking Drawer -->
+    <BookingDrawer
+      :is-open="isBookingDrawerOpen"
+      :event="event"
+      :initial-pack-id="selectedPackId"
+      @close="closeBookingDrawer"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onUnmounted, nextTick, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useToast } from '@/composables/useToast'
@@ -428,7 +431,8 @@ import { useEventSeo } from '@/composables/useEventSeo'
 import { logger } from '@/services/logger'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import EventCountdown from '@/components/ui/EventCountdown.vue'
-import ReservationModal from '@/components/ui/ReservationModal.vue'
+// ✅ Async component - only loaded when user opens booking drawer (reduces initial bundle)
+const BookingDrawer = defineAsyncComponent(() => import('@/components/ui/BookingDrawer.vue'))
 import { useDataStore } from '@/stores/data'
 import { api } from '@/services/api'
 import { API_BASE_URL } from '@/config/api'
@@ -470,9 +474,9 @@ const isLoading = ref(true) // ✅ Always true initially for consistent skeleton
 const isInitialized = ref(false) // ✅ Always false initially for consistent skeleton
 const loadingStartTime = ref(Date.now()) // Track when loading started
 
-// Reservation Modal State
-const isReservationModalOpen = ref(false)
-const selectedPack = ref<Pack | null>(null)
+// Booking Drawer State
+const isBookingDrawerOpen = ref(false)
+const selectedPackId = ref<string | undefined>(undefined)
 
 // Map Facade State
 const isMapLoaded = ref(false)
@@ -500,6 +504,11 @@ const optimizedHeroImage = computed(() => {
   // 1920px width for hero, but compressed and WebP
   return getOptimizedImageUrl(url, 1920)
 })
+
+// 🚀 Optimize artist images (small thumbnails)
+const getOptimizedArtistImage = (url: string) => {
+  return getOptimizedImageUrl(url, 128) // 64px * 2 for retina
+}
 
 const googleMapsUrl = computed(() => {
   if (!event.value) return ''
@@ -912,72 +921,16 @@ const getPackUnitText = (pack: Pack): string => {
   return pack.unit
 }
 
-// Reservation Modal Methods
-const openReservationModal = (pack: Pack) => {
-  if (pack.is_soldout) return
-  selectedPack.value = pack
-  isReservationModalOpen.value = true
+// Booking Drawer Methods
+const openBookingDrawer = (pack?: Pack) => {
+  if (pack?.is_soldout) return
+  selectedPackId.value = pack?.id
+  isBookingDrawerOpen.value = true
 }
 
-const closeReservationModal = () => {
-  isReservationModalOpen.value = false
-  selectedPack.value = null
-}
-
-const handleReservationSubmit = (data: { firstName: string; lastName: string; numberOfPeople: number }) => {
-  if (!selectedPack.value) return
-
-  const phone = '32495526656'
-  const pack = selectedPack.value
-
-  // Event info
-  const eventTitle = displayTitle.value
-  const eventDate = event.value?.date ? formatFullDate(event.value.date) : ''
-  const eventTime = event.value?.time || ''
-  const eventLocation = event.value?.location || ''
-  const eventAddress = event.value?.address || ''
-
-  // Build address: location + address (address already contains city/postal code)
-  const fullAddress = eventAddress
-    ? `${eventLocation}, ${eventAddress}`
-    : eventLocation
-
-  // Pack info
-  const packName = getPackName(pack, locale.value)
-  const packPrice = formatPrice(pack.price, pack.currency)
-  const packUnit = getPackUnitText(pack)
-
-  // Build clean, concise WhatsApp message
-  let message = `${t('reservation.whatsapp.greeting')}\n\n`
-
-  // Event details
-  message += `*${eventTitle}*\n`
-  message += `${eventDate}${eventTime ? ` ${t('reservation.whatsapp.at')} ${eventTime}` : ''}\n`
-  message += `${fullAddress}\n\n`
-
-  // Reservation info
-  message += `${data.firstName} ${data.lastName}`
-  if (data.numberOfPeople > 1) {
-    message += ` (${data.numberOfPeople} ${t('reservation.whatsapp.people')})`
-  }
-  message += `\n`
-
-  // Pack info
-  let priceText = packPrice
-  if (packUnit && shouldShowUnit(pack)) {
-    priceText += ` ${packUnit}`
-  }
-  message += `${packName} - ${priceText}\n\n`
-
-  // Closing
-  message += `${t('reservation.whatsapp.closing')}`
-
-  // Open WhatsApp with the message
-  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-  window.open(whatsappUrl, '_blank')
-
-  // Close the modal
-  closeReservationModal()
+const closeBookingDrawer = () => {
+  isBookingDrawerOpen.value = false
+  selectedPackId.value = undefined
 }
 
 // Build share message for the event
@@ -1408,6 +1361,22 @@ const copyEventLink = async () => {
   .hero-animate {
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* ============================================
+   CART BUTTONS
+   ============================================ */
+.ticket-option__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .ticket-option__actions {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
 </style>

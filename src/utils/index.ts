@@ -1,6 +1,7 @@
 // Utilitaires généraux pour l'application Baba Event
 
 import { WHATSAPP_MESSAGES, CONTACT_INFO } from '@/constants'
+import { logger } from '@/services/logger'
 
 /**
  * Génère un lien WhatsApp avec un message prédéfini
@@ -64,9 +65,15 @@ export function slugify(text: string): string {
 
 /**
  * Formate un prix avec la devise
+ * @param amount - Montant à formater
+ * @param currency - Symbole de devise (défaut: '€')
+ * @param freeText - Texte à afficher si le montant est 0 (ex: 'GRATUIT', 'FREE', etc.)
  */
-export function formatPrice(amount: number, currency: string = '€'): string {
-  return `${amount}${currency}`
+export function formatPrice(amount: number, currency: string = '€', freeText?: string): string {
+  if (amount === 0 && freeText) {
+    return freeText
+  }
+  return `${amount.toFixed(2)} ${currency}`
 }
 
 
@@ -150,10 +157,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     await navigator.clipboard.writeText(text)
     return true
   } catch (error) {
-    // Silencieux en production - l'utilisateur verra déjà l'erreur via le reject
-    if (import.meta.env.DEV) {
-      console.error('Erreur lors de la copie:', error)
-    }
+    logger.error('Erreur lors de la copie:', error)
     return false
   }
 }

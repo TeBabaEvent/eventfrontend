@@ -65,6 +65,14 @@ Best regards`
       stayInformed: 'Stay informed'
     }
   },
+  historique: {
+    label: 'RETROSPECTIVE',
+    title: 'Our past events',
+    description: 'Relive the magic of our past events',
+    loadMore: 'Load more events',
+    noEvents: 'No past events yet',
+    error: 'Error loading past events'
+  },
   team: {
     label: 'Artists',
     title: 'Our Talents',
@@ -153,39 +161,6 @@ Best regards`
     hot: 'Don\'t miss it',
     free: 'Free',
     vip: 'VIP'
-  },
-  mockData: {
-    events: {
-      event1: {
-        title: 'Nata Shqiptare 2024',
-        description: 'The biggest Albanian event of the year with international artists',
-        location: 'Palais des Congrès'
-      },
-      event2: {
-        title: 'Folk Festival',
-        description: 'Traditions, dances and authentic gastronomy',
-        location: 'Cultural Center'
-      },
-      event3: {
-        title: 'New Year 2025',
-        description: 'Premium gala with international DJ',
-        location: 'Grand Hotel'
-      }
-    },
-    djs: {
-      dj1: {
-        role: 'Resident DJ',
-        description: 'Specialist in modern Albanian music and electro remixes'
-      },
-      dj2: {
-        role: 'Club DJ',
-        description: 'Expert in festive atmospheres and current Albanian hits'
-      },
-      dj3: {
-        role: 'Live Performer',
-        description: 'Live mixing and visual performances for premium events'
-      }
-    }
   },
   eventDetail: {
     badge: {
@@ -285,6 +260,9 @@ Best regards`
     started: 'Event has started!'
   },
   auth: {
+    welcome: 'Welcome',
+    adminAccess: 'Administrator access',
+    backToHome: 'Back to home',
     email: 'Email',
     emailPlaceholder: "your{'@'}email.com",
     password: 'Password',
@@ -421,6 +399,153 @@ Best regards`
         addFeature: 'Add a benefit',
         isActive: 'Active pack'
       }
+    },
+    users: {
+      title: 'Users',
+      count: 'user(s)',
+      createNew: 'New user',
+      editUser: 'Edit user',
+      noUsers: 'No users',
+      noUsersDesc: 'Start by creating your first user',
+      createFirst: 'Create my first user',
+      confirmDelete: 'Are you sure you want to delete this user?',
+      active: 'Active',
+      inactive: 'Inactive',
+      cannotDeleteSelf: 'You cannot delete your own account',
+      cannotEditSelfRole: 'You cannot edit your own super admin role',
+      filterByRole: 'Filter by role',
+      filterByStatus: 'Filter by status',
+      allRoles: 'All roles',
+      allStatuses: 'All statuses',
+      statusActive: 'Active',
+      statusInactive: 'Inactive',
+      createdAt: 'Created on',
+      lastLogin: 'Last login',
+      loadError: 'Error loading users',
+      createSuccess: 'User created successfully',
+      updateSuccess: 'User updated successfully',
+      deleteSuccess: 'User deleted successfully',
+      saveError: 'Error saving user',
+      deleteError: 'Error deleting user',
+      roles: {
+        super_admin: 'Super Admin',
+        admin: 'Admin',
+        steward: 'Steward'
+      },
+      form: {
+        username: 'Username',
+        usernamePlaceholder: 'Ex: john.doe',
+        usernameHint: 'Cannot be modified after creation',
+        email: 'Email',
+        emailPlaceholder: "user{'@'}example.com",
+        password: 'Password',
+        passwordPlaceholder: 'Minimum 8 characters',
+        passwordHint: 'Minimum 8 characters with uppercase, lowercase, digit and special character',
+        passwordReq: {
+          minLength: '8 characters minimum',
+          uppercase: 'One uppercase',
+          lowercase: 'One lowercase',
+          number: 'One digit',
+          special: 'One special character'
+        },
+        passwordStrength: {
+          weak: 'Weak',
+          medium: 'Medium',
+          strong: 'Strong'
+        },
+        passwordTooWeak: 'Password does not meet all security requirements',
+        name: 'Full name',
+        namePlaceholder: 'John Doe',
+        phone: 'Phone',
+        phonePlaceholder: '+1 234 567 8900',
+        role: 'Role',
+        selectRole: 'Select a role',
+        roleHint: 'Defines user permissions',
+        status: 'Status',
+        isActive: 'Active user',
+        statusHint: 'If unchecked, the user will not be able to log in'
+      }
+    },
+    orders: {
+      title: 'Orders',
+      count: 'order(s)',
+      noOrders: 'No orders',
+      noOrdersDesc: 'No orders found matching these criteria',
+      stats: {
+        revenue: 'Revenue',
+        completed: 'Paid',
+        pending: 'Pending',
+        failed: 'Failed'
+      },
+      filters: {
+        allEvents: 'All events',
+        allStatuses: 'All statuses',
+        search: 'Search by email or order number...'
+      },
+      status: {
+        pending: 'Pending',
+        completed: 'Paid',
+        failed: 'Failed',
+        refunded: 'Refunded',
+        cancelled: 'Cancelled'
+      },
+      table: {
+        orderNumber: 'Order #',
+        customer: 'Customer',
+        event: 'Event',
+        pack: 'Pack',
+        amount: 'Amount',
+        status: 'Status',
+        date: 'Date',
+        actions: 'Actions'
+      },
+      pagination: {
+        page: 'Page'
+      },
+      actions: {
+        view: 'View details',
+        resendEmail: 'Resend email',
+        refund: 'Refund'
+      },
+      detail: {
+        customer: 'Customer',
+        name: 'Name',
+        email: 'Email',
+        phone: 'Phone',
+        event: 'Event',
+        eventName: 'Event',
+        eventDate: 'Date',
+        pack: 'Pack',
+        payment: 'Payment',
+        amount: 'Amount',
+        createdAt: 'Created on',
+        paidAt: 'Paid on',
+        ccvRef: 'CCV Ref.',
+        tickets: 'Tickets',
+        scanned: 'Scanned',
+        notUsed: 'Not used',
+        cancelled: 'Cancelled',
+        guest: 'Guest'
+      },
+      refund: {
+        title: 'Confirm refund',
+        warning: 'This action is irreversible. The amount will be refunded to the customer\'s payment method and tickets will be cancelled.',
+        amount: 'Amount to refund',
+        amountHint: 'Leave empty for full refund ({max} €)',
+        reason: 'Refund reason',
+        reasonPlaceholder: 'Optional - Ex: Event cancellation',
+        confirm: 'Confirm refund'
+      },
+      success: {
+        emailSent: 'Email sent successfully',
+        refunded: 'Order refunded successfully'
+      },
+      errors: {
+        loadFailed: 'Error loading orders',
+        detailFailed: 'Error loading order details',
+        emailFailed: 'Error sending email',
+        refundFailed: 'Error processing refund'
+      }
     }
   },
   common: {
@@ -431,10 +556,13 @@ Best regards`
     edit: 'Edit',
     view: 'View',
     loading: 'Loading...',
+    sending: 'Sending...',
+    processing: 'Processing...',
     error: 'An error occurred',
     retry: 'Retry',
     confirm: 'Confirm',
-    close: 'Close'
+    close: 'Close',
+    free: 'FREE'
   },
   reservation: {
     badge: 'Booking',
@@ -443,6 +571,7 @@ Best regards`
     firstNamePlaceholder: 'Your first name',
     lastName: 'Last name',
     lastNamePlaceholder: 'Your last name',
+    phone: 'Phone',
     numberOfPeople: 'Number of people',
     submit: 'Send on WhatsApp',
     note: 'Your data is not stored and is only used for your booking.',
@@ -453,6 +582,35 @@ Best regards`
       closing: 'Please confirm my reservation.'
     }
   },
+  booking: {
+    title: 'Booking',
+    selectTickets: 'Select your tickets',
+    yourInfo: 'Your information',
+    firstName: 'First name',
+    firstNamePlaceholder: 'Your first name',
+    lastName: 'Last name',
+    lastNamePlaceholder: 'Your last name',
+    email: 'Email',
+    phone: 'Phone',
+    optional: 'optional',
+    soldOut: 'Sold out',
+    ticket: 'ticket',
+    tickets: 'tickets',
+    total: 'Total',
+    payNow: 'Pay',
+    reserveNow: 'Reserve now',
+    redirecting: 'Redirecting to payment...',
+    confirmingReservation: 'Confirming your reservation...',
+    securePayment: 'Secure payment',
+    instantConfirmation: 'Instant confirmation',
+    error: 'An error occurred',
+    reserve: 'Reserve',
+    validation: {
+      firstNameMin: 'Minimum 2 characters',
+      lastNameMin: 'Minimum 2 characters',
+      emailInvalid: 'Invalid email'
+    }
+  },
   seo: {
     title: 'Baba Event - Premium Albanian Cultural Events | Concerts, Festivals, Weddings',
     description: 'Creator of unforgettable Albanian cultural experiences: exclusive parties, authentic festivals, exceptional weddings and memorable concerts across Europe.',
@@ -461,6 +619,64 @@ Best regards`
     ogDescription: 'Creator of unforgettable Albanian cultural experiences: concerts, festivals, exclusive parties and exceptional weddings across Europe.',
     twitterTitle: 'Baba Event - Premium Albanian Cultural Events',
     twitterDescription: 'Creator of unforgettable Albanian cultural experiences: concerts, festivals, exclusive parties and exceptional weddings.'
+  },
+  payment: {
+    checking: 'Verifying your payment...',
+    pleaseWait: 'Please wait while we confirm your order.',
+    orderNumber: 'Order number',
+    event: 'Event',
+    quantity: 'Quantity',
+    ticket: 'ticket',
+    tickets: 'tickets',
+    total: 'Total',
+    confirmed: 'Confirmed',
+    yourTickets: 'Your tickets',
+    moreTickets: 'more tickets',
+    emailSent: 'A confirmation email has been sent to {email}',
+    viewEvent: 'View event',
+    backToHome: 'Back to home',
+    tryAgain: 'Try again',
+    refresh: 'Refresh',
+    autoRefresh: 'Auto-refreshing...',
+    success: {
+      title: 'Payment successful!',
+      titleFree: 'Reservation confirmed!',
+      subtitle: 'Your order has been confirmed successfully.',
+      subtitleFree: 'Your reservation has been confirmed successfully.'
+    },
+    pending: {
+      title: 'Payment in progress...',
+      subtitle: 'Your payment is being processed. Please wait.'
+    },
+    failed: {
+      title: 'Payment failed',
+      subtitle: 'An error occurred during payment. Please try again.'
+    },
+    error: {
+      title: 'Error',
+      notFound: 'Order not found or invalid order number.'
+    }
+  },
+  scanner: {
+    title: 'QR Scanner',
+    selectEvent: 'Select an event',
+    allEvents: 'All events',
+    scanHint: 'Place the QR code in the frame',
+    startCamera: 'Start camera',
+    stopCamera: 'Stop camera',
+    cameraError: 'Unable to access camera',
+    ticketCode: 'Ticket code',
+    holderName: 'Holder name',
+    event: 'Event',
+    pack: 'Package',
+    scannedAt: 'Scanned at',
+    scanNext: 'Scan next',
+    recentScans: 'Recent scans',
+    stats: {
+      totalScans: 'Total',
+      validScans: 'Valid',
+      invalidScans: 'Invalid'
+    }
   }
 }
 

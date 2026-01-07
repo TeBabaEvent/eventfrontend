@@ -363,7 +363,31 @@ textarea::placeholder {
  * GSAP handles all entrance animations for better control
  */
 
-/* Responsive */
+/* ============================================
+   🚀 MOBILE PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+@media (max-width: 768px) {
+  /* 🚀 Disable all continuous animations on mobile by default */
+  @keyframes badge-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+  }
+
+  /* 🚀 Force GPU compositing for smooth scrolling on touch */
+  .home,
+  .event-detail-page {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 🚀 Sections use contain to optimize layout/paint */
+  .section {
+    contain: layout style;
+  }
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY
+   ============================================ */
 @media (max-width: 768px) {
   html {
     font-size: 14px;

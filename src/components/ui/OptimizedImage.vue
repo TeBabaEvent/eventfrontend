@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { getOptimizedImageUrl } from '@/utils/image'
+import { logger } from '@/services/logger'
 
 interface Props {
   src: string
@@ -102,10 +103,7 @@ const handleError = () => {
   imageError.value = true
   imageLoaded.value = false
 
-  // Log failed image URL in development for debugging
-  if (import.meta.env.DEV) {
-    console.warn('OptimizedImage: Failed to load image:', props.src)
-  }
+  logger.warn('OptimizedImage: Failed to load image:', props.src)
 }
 
 const imageClasses = computed(() => ({
