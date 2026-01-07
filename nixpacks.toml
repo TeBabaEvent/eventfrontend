@@ -1,16 +1,11 @@
 [phases.setup]
-nixPkgs = ["nodejs_22", "wget"]
+nixPkgs = ["nodejs_22", "caddy"]
 
 [phases.install]
-cmds = [
-    "npm ci --prefer-offline --no-audit",
-    # Installation manuelle de Caddy pour éviter les conflits de paquets Nix
-    "wget -qO caddy \"https://caddyserver.com/api/download?os=linux&arch=amd64\"",
-    "chmod +x caddy"
-]
+cmds = ["npm ci --prefer-offline --no-audit"]
 
 [phases.build]
 cmds = ["npm run build"]
 
 [start]
-cmd = "./caddy run --config Caddyfile --adapter caddyfile 2>&1"
+cmd = "caddy run --config Caddyfile --adapter caddyfile 2>&1"
