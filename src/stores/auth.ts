@@ -10,11 +10,24 @@ export interface User {
   role?: 'admin' | 'super_admin' | 'steward' | 'user'
 }
 
+// Key for localStorage to remember if user was logged in (survives page reload)
+const WAS_LOGGED_IN_KEY = 'wasLoggedIn'
+
 export const useAuthStore = defineStore('auth', () => {
   // State - no token stored (in httpOnly cookie now)
   const user = ref<User | null>(null)
   const isLoading = ref(false)
   const isInitialized = ref(false)
+  
+  // Check if user was previously logged in (survives page reload)
+  const wasLoggedIn = (): boolean => localStorage.getItem(WAS_LOGGED_IN_KEY) === 'true'
+  const setWasLoggedIn = (value: boolean): void => {
+    if (value) {
+      localStorage.setItem(WAS_LOGGED_IN_KEY, 'true')
+    } else {
+      localStorage.removeItem(WAS_LOGGED_IN_KEY)
+    }
+  }
 
   const isAuthenticated = computed(() => !!user.value)
   const isAdmin = computed(() => {
@@ -23,6 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setUser(newUser: User | null) {
     user.value = newUser
+    setWasLoggedIn(!!newUser) // Persist login state for page reload
   }
 
   function setLoading(loading: boolean) {
@@ -114,8 +128,9 @@ export const useAuthStore = defineStore('auth', () => {
       logger.error('Logout backend error:', error)
     }
 
-    // Clear user state
+    // Clear user state and persistent login flag
     setUser(null)
+    setWasLoggedIn(false)
   }
 
   function setInitialized(value: boolean) {
@@ -139,14 +154,16 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (!response.ok) {
         // Token might be expired, try refresh ONLY if:
-        // 1. We had a user before (don't try refresh for users who were never logged in)
+        // 1. User was logged in before (survives page reload via localStorage)
         // 2. We haven't already retried (prevent infinite loop)
-        if (response.status === 401 && user.value && retryCount < 1) {
+        if (response.status === 401 && wasLoggedIn() && retryCount < 1) {
           const refreshed = await refreshToken()
           if (refreshed) {
             // Retry with new token (increment retryCount to prevent loop)
             return await checkAuth(retryCount + 1)
           }
+          // Refresh failed - clear persistent login state
+          setWasLoggedIn(false)
         }
 
         // Not authenticated (normal for non-logged users)

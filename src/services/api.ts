@@ -16,10 +16,12 @@ export interface ApiError {
 interface RequestOptions extends Omit<RequestInit, 'signal'> {
   signal?: AbortSignal
   timeout?: number // Timeout en ms (défaut: 30s)
+  skipAuthRetry?: boolean // Skip auto-refresh on 401 (internal use)
 }
 
 class ApiService {
   private readonly DEFAULT_TIMEOUT = 30000 // 30 secondes
+  private refreshPromise: Promise<boolean> | null = null // Prevent concurrent refresh calls
 
   /**
    * Crée un AbortController avec timeout automatique
@@ -37,6 +39,39 @@ class ApiService {
     return controller
   }
 
+  /**
+   * ✅ Refresh access token using refresh token cookie
+   * Uses a singleton promise to prevent concurrent refresh attempts
+   */
+  private async refreshAccessToken(): Promise<boolean> {
+    // If already refreshing, wait for that result
+    if (this.refreshPromise) {
+      return this.refreshPromise
+    }
+
+    this.refreshPromise = (async () => {
+      try {
+        const response = await fetch(buildApiUrl(API_ENDPOINTS.REFRESH), {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        })
+
+        if (response.ok) {
+          logger.log('🔄 Token refreshed automatically')
+          return true
+        }
+        return false
+      } catch {
+        return false
+      } finally {
+        this.refreshPromise = null
+      }
+    })()
+
+    return this.refreshPromise
+  }
+
   private async request<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     const url = buildApiUrl(endpoint)
 
@@ -48,7 +83,7 @@ class ApiService {
     }
 
     // Merge options et ajouter signal si présent
-    const { signal, timeout, ...restOptions } = options ?? {}
+    const { signal, timeout, skipAuthRetry, ...restOptions } = options ?? {}
 
     // Créer un signal avec timeout si pas de signal fourni mais timeout demandé
     let effectiveSignal = signal
@@ -70,6 +105,15 @@ class ApiService {
       })
 
       if (!response.ok) {
+        // ✅ Auto-refresh on 401 and retry once
+        if (response.status === 401 && !skipAuthRetry) {
+          const refreshed = await this.refreshAccessToken()
+          if (refreshed) {
+            // Retry the original request (with skipAuthRetry to prevent infinite loop)
+            return this.request<T>(endpoint, { ...options, skipAuthRetry: true })
+          }
+        }
+
         const errorData = await response.json().catch(() => ({}))
         const error: ApiError = {
           message: errorData.message || `Erreur HTTP: ${response.status}`,
