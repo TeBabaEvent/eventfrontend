@@ -262,8 +262,8 @@ function formatAmount(euros: number): string {
  * Redirige vers la page de l'événement
  */
 function goToEvent() {
-  if (order.value?.event_id) {
-    router.push(`/events/${order.value.event_id}`)
+  if (order.value?.event_slug) {
+    router.push(`/events/${order.value.event_slug}`)
   } else {
     goToHome()
   }

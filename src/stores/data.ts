@@ -241,6 +241,14 @@ export const useDataStore = defineStore('data', () => {
   }
 
   /**
+   * Récupérer un événement par slug depuis le cache
+   */
+  function getEventBySlug(slug: string): Event | undefined {
+    // Chercher dans les événements à venir ET les événements passés
+    return events.value.find(e => e.slug === slug) || pastEvents.value.find(e => e.slug === slug)
+  }
+
+  /**
    * Récupérer un artiste par ID depuis le cache
    */
   function getArtistById(id: string): Artist | undefined {
@@ -279,6 +287,7 @@ export const useDataStore = defineStore('data', () => {
 
     // Function Getters (parameterized)
     getEventById,
+    getEventBySlug,
     getArtistById
   }
 })

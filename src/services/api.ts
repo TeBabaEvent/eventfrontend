@@ -166,6 +166,10 @@ class ApiService {
     return this.request<Event>(API_ENDPOINTS.EVENT_BY_ID(id), { signal })
   }
 
+  async getEventBySlug(slug: string, signal?: AbortSignal): Promise<Event> {
+    return this.request<Event>(API_ENDPOINTS.EVENT_BY_SLUG(slug), { signal })
+  }
+
   // Alias pour compatibilité
   async getEvent(id: string, signal?: AbortSignal): Promise<Event> {
     return this.getEventById(id, signal)

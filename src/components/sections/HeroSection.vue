@@ -232,8 +232,8 @@ const prefetchEvent = () => {
 }
 
 const goToEventDetail = () => {
-  if (!featuredEvent.value) return
-  router.push({ name: 'event-detail', params: { id: featuredEvent.value.id } })
+  if (!featuredEvent.value?.slug) return
+  router.push({ name: 'event-detail', params: { slug: featuredEvent.value.slug } })
 }
 
 // Animate stats on mount (disabled on mobile)

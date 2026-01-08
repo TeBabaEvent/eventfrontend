@@ -2,6 +2,7 @@
 
 export interface Event {
   id: string
+  slug?: string  // URL-friendly slug for SEO
   title: string
   title_translations?: {
     fr?: string
@@ -203,6 +204,7 @@ export interface Order {
   customer_email: string
   customer_phone?: string
   event_id: string
+  event_slug?: string  // URL-friendly slug for navigation
   /** @deprecated Legacy single-pack only */
   pack_id?: string
   /** @deprecated Use pack_display instead */

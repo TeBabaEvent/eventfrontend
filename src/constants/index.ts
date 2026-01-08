@@ -9,7 +9,7 @@ export const APP_CONFIG = {
 } as const
 
 export const CONTACT_INFO = {
-  email: 'baba.limited.event@gmail.com',
+  email: 'info@baba.events',
   phone: '+32 495 52 66 56',
   whatsapp: '+32495526656',
   address: 'Zemst',

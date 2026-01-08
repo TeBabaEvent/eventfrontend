@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   // Events
   EVENTS: '/api/events',
   EVENT_BY_ID: (id: string) => `/api/events/${id}`,
+  EVENT_BY_SLUG: (slug: string) => `/api/events/by-slug/${slug}`,
   UPCOMING_EVENTS: '/api/events/upcoming',
   PAST_EVENTS: '/api/events/past',
 

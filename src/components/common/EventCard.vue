@@ -383,8 +383,8 @@ onUnmounted(() => {
 
 // Methods
 const goToDetail = () => {
-  if (!props.isComingSoon) {
-    router.push({ name: 'event-detail', params: { id: props.event.id } })
+  if (!props.isComingSoon && props.event.slug) {
+    router.push({ name: 'event-detail', params: { slug: props.event.slug } })
   }
 }
 </script>

@@ -534,7 +534,7 @@ const googleMapsEmbedUrl = computed(() => {
 })
 
 // Fetch event data - Cache-first strategy with consistent skeleton animation
-async function fetchEventData(eventId: string) {
+async function fetchEventData(slug: string) {
   // ✅ Helper to enforce minimum loading duration for consistent UX
   const MIN_LOADING_DURATION = 250 // ms
   const ensureMinimumLoadingTime = async () => {
@@ -547,9 +547,9 @@ async function fetchEventData(eventId: string) {
 
   try {
     // 1. Si on a déjà les données (initialisation synchrone), juste rafraîchir en background
-    if (event.value && event.value.id === eventId && isInitialized.value) {
+    if (event.value && event.value.slug === slug && isInitialized.value) {
       // Rafraîchir en arrière-plan pour avoir les données complètes
-      api.getEventById(eventId).then(freshEvent => {
+      api.getEventBySlug(slug).then(freshEvent => {
         if (freshEvent) {
           event.value = freshEvent
         }
@@ -557,8 +557,8 @@ async function fetchEventData(eventId: string) {
       return
     }
 
-    // 2. Chercher dans le cache
-    const cachedEvent = dataStore.getEventById(eventId)
+    // 2. Chercher dans le cache par slug
+    const cachedEvent = dataStore.getEventBySlug(slug)
     if (cachedEvent) {
       event.value = cachedEvent
 
@@ -569,7 +569,7 @@ async function fetchEventData(eventId: string) {
       isInitialized.value = true
 
       // Rafraîchir en arrière-plan
-      api.getEventById(eventId).then(freshEvent => {
+      api.getEventBySlug(slug).then(freshEvent => {
         if (freshEvent) {
           event.value = freshEvent
         }
@@ -579,7 +579,7 @@ async function fetchEventData(eventId: string) {
 
     // 3. Pas en cache - charger depuis l'API
     isLoading.value = true
-    const newEvent = await api.getEventById(eventId)
+    const newEvent = await api.getEventBySlug(slug)
     event.value = newEvent
 
     // ✅ Ensure minimum loading time for consistent UX
@@ -597,15 +597,15 @@ async function fetchEventData(eventId: string) {
 }
 
 // Watch for route changes
-watch(() => route.params.id, (newId) => {
-  if (newId) {
+watch(() => route.params.slug, (newSlug) => {
+  if (newSlug) {
     // ✅ Reset loading state for consistent skeleton animation on each navigation
     isLoading.value = true
     isInitialized.value = false
     loadingStartTime.value = Date.now()
     animationsInitialized = false // Reset animation flag for new event
 
-    fetchEventData(newId as string)
+    fetchEventData(newSlug as string)
   }
 }, { immediate: true })
 

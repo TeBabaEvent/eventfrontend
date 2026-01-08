@@ -568,8 +568,8 @@ async function editEvent(event: Event) {
 }
 
 function viewEvent(event: Event) {
-  // Open event detail page in new tab
-  const url = `/events/${event.id}`
+  // Open event detail page in new tab (use slug for SEO-friendly URLs)
+  const url = `/events/${event.slug || event.id}`
   window.open(url, '_blank')
 }
 
