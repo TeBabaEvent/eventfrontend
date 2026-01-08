@@ -175,7 +175,9 @@ export interface CheckoutData {
 
 export interface CheckoutResponse {
   order_number: string
+  order_number: string
   pay_url: string
+  paypal_order_id?: string
 }
 
 // Types pour le checkout multi-pack
@@ -197,7 +199,9 @@ export interface CartCheckoutResponse {
   amount: number
   total_items: number
   payment_method: 'online' | 'cash'
+  payment_method: 'online' | 'cash'
   is_pending_cash: boolean
+  paypal_order_id?: string
 }
 
 export interface Order {

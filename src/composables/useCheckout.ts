@@ -102,7 +102,7 @@ export function useCheckout() {
    * @param data - Données du panier (items + customer)
    * @returns Promise avec les informations de paiement
    */
-  async function initiateCartPayment(data: CartCheckoutData): Promise<CartCheckoutResponse | null> {
+  async function initiateCartPayment(data: CartCheckoutData, autoRedirect: boolean = true): Promise<CartCheckoutResponse | null> {
     isLoading.value = true
     error.value = null
 
@@ -127,15 +127,15 @@ export function useCheckout() {
 
       logger.log('Cart checkout session created:', result)
 
-      // Pour les paiements cash, ne pas rediriger vers PayPal mais vers la page de confirmation
+      // Pour les paiements cash, on redirige toujours (c'est une page de confirmation)
       if (result.is_pending_cash) {
         // Rediriger vers la page de confirmation avec indication cash
-        window.location.href = result.pay_url
+        if (autoRedirect) window.location.href = result.pay_url
         return result
       }
 
-      // Rediriger automatiquement vers la page de paiement PayPal
-      if (result.pay_url) {
+      // Rediriger automatiquement vers la page de paiement PayPal (si demandé)
+      if (result.pay_url && autoRedirect) {
         window.location.href = result.pay_url
       }
 
@@ -192,7 +192,46 @@ export function useCheckout() {
 
     // Timeout atteint
     logger.warn(`Polling timeout for order ${orderNumber} after ${maxAttempts} attempts`)
+    logger.warn(`Polling timeout for order ${orderNumber} after ${maxAttempts} attempts`)
     return null
+  }
+
+  /**
+   * Capture le paiement PayPal et finalise la commande
+   *
+   * @param orderNumber - Numéro de commande local
+   * @param paypalOrderId - ID de commande PayPal
+   */
+  async function capturePayment(orderNumber: string, paypalOrderId: string): Promise<void> {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.CHECKOUT_CAPTURE(orderNumber))
+
+      const response = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ paypal_order_id: paypalOrderId }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Erreur inconnue' }))
+        throw new Error(errorData.detail || `Erreur HTTP: ${response.status}`)
+      }
+
+      logger.log('Payment captured successfully')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la capture du paiement'
+      error.value = errorMessage
+      logger.error('Capture payment error:', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
   }
 
   return {
@@ -201,6 +240,8 @@ export function useCheckout() {
     initiatePayment,
     initiateCartPayment,
     getOrderByNumber,
+    getOrderByNumber,
     pollOrderStatus,
+    capturePayment,
   }
 }

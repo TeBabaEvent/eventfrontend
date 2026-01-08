@@ -238,8 +238,9 @@
               </div>
             </Transition>
 
-            <!-- Submit Button -->
+            <!-- Submit Button (Cash or Free) -->
             <button
+              v-if="formData.paymentMethod === 'cash' || totalAmount === 0"
               type="button"
               class="submit-btn"
               :class="{ 'submit-btn--cash': formData.paymentMethod === 'cash' && totalAmount > 0 }"
@@ -249,17 +250,22 @@
               <span v-if="isLoading" class="btn-content">
                 <i class="fas fa-circle-notch fa-spin"></i>
                 <span v-if="formData.paymentMethod === 'cash' && totalAmount > 0">{{ t('booking.creatingReservation') }}</span>
-                <span v-else-if="totalAmount > 0">{{ t('booking.redirecting') }}</span>
                 <span v-else>{{ t('booking.confirmingReservation') }}</span>
               </span>
               <span v-else class="btn-content">
-                <i :class="formData.paymentMethod === 'cash' && totalAmount > 0 ? 'fas fa-clock' : (totalAmount > 0 ? 'fas fa-lock' : 'fas fa-ticket-alt')"></i>
+                <i :class="formData.paymentMethod === 'cash' && totalAmount > 0 ? 'fas fa-clock' : 'fas fa-ticket-alt'"></i>
                 <span v-if="formData.paymentMethod === 'cash' && totalAmount > 0">{{ t('booking.reserveCash') }} {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
-                <span v-else-if="totalAmount > 0">{{ t('booking.payNow') }} {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
                 <span v-else>{{ t('booking.reserveNow') }}</span>
                 <i class="fas fa-arrow-right btn-arrow"></i>
               </span>
             </button>
+
+            <!-- PayPal Buttons Container -->
+            <div 
+              v-show="formData.paymentMethod === 'online' && totalAmount > 0" 
+              ref="paypalButtonContainer" 
+              class="paypal-buttons-container"
+            ></div>
 
             <!-- Trust badges (only for paid tickets) -->
             <div v-if="totalAmount > 0" class="trust-badges">
@@ -292,6 +298,8 @@ import { useI18n } from 'vue-i18n'
 import type { Event, Pack } from '@/types'
 import { useCheckout } from '@/composables/useCheckout'
 import { formatPrice } from '@/utils'
+import { loadScript } from '@paypal/paypal-js'
+import { nextTick } from 'vue'
 
 const { t, locale } = useI18n()
 
@@ -307,6 +315,9 @@ const emit = defineEmits<{
 
 // Refs
 const panelRef = ref<HTMLElement | null>(null)
+const paypalButtonContainer = ref<HTMLElement | null>(null)
+const currentOrderNumber = ref('')
+const isPayPalScriptLoaded = ref(false)
 
 // State
 const packQuantities = reactive<Record<string, number>>({})
@@ -348,7 +359,8 @@ function markTouched(field: 'firstName' | 'lastName' | 'email') {
 }
 
 // Checkout
-const { initiateCartPayment, isLoading, error: checkoutError } = useCheckout()
+// Checkout
+const { initiateCartPayment, capturePayment, isLoading, error: checkoutError } = useCheckout()
 
 // Computed
 const availablePacks = computed(() => {
@@ -436,6 +448,9 @@ async function handleSubmit() {
 
   errorMessage.value = null
 
+  // Pour le paiement cash ou gratuit (montant 0), soumission standard
+  // Pour online > 0, c'est géré par les boutons PayPal directement
+  
   // Build checkout items
   const items = selectedPacks.value.map(pack => ({
     event_id: props.event!.id,
@@ -448,30 +463,149 @@ async function handleSubmit() {
     customer_name: `${formData.value.firstName.trim()} ${formData.value.lastName.trim()}`,
     customer_email: formData.value.email.trim().toLowerCase(),
     customer_phone: formData.value.phone?.trim() || undefined,
-    payment_method: totalAmount.value > 0 ? formData.value.paymentMethod : 'online'
+    payment_method: (totalAmount.value > 0 ? formData.value.paymentMethod : 'online') as 'online' | 'cash'
   }
 
-  const result = await initiateCartPayment(checkoutData)
+  const result = await initiateCartPayment(checkoutData, true) // Auto-redirect pour cash/free
 
   if (!result) {
     errorMessage.value = checkoutError.value ?? t('booking.error')
   }
-  // Si succès, redirect automatique vers PayPal
 }
 
-// Watch for drawer open/close
+async function renderPayPalButtons() {
+  await nextTick()
+  if (!paypalButtonContainer.value) return
+
+  // Ne pas recharger si déjà fait ou en cours (optionnel, mais propre)
+  // On nettoie le conteneur
+  paypalButtonContainer.value.innerHTML = ''
+
+  try {
+    // Check Client ID
+    const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID
+    if (!clientId) {
+      console.error("PayPal Client ID not found in env")
+      errorMessage.value = "Configuration Error: PayPal Client ID missing"
+      return
+    }
+
+    const paypal = await loadScript({ 
+      clientId, 
+      currency: "EUR",
+      intent: "capture"
+    })
+
+    if (!paypal || !paypal.Buttons) {
+       console.error("PayPal SDK failed to load")
+       return
+    }
+
+    const buttons = paypal.Buttons({
+      style: {
+        layout: 'vertical',
+        color: 'gold',
+        shape: 'rect',
+        label: 'pay'
+      },
+      
+      // Validation initiale (désactive le clic si invalide - optionnel)
+      // onInit: (data, actions) => {
+      //   if (!canSubmit.value) actions.disable()
+      //   watch(canSubmit, val => val ? actions.enable() : actions.disable())
+      // },
+
+      createOrder: async (data, actions) => {
+        // Validation explicite au clic
+        if (!isFormValid.value || totalQuantity.value === 0) {
+           touched.firstName = true
+           touched.lastName = true
+           touched.email = true
+           errorMessage.value = t('booking.validation.fillFields') // "Veuillez remplir tous les champs"
+           throw new Error("Form invalid")
+        }
+
+        const items = selectedPacks.value.map(pack => ({
+          event_id: props.event!.id,
+          pack_id: pack.id,
+          quantity: getPackQuantity(pack.id)
+        }))
+
+        const checkoutData = {
+          items,
+          customer_name: `${formData.value.firstName.trim()} ${formData.value.lastName.trim()}`,
+          customer_email: formData.value.email.trim().toLowerCase(),
+          customer_phone: formData.value.phone?.trim() || undefined,
+          payment_method: 'online' as 'online' | 'cash'
+        }
+
+        // Création session sans redirect automatique
+        const result = await initiateCartPayment(checkoutData, false)
+        
+        if (!result || !result.paypal_order_id) {
+             const err = checkoutError.value || "Erreur création commande"
+             errorMessage.value = err
+             throw new Error(err)
+        }
+
+        currentOrderNumber.value = result.order_number
+        return result.paypal_order_id
+      },
+
+      onApprove: async (data, actions) => {
+        // Capture
+        try {
+           await capturePayment(currentOrderNumber.value, data.orderID)
+           // Redirect succès
+           window.location.href = `/payment/complete?order=${currentOrderNumber.value}`
+        } catch (err) {
+           console.error(err)
+           errorMessage.value = t('booking.error') // "Une erreur est survenue"
+        }
+      },
+
+      onError: (err) => {
+        console.error("PayPal Error:", err)
+        errorMessage.value = "PayPal Error: " + (err.message || 'Unknown')
+      }
+    })
+
+    if (buttons.isEligible()) {
+        buttons.render(paypalButtonContainer.value)
+    }
+
+  } catch (err) {
+    console.error("PayPal Load Error", err)
+    errorMessage.value = "Erreur chargement PayPal"
+  }
+}
+
+// Watchers pour afficher les boutons
+watch(() => formData.value.paymentMethod, (method) => {
+  if (method === 'online' && totalAmount.value > 0) {
+    renderPayPalButtons()
+  }
+})
+
+// Au chargement initial si déjà ouvert
 watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
     resetForm()
     document.body.style.overflow = 'hidden'
-
-    // Pre-select initial pack if provided
-    if (props.initialPackId) {
-      packQuantities[props.initialPackId] = 1
-    }
+    if (props.initialPackId) packQuantities[props.initialPackId] = 1
+    
+    // Si méthode par défaut est online et payant (difficile à savoir tant qu'on n'a pas sélectionné)
+    // Mais renderPayPalButtons regarde paypalButtonContainer qui n'existe que via v-if
   } else {
     document.body.style.overflow = ''
   }
+})
+
+// Watch totalAmount pour afficher/cacher boutons PayPal
+watch(totalAmount, (amount) => {
+    if (amount > 0 && formData.value.paymentMethod === 'online') {
+        renderPayPalButtons()
+    }
 })
 
 // Keyboard handling
@@ -1665,6 +1799,14 @@ onUnmounted(() => {
 .booking-drawer__content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
+}
+</style>
+
+<style scoped>
+.paypal-buttons-container {
+  width: 100%;
+  margin-top: 0.5rem;
+  min-height: 150px; /* Evite le saut */
 }
 </style>
 
