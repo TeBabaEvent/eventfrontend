@@ -240,7 +240,6 @@ export function useCheckout() {
     initiatePayment,
     initiateCartPayment,
     getOrderByNumber,
-    getOrderByNumber,
     pollOrderStatus,
     capturePayment,
   }
