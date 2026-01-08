@@ -224,7 +224,8 @@ export interface Order {
   status: 'pending' | 'pending_cash' | 'completed' | 'failed' | 'refunded' | 'cancelled'
   payment_method?: 'online' | 'cash'
   ccv_reference?: string
-  mollie_payment_id?: string
+  paypal_order_id?: string
+  mollie_payment_id?: string  // Legacy
   created_at: string
   paid_at?: string
   event?: Event
@@ -345,7 +346,8 @@ export interface OrderListItem {
   status: 'pending' | 'pending_cash' | 'completed' | 'failed' | 'refunded' | 'cancelled'
   payment_method?: 'online' | 'cash'
   ccv_reference?: string
-  mollie_payment_id?: string
+  paypal_order_id?: string
+  mollie_payment_id?: string  // Legacy
   created_at: string
   paid_at?: string
 }
@@ -385,7 +387,8 @@ export interface OrderDetail {
   status: 'pending' | 'pending_cash' | 'completed' | 'failed' | 'refunded' | 'cancelled'
   payment_method?: 'online' | 'cash'
   ccv_reference?: string
-  mollie_payment_id?: string
+  paypal_order_id?: string
+  mollie_payment_id?: string  // Legacy
   payment_failure_reason?: string
   created_at: string
   paid_at?: string

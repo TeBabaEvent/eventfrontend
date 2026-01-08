@@ -456,7 +456,7 @@ async function handleSubmit() {
   if (!result) {
     errorMessage.value = checkoutError.value ?? t('booking.error')
   }
-  // Si succès, redirect automatique vers Mollie
+  // Si succès, redirect automatique vers PayPal
 }
 
 // Watch for drawer open/close
