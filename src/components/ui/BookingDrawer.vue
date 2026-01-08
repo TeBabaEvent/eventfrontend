@@ -261,11 +261,13 @@
             </button>
 
             <!-- PayPal Buttons Container -->
+            <!-- Utilisation de v-show pour préserver le DOM, mais avec une clé pour forcer le redraw si nécessaire -->
             <div 
               v-show="formData.paymentMethod === 'online' && totalAmount > 0" 
-              ref="paypalButtonContainer" 
-              class="paypal-buttons-container"
-            ></div>
+              class="paypal-buttons-wrapper"
+            >
+              <div ref="paypalButtonContainer" id="paypal-button-container"></div>
+            </div>
 
             <!-- Trust badges (only for paid tickets) -->
             <div v-if="totalAmount > 0" class="trust-badges">
@@ -477,8 +479,13 @@ async function renderPayPalButtons() {
   await nextTick()
   if (!paypalButtonContainer.value) return
 
-  // Ne pas recharger si déjà fait ou en cours (optionnel, mais propre)
-  // On nettoie le conteneur
+  // Si le script est déjà chargé et que le conteneur a des enfants, on ne refait pas le rendu.
+  // Cela évite l'erreur "Detected container element removed from DOM"
+  if (paypalButtonContainer.value.children.length > 0) {
+      return
+  }
+  
+  // On nettoie le conteneur par sécurité (devrait être vide si on arrive ici)
   paypalButtonContainer.value.innerHTML = ''
 
   try {
@@ -581,30 +588,27 @@ async function renderPayPalButtons() {
 }
 
 // Watchers pour afficher les boutons
-watch(() => formData.value.paymentMethod, (method) => {
+// Watchers pour afficher les boutons
+watch(() => formData.value.paymentMethod, async (method) => {
   if (method === 'online' && totalAmount.value > 0) {
-    renderPayPalButtons()
-  }
-})
-
-// Au chargement initial si déjà ouvert
-watch(() => props.isOpen, (isOpen) => {
-  if (isOpen) {
-    resetForm()
-    document.body.style.overflow = 'hidden'
-    if (props.initialPackId) packQuantities[props.initialPackId] = 1
-    
-    // Si méthode par défaut est online et payant (difficile à savoir tant qu'on n'a pas sélectionné)
-    // Mais renderPayPalButtons regarde paypalButtonContainer qui n'existe que via v-if
-  } else {
-    document.body.style.overflow = ''
+    await renderPayPalButtons()
   }
 })
 
 // Watch totalAmount pour afficher/cacher boutons PayPal
-watch(totalAmount, (amount) => {
+watch(totalAmount, async (amount) => {
     if (amount > 0 && formData.value.paymentMethod === 'online') {
-        renderPayPalButtons()
+        // Reset si le montant change (car le montant n'est pas updatable dynamiquement avec cette implémentation simple sans patch)
+        // Mais pour éviter l'erreur de container, on vérifie si on doit rerender
+        // Le mieux est de laisser le bouton tel quel car le createOrder prendra le nouveau montant
+        // SAUF si on veut afficher le montant dans le bouton (ce qui n'est pas le cas ici par défaut)
+        
+        // Si on a besoin de ré-initialiser :
+        // if (paypalButtonContainer.value) paypalButtonContainer.value.innerHTML = ''
+        // await renderPayPalButtons()
+        
+        // Ici on appelle juste render au cas où il n'était pas là (ex: passage de 0 à 10€)
+        await renderPayPalButtons()
     }
 })
 
@@ -1802,11 +1806,16 @@ onUnmounted(() => {
 }
 </style>
 
+
+
 <style scoped>
-.paypal-buttons-container {
+.paypal-buttons-wrapper {
   width: 100%;
   margin-top: 0.5rem;
-  min-height: 150px; /* Evite le saut */
+  min-height: 150px;
+}
+#paypal-button-container {
+  width: 100%;
 }
 </style>
 
