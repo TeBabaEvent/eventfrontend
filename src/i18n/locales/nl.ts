@@ -606,6 +606,14 @@ Met vriendelijke groeten`
     instantConfirmation: 'Directe bevestiging',
     error: 'Er is een fout opgetreden',
     reserve: 'Reserveren',
+    reserveCash: 'Reserveren cash',
+    creatingReservation: 'Uw reservering aanmaken...',
+    paymentMethod: 'Betaalmethode',
+    payOnline: 'Online betalen',
+    payOnlineDesc: 'Veilige betaling via Bancontact',
+    payCash: 'Betalen ter plaatse',
+    payCashDesc: 'Reserveer en neem contact met ons op om cash te betalen',
+    cashWarning: 'Plaatsen zijn niet gegarandeerd. Online betalingen hebben voorrang.',
     validation: {
       firstNameMin: 'Minimaal 2 tekens',
       lastNameMin: 'Minimaal 2 tekens',
@@ -651,7 +659,7 @@ Met vriendelijke groeten`
     },
     pendingCash: {
       title: 'Reservering in afwachting',
-      subtitle: 'Uw reservering is geregistreerd. Kom naar de ingang om contant te betalen.',
+      subtitle: 'Uw reservering is geregistreerd. Neem contact met ons op om cash te betalen.',
       warning: 'Plaatsen zijn niet gegarandeerd zolang de betaling niet is uitgevoerd. Online betalingen hebben voorrang.',
       instructions: 'U ontvangt uw tickets per e-mail zodra de betaling ter plaatse is uitgevoerd.',
       contact: 'Contact via WhatsApp'

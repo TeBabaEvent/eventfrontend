@@ -606,6 +606,14 @@ Me respekt`
     instantConfirmation: 'Konfirmim i menjëhershëm',
     error: 'Ndodhi një gabim',
     reserve: 'Rezervo',
+    reserveCash: 'Rezervo cash',
+    creatingReservation: 'Duke krijuar rezervimin tuaj...',
+    paymentMethod: 'Mënyra e pagesës',
+    payOnline: 'Paguaj online',
+    payOnlineDesc: 'Pagesë e sigurt përmes Bancontact',
+    payCash: 'Paguaj në vend',
+    payCashDesc: 'Rezervoni dhe na kontaktoni për të paguar cash',
+    cashWarning: 'Vendet nuk garantohen. Pagesat online kanë përparësi.',
     validation: {
       firstNameMin: 'Minimumi 2 karaktere',
       lastNameMin: 'Minimumi 2 karaktere',
@@ -651,7 +659,7 @@ Me respekt`
     },
     pendingCash: {
       title: 'Rezervimi në pritje',
-      subtitle: 'Rezervimi juaj është regjistruar. Paraqituni në hyrje për të paguar cash.',
+      subtitle: 'Rezervimi juaj është regjistruar. Ju lutem na kontaktoni për të paguar cash.',
       warning: 'Vendet nuk garantohen derisa pagesa të kryhet. Pagesat online kanë përparësi.',
       instructions: 'Do të merrni biletat tuaja me email pasi pagesa të kryhet në vend.',
       contact: 'Na kontaktoni në WhatsApp'

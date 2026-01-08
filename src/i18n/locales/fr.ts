@@ -616,7 +616,7 @@ Cordialement`
     payOnline: 'Paiement en ligne',
     payOnlineDesc: 'Paiement sécurisé par Bancontact',
     payCash: 'Paiement sur place',
-    payCashDesc: 'Réservez et payez en cash à l\'entrée',
+    payCashDesc: 'Réservez et contactez-nous pour payer en cash',
     cashWarning: 'Les places ne sont pas garanties. Les paiements en ligne sont prioritaires.',
     validation: {
       firstNameMin: 'Minimum 2 caractères',
@@ -663,7 +663,7 @@ Cordialement`
     },
     pendingCash: {
       title: 'Réservation en attente',
-      subtitle: 'Votre réservation est enregistrée. Présentez-vous à l\'entrée pour payer en cash.',
+      subtitle: 'Votre réservation est enregistrée. Veuillez nous contacter pour payer en cash.',
       warning: 'Les places ne sont pas garanties tant que le paiement n\'est pas effectué. Les paiements en ligne sont prioritaires.',
       instructions: 'Vous recevrez vos billets par email une fois le paiement effectué sur place.',
       contact: 'Nous contacter sur WhatsApp'

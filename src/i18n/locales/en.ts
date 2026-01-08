@@ -606,6 +606,14 @@ Best regards`
     instantConfirmation: 'Instant confirmation',
     error: 'An error occurred',
     reserve: 'Reserve',
+    reserveCash: 'Reserve cash',
+    creatingReservation: 'Creating your reservation...',
+    paymentMethod: 'Payment method',
+    payOnline: 'Pay online',
+    payOnlineDesc: 'Secure payment via Bancontact',
+    payCash: 'Pay on site',
+    payCashDesc: 'Reserve and contact us to pay cash',
+    cashWarning: 'Seats are not guaranteed. Online payments have priority.',
     validation: {
       firstNameMin: 'Minimum 2 characters',
       lastNameMin: 'Minimum 2 characters',
@@ -651,7 +659,7 @@ Best regards`
     },
     pendingCash: {
       title: 'Reservation pending',
-      subtitle: 'Your reservation is registered. Come to the entrance to pay cash.',
+      subtitle: 'Your reservation is registered. Please contact us to pay cash.',
       warning: 'Seats are not guaranteed until payment is made. Online payments have priority.',
       instructions: 'You will receive your tickets by email once payment is made on site.',
       contact: 'Contact us on WhatsApp'
