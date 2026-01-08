@@ -1,62 +1,91 @@
 <!DOCTYPE html>
 <html lang="fr" id="html-root">
-  <head>
-    <!-- Meta de base -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
-    <!-- SEO Principal - Géré dynamiquement par @vueuse/head + i18n -->
-    <!-- Les meta tags title, description, og:*, twitter:* sont injectés dynamiquement -->
-    <!-- selon la langue active (fr/en/nl/sq) via src/composables/useSeo.ts -->
-    <meta name="author" content="Baba Event">
-    <meta name="robots" content="index, follow">
-    
-    <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="/logo.svg">
-    <link rel="manifest" href="/manifest.json">
-    
-    <!-- Theme -->
-    <meta name="theme-color" content="#000000">
-    
-    <!-- Critical CSS - Prevents flash & matches GlobalBackground -->
-    <style>
-      html { background: #030303; min-height: 100vh; }
-      body, #app { background: transparent; min-height: 100vh; }
-      /* Scrollbar */
-      ::-webkit-scrollbar { width: 8px; }
-      ::-webkit-scrollbar-track { background: #1a1a1a; }
-      ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 9999px; }
-      ::-webkit-scrollbar-thumb:hover { background: #dc143c; }
-      * { scrollbar-width: thin; scrollbar-color: #4a4a4a #1a1a1a; }
-    </style>
-    <meta name="msapplication-TileColor" content="#1a1a1a">
-    <meta name="msapplication-config" content="/browserconfig.xml">
-    
-    <!-- Preconnect pour les performances -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://images.unsplash.com">
-    <link rel="preconnect" href="https://images.pexels.com">
-    <!-- 🚀 Image optimization proxy -->
-    <link rel="preconnect" href="https://wsrv.nl" crossorigin>
-    
-    <!-- DNS Prefetch -->
-    <link rel="dns-prefetch" href="//fonts.googleapis.com">
-    <link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-    <link rel="dns-prefetch" href="//images.pexels.com">
 
-    <!-- Fonts optimisés avec font-display: swap -->
-    <!-- Utilisation de l'attribut media="print" et onload pour un chargement non-bloquant -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" media="print" onload="this.media='all'">
-    <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap">
-    </noscript>
-    
-    <!-- Schema.org JSON-LD -->
-    <script type="application/ld+json">
+<head>
+  <!-- Meta de base -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <!-- SEO Principal - Géré dynamiquement par @vueuse/head + i18n -->
+  <!-- Les meta tags title, description, og:*, twitter:* sont injectés dynamiquement -->
+  <!-- selon la langue active (fr/en/nl/sq) via src/composables/useSeo.ts -->
+  <meta name="author" content="Baba Event">
+  <meta name="robots" content="index, follow">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Theme -->
+  <meta name="theme-color" content="#000000">
+
+  <!-- Critical CSS - Prevents flash & matches GlobalBackground -->
+  <style>
+    html {
+      background: #030303;
+      min-height: 100vh;
+    }
+
+    body,
+    #app {
+      background: transparent;
+      min-height: 100vh;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #4a4a4a;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #dc143c;
+    }
+
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #4a4a4a #1a1a1a;
+    }
+  </style>
+  <meta name="msapplication-TileColor" content="#1a1a1a">
+  <meta name="msapplication-config" content="/browserconfig.xml">
+
+  <!-- Preconnect pour les performances -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="preconnect" href="https://images.pexels.com">
+  <!-- 🚀 Image optimization proxy -->
+  <link rel="preconnect" href="https://wsrv.nl" crossorigin>
+
+  <!-- DNS Prefetch -->
+  <link rel="dns-prefetch" href="//fonts.googleapis.com">
+  <link rel="dns-prefetch" href="//fonts.gstatic.com">
+  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="//images.pexels.com">
+
+  <!-- Fonts optimisés avec font-display: swap -->
+  <!-- Utilisation de l'attribut media="print" et onload pour un chargement non-bloquant -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap"
+    media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap">
+  </noscript>
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
@@ -86,36 +115,40 @@
       "serviceType": ["Concerts", "Festivals", "Soirées VIP"]
     }
     </script>
-    
-    <!-- Sécurité -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self' http://localhost:* https://*.railway.app https://*.up.railway.app https:; media-src 'self' https: blob:; frame-src 'self' https://www.google.com https://maps.google.com;">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-  </head>
-  <body>
-    <!-- Fallback pour JavaScript désactivé -->
-    <noscript>
-      <div style="text-align: center; padding: 2rem; font-family: Arial, sans-serif;">
-        <h1>JavaScript requis</h1>
-        <p>Cette application nécessite JavaScript pour fonctionner correctement.</p>
-        <p>Veuillez activer JavaScript dans votre navigateur et recharger la page.</p>
-      </div>
-    </noscript>
-    
-    <!-- App container avec attributs d'accessibilité -->
-    <div id="app" role="application" aria-label="Baba Event - Application web"></div>
-    
-    <!-- Script principal -->
-    <script type="module" src="/src/main.ts"></script>
-    
-    <!-- Chargement différé de Font Awesome pour ne pas bloquer le rendu -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
-    <noscript>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    </noscript>
-    
-    <!-- Analytics placeholder (à remplacer par votre solution) -->
-    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
-  </body>
+
+  <!-- Sécurité -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com blob: https://www.paypal.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self' http://localhost:* https://*.railway.app https://*.up.railway.app https:; media-src 'self' https: blob:; frame-src 'self' https://www.google.com https://maps.google.com https://www.paypal.com https://www.sandbox.paypal.com;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+</head>
+
+<body>
+  <!-- Fallback pour JavaScript désactivé -->
+  <noscript>
+    <div style="text-align: center; padding: 2rem; font-family: Arial, sans-serif;">
+      <h1>JavaScript requis</h1>
+      <p>Cette application nécessite JavaScript pour fonctionner correctement.</p>
+      <p>Veuillez activer JavaScript dans votre navigateur et recharger la page.</p>
+    </div>
+  </noscript>
+
+  <!-- App container avec attributs d'accessibilité -->
+  <div id="app" role="application" aria-label="Baba Event - Application web"></div>
+
+  <!-- Script principal -->
+  <script type="module" src="/src/main.ts"></script>
+
+  <!-- Chargement différé de Font Awesome pour ne pas bloquer le rendu -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print"
+    onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </noscript>
+
+  <!-- Analytics placeholder (à remplacer par votre solution) -->
+  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
+</body>
+
 </html>
