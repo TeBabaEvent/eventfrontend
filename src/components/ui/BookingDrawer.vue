@@ -147,6 +147,68 @@
                       :disabled="isLoading"
                     />
                   </div>
+
+                  <!-- Payment Method Selection (only for paid tickets) -->
+                  <div v-if="totalAmount > 0" class="payment-method-section">
+                    <div class="section-label section-label--inline">
+                      <i class="fas fa-credit-card"></i>
+                      <span>{{ t('booking.paymentMethod') }}</span>
+                    </div>
+
+                    <div class="payment-options">
+                      <label
+                        class="payment-option"
+                        :class="{ 'payment-option--selected': formData.paymentMethod === 'online' }"
+                      >
+                        <input
+                          type="radio"
+                          v-model="formData.paymentMethod"
+                          value="online"
+                          :disabled="isLoading"
+                        />
+                        <div class="payment-option__content">
+                          <div class="payment-option__icon">
+                            <i class="fas fa-lock"></i>
+                          </div>
+                          <div class="payment-option__info">
+                            <span class="payment-option__title">{{ t('booking.payOnline') }}</span>
+                            <span class="payment-option__desc">{{ t('booking.payOnlineDesc') }}</span>
+                          </div>
+                          <i class="fas fa-check payment-option__check"></i>
+                        </div>
+                      </label>
+
+                      <label
+                        class="payment-option"
+                        :class="{ 'payment-option--selected': formData.paymentMethod === 'cash' }"
+                      >
+                        <input
+                          type="radio"
+                          v-model="formData.paymentMethod"
+                          value="cash"
+                          :disabled="isLoading"
+                        />
+                        <div class="payment-option__content">
+                          <div class="payment-option__icon payment-option__icon--cash">
+                            <i class="fas fa-money-bill-wave"></i>
+                          </div>
+                          <div class="payment-option__info">
+                            <span class="payment-option__title">{{ t('booking.payCash') }}</span>
+                            <span class="payment-option__desc">{{ t('booking.payCashDesc') }}</span>
+                          </div>
+                          <i class="fas fa-check payment-option__check"></i>
+                        </div>
+                      </label>
+                    </div>
+
+                    <!-- Cash Warning -->
+                    <Transition name="fade">
+                      <div v-if="formData.paymentMethod === 'cash'" class="cash-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>{{ t('booking.cashWarning') }}</span>
+                      </div>
+                    </Transition>
+                  </div>
                 </form>
               </div>
             </Transition>
@@ -180,17 +242,20 @@
             <button
               type="button"
               class="submit-btn"
+              :class="{ 'submit-btn--cash': formData.paymentMethod === 'cash' && totalAmount > 0 }"
               :disabled="!canSubmit || isLoading"
               @click="handleSubmit"
             >
               <span v-if="isLoading" class="btn-content">
                 <i class="fas fa-circle-notch fa-spin"></i>
-                <span v-if="totalAmount > 0">{{ t('booking.redirecting') }}</span>
+                <span v-if="formData.paymentMethod === 'cash' && totalAmount > 0">{{ t('booking.creatingReservation') }}</span>
+                <span v-else-if="totalAmount > 0">{{ t('booking.redirecting') }}</span>
                 <span v-else>{{ t('booking.confirmingReservation') }}</span>
               </span>
               <span v-else class="btn-content">
-                <i :class="totalAmount > 0 ? 'fas fa-lock' : 'fas fa-ticket-alt'"></i>
-                <span v-if="totalAmount > 0">{{ t('booking.payNow') }} {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
+                <i :class="formData.paymentMethod === 'cash' && totalAmount > 0 ? 'fas fa-clock' : (totalAmount > 0 ? 'fas fa-lock' : 'fas fa-ticket-alt')"></i>
+                <span v-if="formData.paymentMethod === 'cash' && totalAmount > 0">{{ t('booking.reserveCash') }} {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
+                <span v-else-if="totalAmount > 0">{{ t('booking.payNow') }} {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
                 <span v-else>{{ t('booking.reserveNow') }}</span>
                 <i class="fas fa-arrow-right btn-arrow"></i>
               </span>
@@ -249,7 +314,8 @@ const formData = ref({
   firstName: '',
   lastName: '',
   email: '',
-  phone: ''
+  phone: '',
+  paymentMethod: 'online' as 'online' | 'cash'
 })
 const errorMessage = ref<string | null>(null)
 
@@ -357,7 +423,7 @@ function closeDrawer() {
 
 function resetForm() {
   Object.keys(packQuantities).forEach(key => delete packQuantities[key])
-  formData.value = { firstName: '', lastName: '', email: '', phone: '' }
+  formData.value = { firstName: '', lastName: '', email: '', phone: '', paymentMethod: 'online' }
   errorMessage.value = null
   // Reset touched state
   touched.firstName = false
@@ -381,7 +447,8 @@ async function handleSubmit() {
     items,
     customer_name: `${formData.value.firstName.trim()} ${formData.value.lastName.trim()}`,
     customer_email: formData.value.email.trim().toLowerCase(),
-    customer_phone: formData.value.phone?.trim() || undefined
+    customer_phone: formData.value.phone?.trim() || undefined,
+    payment_method: totalAmount.value > 0 ? formData.value.paymentMethod : 'online'
   }
 
   const result = await initiateCartPayment(checkoutData)
@@ -796,6 +863,139 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+/* ============================================
+   PAYMENT METHOD SELECTION
+   ============================================ */
+
+.payment-method-section {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.section-label--inline {
+  margin-bottom: 0.625rem;
+}
+
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.payment-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.payment-option input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.payment-option__content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.payment-option:hover .payment-option__content {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.payment-option--selected .payment-option__content {
+  background: rgba(220, 20, 60, 0.08);
+  border-color: rgba(220, 20, 60, 0.3);
+}
+
+.payment-option__icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 20, 60, 0.1);
+  border-radius: 8px;
+  color: var(--color-primary, #dc143c);
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.payment-option__icon--cash {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.payment-option__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.payment-option__title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.payment-option__desc {
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.payment-option__check {
+  font-size: 0.875rem;
+  color: var(--color-primary, #dc143c);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s ease;
+}
+
+.payment-option--selected .payment-option__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Cash Warning */
+.cash-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  margin-top: 0.5rem;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.15);
+  border-radius: 8px;
+  font-size: 0.6875rem;
+  color: #fbbf24;
+  line-height: 1.5;
+}
+
+.cash-warning i {
+  font-size: 0.75rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+/* Submit Button Cash Variant */
+.submit-btn--cash {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.submit-btn--cash:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
 }
 
 /* ============================================

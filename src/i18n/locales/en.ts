@@ -484,6 +484,7 @@ Best regards`
       },
       status: {
         pending: 'Pending',
+        pending_cash: 'Cash pending',
         completed: 'Paid',
         failed: 'Failed',
         refunded: 'Refunded',
@@ -647,6 +648,13 @@ Best regards`
     pending: {
       title: 'Payment in progress...',
       subtitle: 'Your payment is being processed. Please wait.'
+    },
+    pendingCash: {
+      title: 'Reservation pending',
+      subtitle: 'Your reservation is registered. Come to the entrance to pay cash.',
+      warning: 'Seats are not guaranteed until payment is made. Online payments have priority.',
+      instructions: 'You will receive your tickets by email once payment is made on site.',
+      contact: 'Contact us on WhatsApp'
     },
     failed: {
       title: 'Payment failed',

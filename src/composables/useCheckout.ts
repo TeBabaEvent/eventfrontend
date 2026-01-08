@@ -127,7 +127,14 @@ export function useCheckout() {
 
       logger.log('Cart checkout session created:', result)
 
-      // Rediriger automatiquement vers la page de paiement CCV
+      // Pour les paiements cash, ne pas rediriger vers Mollie mais vers la page de confirmation
+      if (result.is_pending_cash) {
+        // Rediriger vers la page de confirmation avec indication cash
+        window.location.href = result.pay_url
+        return result
+      }
+
+      // Rediriger automatiquement vers la page de paiement Mollie
       if (result.pay_url) {
         window.location.href = result.pay_url
       }

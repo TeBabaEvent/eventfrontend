@@ -188,6 +188,7 @@ export interface CartCheckoutData {
   customer_name: string
   customer_email: string
   customer_phone?: string
+  payment_method?: 'online' | 'cash'
 }
 
 export interface CartCheckoutResponse {
@@ -195,6 +196,8 @@ export interface CartCheckoutResponse {
   pay_url: string
   amount: number
   total_items: number
+  payment_method: 'online' | 'cash'
+  is_pending_cash: boolean
 }
 
 export interface Order {
@@ -218,7 +221,8 @@ export interface Order {
   /** Total tickets across all packs */
   total_quantity?: number
   amount: number // En centimes
-  status: 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled'
+  status: 'pending' | 'pending_cash' | 'completed' | 'failed' | 'refunded' | 'cancelled'
+  payment_method?: 'online' | 'cash'
   ccv_reference?: string
   mollie_payment_id?: string
   created_at: string
@@ -338,7 +342,8 @@ export interface OrderListItem {
   /** Total tickets across all packs */
   total_quantity: number
   amount: number // En EUR
-  status: 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled'
+  status: 'pending' | 'pending_cash' | 'completed' | 'failed' | 'refunded' | 'cancelled'
+  payment_method?: 'online' | 'cash'
   ccv_reference?: string
   mollie_payment_id?: string
   created_at: string
@@ -377,7 +382,8 @@ export interface OrderDetail {
   /** Total tickets across all packs */
   total_quantity: number
   amount: number // En EUR
-  status: 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled'
+  status: 'pending' | 'pending_cash' | 'completed' | 'failed' | 'refunded' | 'cancelled'
+  payment_method?: 'online' | 'cash'
   ccv_reference?: string
   mollie_payment_id?: string
   payment_failure_reason?: string
@@ -404,6 +410,7 @@ export interface OrdersListResponse {
   global_revenue: number
   global_completed: number
   global_pending: number
+  global_pending_cash: number
   global_failed: number
 }
 

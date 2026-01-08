@@ -484,6 +484,7 @@ Met vriendelijke groeten`
       },
       status: {
         pending: 'In afwachting',
+        pending_cash: 'Cash in afwachting',
         completed: 'Betaald',
         failed: 'Mislukt',
         refunded: 'Terugbetaald',
@@ -647,6 +648,13 @@ Met vriendelijke groeten`
     pending: {
       title: 'Betaling in behandeling...',
       subtitle: 'Uw betaling wordt verwerkt. Even geduld.'
+    },
+    pendingCash: {
+      title: 'Reservering in afwachting',
+      subtitle: 'Uw reservering is geregistreerd. Kom naar de ingang om contant te betalen.',
+      warning: 'Plaatsen zijn niet gegarandeerd zolang de betaling niet is uitgevoerd. Online betalingen hebben voorrang.',
+      instructions: 'U ontvangt uw tickets per e-mail zodra de betaling ter plaatse is uitgevoerd.',
+      contact: 'Contact via WhatsApp'
     },
     failed: {
       title: 'Betaling mislukt',

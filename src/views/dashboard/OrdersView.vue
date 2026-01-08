@@ -397,7 +397,7 @@
                 </div>
               </div>
 
-              <!-- Actions Footer -->
+              <!-- Actions Footer - Completed Orders -->
               <div class="drawer__footer" v-if="selectedOrder.status === 'completed'">
                 <button
                   class="drawer-btn drawer-btn--secondary"
@@ -413,6 +413,18 @@
                 >
                   <i class="fas fa-undo"></i>
                   <span>{{ $t('dashboard.orders.actions.refund') }}</span>
+                </button>
+              </div>
+
+              <!-- Actions Footer - Pending Cash -->
+              <div class="drawer__footer" v-else-if="selectedOrder.status === 'pending_cash'">
+                <button
+                  class="drawer-btn drawer-btn--success"
+                  :disabled="isMarkingPaid"
+                  @click="markAsPaid"
+                >
+                  <i :class="isMarkingPaid ? 'fas fa-circle-notch fa-spin' : 'fas fa-check-circle'"></i>
+                  <span>{{ isMarkingPaid ? $t('dashboard.orders.actions.markingPaid') : $t('dashboard.orders.actions.markPaid') }}</span>
                 </button>
               </div>
             </template>
@@ -553,6 +565,7 @@ const isInitialLoading = ref(true)
 const isLoadingDetail = ref(false)
 const isResending = ref(false)
 const isRefunding = ref(false)
+const isMarkingPaid = ref(false)
 const drawerView = ref<'details' | 'refund'>('details') // Track drawer view state
 const refundAmount = ref<number | null>(null)
 const refundReason = ref('')
@@ -639,6 +652,7 @@ function getStatusIcon(status: string): string {
   const icons: Record<string, string> = {
     completed: 'fas fa-check',
     pending: 'fas fa-clock',
+    pending_cash: 'fas fa-money-bill-wave',
     failed: 'fas fa-times',
     refunded: 'fas fa-undo',
     cancelled: 'fas fa-ban'
@@ -779,6 +793,36 @@ async function processRefund() {
     showToast(error instanceof Error ? error.message : t('dashboard.orders.errors.refundFailed'), 'error')
   } finally {
     isRefunding.value = false
+  }
+}
+
+async function markAsPaid() {
+  if (!selectedOrder.value) return
+
+  isMarkingPaid.value = true
+  try {
+    const response = await fetch(
+      buildApiUrl(API_ENDPOINTS.ADMIN_ORDER_MARK_PAID(selectedOrder.value.id)),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: getAuthHeaders()
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.detail || 'Mark paid failed')
+    }
+
+    showToast(t('dashboard.orders.success.markedPaid'), 'success')
+    closeDrawer()
+    loadOrders()
+  } catch (error) {
+    logger.error('Error marking order as paid:', error)
+    showToast(error instanceof Error ? error.message : t('dashboard.orders.errors.markPaidFailed'), 'error')
+  } finally {
+    isMarkingPaid.value = false
   }
 }
 
@@ -1515,6 +1559,11 @@ onUnmounted(() => {
   color: #6b7280;
 }
 
+.status-badge--pending_cash {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
 /* Actions */
 .action-btn {
   width: 30px;
@@ -1666,6 +1715,12 @@ onUnmounted(() => {
   background: rgba(139, 92, 246, 0.15);
   color: #8b5cf6;
   border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.status-pill--pending_cash {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
 .drawer__close {
@@ -2086,6 +2141,17 @@ onUnmounted(() => {
 .drawer-btn--danger:hover:not(:disabled) {
   background: rgba(220, 20, 60, 0.15);
   border-color: rgba(220, 20, 60, 0.3);
+}
+
+.drawer-btn--success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #22c55e;
+}
+
+.drawer-btn--success:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.25);
+  border-color: rgba(34, 197, 94, 0.4);
 }
 
 .drawer-btn:disabled {

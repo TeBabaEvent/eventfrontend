@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
   ADMIN_ORDER_BY_ID: (id: string) => `/api/admin/orders/${id}`,
   ADMIN_ORDER_REFUND: (id: string) => `/api/admin/orders/${id}/refund`,
   ADMIN_ORDER_RESEND_EMAIL: (id: string) => `/api/admin/orders/${id}/resend-email`,
+  ADMIN_ORDER_MARK_PAID: (id: string) => `/api/admin/orders/${id}/mark-paid`,
 
   // Admin - Stats
   ADMIN_GLOBAL_STATS: '/api/admin/stats',

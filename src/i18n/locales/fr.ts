@@ -484,6 +484,7 @@ Cordialement`
       },
       status: {
         pending: 'En attente',
+        pending_cash: 'Cash en attente',
         completed: 'Payée',
         failed: 'Échouée',
         refunded: 'Remboursée',
@@ -505,7 +506,9 @@ Cordialement`
       actions: {
         view: 'Voir les détails',
         resendEmail: 'Renvoyer l\'email',
-        refund: 'Rembourser'
+        refund: 'Rembourser',
+        markPaid: 'Marquer payé',
+        markingPaid: 'Traitement...'
       },
       detail: {
         customer: 'Client',
@@ -538,13 +541,15 @@ Cordialement`
       },
       success: {
         emailSent: 'Email envoyé avec succès',
-        refunded: 'Commande remboursée avec succès'
+        refunded: 'Commande remboursée avec succès',
+        markedPaid: 'Paiement confirmé ! Billets envoyés au client.'
       },
       errors: {
         loadFailed: 'Erreur lors du chargement des commandes',
         detailFailed: 'Erreur lors du chargement des détails',
         emailFailed: 'Erreur lors de l\'envoi de l\'email',
-        refundFailed: 'Erreur lors du remboursement'
+        refundFailed: 'Erreur lors du remboursement',
+        markPaidFailed: 'Erreur lors de la confirmation du paiement'
       }
     }
   },
@@ -599,12 +604,20 @@ Cordialement`
     total: 'Total',
     payNow: 'Payer',
     reserveNow: 'Réserver maintenant',
+    reserveCash: 'Réserver en cash',
     redirecting: 'Redirection vers le paiement...',
     confirmingReservation: 'Confirmation de votre réservation...',
+    creatingReservation: 'Création de votre réservation...',
     securePayment: 'Paiement sécurisé',
     instantConfirmation: 'Confirmation immédiate',
     error: 'Une erreur est survenue',
     reserve: 'Réserver',
+    paymentMethod: 'Mode de paiement',
+    payOnline: 'Paiement en ligne',
+    payOnlineDesc: 'Paiement sécurisé par Bancontact',
+    payCash: 'Paiement sur place',
+    payCashDesc: 'Réservez et payez en cash à l\'entrée',
+    cashWarning: 'Les places ne sont pas garanties. Les paiements en ligne sont prioritaires.',
     validation: {
       firstNameMin: 'Minimum 2 caractères',
       lastNameMin: 'Minimum 2 caractères',
@@ -647,6 +660,13 @@ Cordialement`
     pending: {
       title: 'Paiement en cours...',
       subtitle: 'Votre paiement est en cours de traitement. Veuillez patienter.'
+    },
+    pendingCash: {
+      title: 'Réservation en attente',
+      subtitle: 'Votre réservation est enregistrée. Présentez-vous à l\'entrée pour payer en cash.',
+      warning: 'Les places ne sont pas garanties tant que le paiement n\'est pas effectué. Les paiements en ligne sont prioritaires.',
+      instructions: 'Vous recevrez vos billets par email une fois le paiement effectué sur place.',
+      contact: 'Nous contacter sur WhatsApp'
     },
     failed: {
       title: 'Paiement échoué',

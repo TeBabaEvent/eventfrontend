@@ -77,7 +77,7 @@
           </div>
         </div>
 
-        <!-- Pending State -->
+        <!-- Pending State (Online payment processing) -->
         <div v-else-if="order && order.status === 'pending'" key="pending" class="payment-card payment-card--pending">
           <div class="payment-card__icon payment-card__icon--pending">
             <div class="spinner-ring"></div>
@@ -102,6 +102,79 @@
             <i class="fas fa-info-circle"></i>
             {{ $t('payment.autoRefresh') }}
           </p>
+        </div>
+
+        <!-- Pending Cash State -->
+        <div v-else-if="order && order.status === 'pending_cash'" key="pending_cash" class="payment-card payment-card--pending-cash">
+          <div class="payment-card__icon payment-card__icon--cash">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+
+          <h1 class="payment-card__title">{{ $t('payment.pendingCash.title') }}</h1>
+          <p class="payment-card__subtitle">{{ $t('payment.pendingCash.subtitle') }}</p>
+
+          <!-- Order Summary -->
+          <div class="order-summary order-summary--cash">
+            <div class="order-summary__header">
+              <span class="order-number">{{ order.order_number }}</span>
+              <span class="order-badge order-badge--pending">{{ $t('dashboard.orders.status.pending_cash') }}</span>
+            </div>
+
+            <div class="order-summary__details">
+              <div class="detail-row">
+                <span class="detail-label">
+                  <i class="fas fa-calendar-alt"></i>
+                  {{ $t('payment.event') }}
+                </span>
+                <span class="detail-value">{{ eventName }}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="detail-label">
+                  <i class="fas fa-ticket-alt"></i>
+                  {{ $t('payment.quantity') }}
+                </span>
+                <span class="detail-value">{{ totalQuantity }} {{ totalQuantity > 1 ? $t('payment.tickets') : $t('payment.ticket') }}</span>
+              </div>
+
+              <div class="detail-row detail-row--total">
+                <span class="detail-label">
+                  <i class="fas fa-euro-sign"></i>
+                  {{ $t('payment.total') }}
+                </span>
+                <span class="detail-value detail-value--amount">{{ formatAmount(order.amount) }} €</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warning Notice -->
+          <div class="warning-notice">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>{{ $t('payment.pendingCash.warning') }}</p>
+          </div>
+
+          <!-- Instructions -->
+          <div class="email-notice">
+            <i class="fas fa-envelope"></i>
+            <p>{{ $t('payment.pendingCash.instructions') }}</p>
+          </div>
+
+          <!-- WhatsApp Contact -->
+          <a :href="whatsappLink" target="_blank" class="whatsapp-btn">
+            <i class="fab fa-whatsapp"></i>
+            {{ $t('payment.pendingCash.contact') }}
+          </a>
+
+          <!-- Actions -->
+          <div class="payment-card__actions">
+            <button class="btn btn--primary" @click="goToEvent">
+              <i class="fas fa-arrow-left"></i>
+              {{ $t('payment.viewEvent') }}
+            </button>
+            <button class="btn btn--ghost" @click="goToHome">
+              {{ $t('payment.backToHome') }}
+            </button>
+          </div>
         </div>
 
         <!-- Failed State -->
@@ -154,6 +227,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCheckout } from '@/composables/useCheckout'
+import { CONTACT_INFO } from '@/constants'
 import type { Order } from '@/types'
 
 const route = useRoute()
@@ -179,6 +253,12 @@ const eventName = computed(() => {
   // API returns event_name as flat field, or event.title as nested object
   const orderData = order.value as Order & { event_name?: string }
   return orderData.event_name || order.value.event?.title || ''
+})
+
+const whatsappLink = computed(() => {
+  const phone = CONTACT_INFO.whatsapp.replace(/[^0-9+]/g, '')
+  const message = `Bonjour, j'ai une réservation en attente de paiement cash.\n\nNuméro de commande: ${order.value?.order_number || ''}\nNom: ${order.value?.customer_name || ''}\nÉvénement: ${eventName.value}\n\nMerci de me contacter pour plus d'informations.`
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
 })
 
 /**
@@ -343,6 +423,11 @@ onMounted(() => {
   opacity: 1;
 }
 
+.payment-card--pending-cash::before {
+  background: linear-gradient(90deg, transparent, #f59e0b, transparent);
+  opacity: 1;
+}
+
 .payment-card--failed::before,
 .payment-card--error::before {
   background: linear-gradient(90deg, transparent, #ef4444, transparent);
@@ -382,6 +467,12 @@ onMounted(() => {
 
 .payment-card__icon--pending .spinner-ring {
   border-top-color: #f59e0b;
+}
+
+.payment-card__icon--cash {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  animation: iconPop 0.5s ease-out;
 }
 
 @keyframes iconPop {
@@ -460,6 +551,11 @@ onMounted(() => {
   letter-spacing: 0.5px;
 }
 
+.order-badge--pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
 .order-summary__details {
   padding: 0.75rem 1rem;
 }
@@ -532,6 +628,67 @@ onMounted(() => {
   margin: 0;
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================
+   WARNING NOTICE (Cash)
+   ============================================ */
+
+.warning-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.warning-notice i {
+  color: #f59e0b;
+  font-size: 1.1rem;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+.warning-notice p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+/* ============================================
+   WHATSAPP BUTTON
+   ============================================ */
+
+.whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  background: #25D366;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-bottom: 1.25rem;
+}
+
+.whatsapp-btn:hover {
+  background: #1ebe5d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-btn i {
+  font-size: 1.2rem;
 }
 
 /* ============================================

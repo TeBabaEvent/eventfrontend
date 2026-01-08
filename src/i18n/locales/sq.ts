@@ -484,6 +484,7 @@ Me respekt`
       },
       status: {
         pending: 'Në pritje',
+        pending_cash: 'Cash në pritje',
         completed: 'E paguar',
         failed: 'E dështuar',
         refunded: 'E rimbursuar',
@@ -647,6 +648,13 @@ Me respekt`
     pending: {
       title: 'Pagesa në proces...',
       subtitle: 'Pagesa juaj po përpunohet. Ju lutem prisni.'
+    },
+    pendingCash: {
+      title: 'Rezervimi në pritje',
+      subtitle: 'Rezervimi juaj është regjistruar. Paraqituni në hyrje për të paguar cash.',
+      warning: 'Vendet nuk garantohen derisa pagesa të kryhet. Pagesat online kanë përparësi.',
+      instructions: 'Do të merrni biletat tuaja me email pasi pagesa të kryhet në vend.',
+      contact: 'Na kontaktoni në WhatsApp'
     },
     failed: {
       title: 'Pagesa dështoi',
