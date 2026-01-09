@@ -614,10 +614,14 @@ Me respekt`
     payCash: 'Paguaj në vend',
     payCashDesc: 'Rezervoni dhe na kontaktoni për të paguar cash',
     cashWarning: 'Vendet nuk garantohen. Pagesat online kanë përparësi.',
+    acceptTerms: 'Pranoj',
+    termsLink: 'kushtet e shitjes',
+    privacyLink: 'politikën e privatësisë',
     validation: {
       firstNameMin: 'Minimumi 2 karaktere',
       lastNameMin: 'Minimumi 2 karaktere',
       emailInvalid: 'Email i pavlefshëm',
+      phoneInvalid: 'Numri i telefonit i pavlefshëm',
       termsRequired: 'Duhet të pranoni kushtet e përgjithshme',
       fillFields: 'Ju lutem plotësoni të gjitha fushat e detyrueshme'
     },

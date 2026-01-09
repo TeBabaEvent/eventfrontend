@@ -614,10 +614,14 @@ Met vriendelijke groeten`
     payCash: 'Betalen ter plaatse',
     payCashDesc: 'Reserveer en neem contact met ons op om cash te betalen',
     cashWarning: 'Plaatsen zijn niet gegarandeerd. Online betalingen hebben voorrang.',
+    acceptTerms: 'Ik accepteer de',
+    termsLink: 'algemene voorwaarden',
+    privacyLink: 'het privacybeleid',
     validation: {
       firstNameMin: 'Minimaal 2 tekens',
       lastNameMin: 'Minimaal 2 tekens',
       emailInvalid: 'Ongeldig e-mailadres',
+      phoneInvalid: 'Ongeldig telefoonnummer',
       termsRequired: 'U moet de algemene voorwaarden accepteren',
       fillFields: 'Vul alle verplichte velden in'
     },

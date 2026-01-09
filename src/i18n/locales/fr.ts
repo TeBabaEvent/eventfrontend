@@ -618,10 +618,14 @@ Cordialement`
     payCash: 'Paiement sur place',
     payCashDesc: 'Réservez et contactez-nous pour payer en cash',
     cashWarning: 'Les places ne sont pas garanties. Les paiements en ligne sont prioritaires.',
+    acceptTerms: "J'accepte les",
+    termsLink: 'conditions générales de vente',
+    privacyLink: 'la politique de confidentialité',
     validation: {
       firstNameMin: 'Minimum 2 caractères',
       lastNameMin: 'Minimum 2 caractères',
       emailInvalid: 'Email invalide',
+      phoneInvalid: 'Numéro de téléphone invalide',
       termsRequired: 'Vous devez accepter les conditions générales',
       fillFields: 'Veuillez remplir tous les champs obligatoires'
     },

@@ -614,10 +614,14 @@ Best regards`
     payCash: 'Pay on site',
     payCashDesc: 'Reserve and contact us to pay cash',
     cashWarning: 'Seats are not guaranteed. Online payments have priority.',
+    acceptTerms: 'I accept the',
+    termsLink: 'terms and conditions',
+    privacyLink: 'privacy policy',
     validation: {
       firstNameMin: 'Minimum 2 characters',
       lastNameMin: 'Minimum 2 characters',
       emailInvalid: 'Invalid email',
+      phoneInvalid: 'Invalid phone number',
       termsRequired: 'You must accept the terms and conditions',
       fillFields: 'Please fill in all required fields'
     },
