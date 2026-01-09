@@ -206,7 +206,7 @@
                     :disabled="isLoading"
                   >
                     <div class="payment-method-card__icon payment-method-card__icon--bancontact">
-                      <img src="https://cdn.paypalobjects.com/images/checkout/latinum/Bancontact_2x.png" alt="Bancontact" />
+                      <span class="bancontact-logo">BC</span>
                     </div>
                     <div class="payment-method-card__info">
                       <span class="payment-method-card__name">Bancontact</span>
@@ -227,10 +227,6 @@
                   >
                     <div class="payment-method-card__icon payment-method-card__icon--card">
                       <i class="fas fa-credit-card"></i>
-                      <div class="card-brands">
-                        <img src="https://cdn.paypalobjects.com/images/checkout/latinum/Visa_2x.png" alt="Visa" />
-                        <img src="https://cdn.paypalobjects.com/images/checkout/latinum/Mastercard_2x.png" alt="Mastercard" />
-                      </div>
                     </div>
                     <div class="payment-method-card__info">
                       <span class="payment-method-card__name">{{ t('booking.paymentMethods.card') }}</span>
@@ -2042,23 +2038,20 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #005498 0%, #003d70 100%);
 }
 
+.bancontact-logo {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
 .payment-method-card__icon--card {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  flex-direction: column;
-  gap: 0.25rem;
 }
 
 .payment-method-card__icon--card i {
-  display: none;
-}
-
-.card-brands {
-  display: flex;
-  gap: 0.375rem;
-}
-
-.card-brands img {
-  height: 18px;
+  color: #fff;
+  font-size: 1.5rem;
 }
 
 .payment-method-card__icon--paypal {
@@ -2154,12 +2147,10 @@ onUnmounted(() => {
     font-size: 1.25rem;
   }
 
-  .payment-method-card__icon img {
+  .payment-method-card__icon img,
+  .payment-method-card__icon svg {
     height: 20px;
-  }
-
-  .card-brands img {
-    height: 14px;
+    width: 20px;
   }
 
   .payment-method-card__name {
@@ -2179,10 +2170,6 @@ onUnmounted(() => {
   .payment-method-card__icon {
     width: 36px;
     height: 36px;
-  }
-
-  .card-brands img {
-    height: 12px;
   }
 }
 </style>
