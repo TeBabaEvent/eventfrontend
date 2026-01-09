@@ -10,14 +10,16 @@
 
       <!-- Scan target area -->
       <div v-if="!scanResult && !cameraError" class="scanner__target">
-        <div class="target">
+        <div class="target" :class="{ 'target--processing': isProcessing }">
           <div class="target__corner target__corner--tl"></div>
           <div class="target__corner target__corner--tr"></div>
           <div class="target__corner target__corner--bl"></div>
           <div class="target__corner target__corner--br"></div>
-          <div v-if="isScanning" class="target__pulse"></div>
+          <div v-if="isScanning && !isProcessing" class="target__pulse"></div>
+          <!-- Processing spinner -->
+          <div v-if="isProcessing" class="target__spinner"></div>
         </div>
-        <p class="scanner__hint">Placez le QR code dans le cadre</p>
+        <p class="scanner__hint">{{ isProcessing ? 'Vérification...' : 'Placez le QR code dans le cadre' }}</p>
       </div>
 
       <!-- Camera Error -->
@@ -124,7 +126,6 @@ import { ref, shallowRef, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useScanner } from '@/composables/useScanner'
-import { logger } from '@/services/logger'
 import type { ScanResponse } from '@/types'
 import QrScanner from 'qr-scanner'
 
@@ -135,13 +136,12 @@ const { validateTicket, authError } = useScanner()
 // State
 const videoRef = ref<HTMLVideoElement>()
 const isScanning = ref(false)
+const isProcessing = ref(false) // Feedback immédiat pendant l'appel API
 const scanResult = ref<ScanResponse | null>(null)
 const cameraError = ref<string | null>(null)
 
 // Use shallowRef for non-reactive complex objects
 const qrScanner = shallowRef<QrScanner | null>(null)
-let lastScanTime = 0
-const SCAN_DEBOUNCE_MS = 1500
 
 // Audio
 let audioContext: AudioContext | null = null
@@ -213,18 +213,16 @@ async function startScanning() {
     qrScanner.value = new QrScanner(
       videoRef.value,
       (result) => {
-        const now = Date.now()
-        if (now - lastScanTime < SCAN_DEBOUNCE_MS) return
-        lastScanTime = now
-
-        if (isScanning.value) {
+        // Process immediately - no debounce needed since we stop scanning
+        if (isScanning.value && !isProcessing.value) {
           handleScan(result.data)
         }
       },
       {
         returnDetailedScanResult: true,
         highlightScanRegion: false,
-        highlightCodeOutline: false
+        highlightCodeOutline: false,
+        maxScansPerSecond: 5 // Limit CPU usage
       }
     )
 
@@ -232,7 +230,7 @@ async function startScanning() {
     isScanning.value = true
   } catch (err) {
     const error = err as Error
-    logger.error('Camera error:', error)
+    console.error('[Scanner] Camera error:', error)
 
     if (error.message?.includes('NotAllowedError') || error.message?.includes('Permission')) {
       cameraError.value = 'Accès à la caméra refusé. Autorisez l\'accès dans les paramètres de votre navigateur.'
@@ -254,19 +252,40 @@ function stopScanning() {
 }
 
 async function handleScan(qrData: string) {
+  // Immediate visual feedback
+  isProcessing.value = true
   isScanning.value = false
 
+  // Stop camera while processing
+  qrScanner.value?.stop()
+
+  // Haptic feedback on detection
+  if (navigator.vibrate) {
+    navigator.vibrate(30)
+  }
+
+  console.log('[Scanner] QR detected, validating...') // Always log for debugging
+
   const result = await validateTicket(qrData)
+
+  isProcessing.value = false
+
   if (result) {
+    console.log('[Scanner] Result:', result.valid ? 'SUCCESS' : result.result)
     scanResult.value = result
 
-    // Haptic feedback if available
+    // Haptic feedback for result
     if (navigator.vibrate) {
-      navigator.vibrate(result.valid ? [50] : [50, 50, 50])
+      navigator.vibrate(result.valid ? [50] : [50, 30, 50])
     }
 
     // Audio feedback
     playSound(result.valid)
+  } else {
+    console.log('[Scanner] No result from API')
+    // Restart scanning if no result
+    qrScanner.value?.start()
+    isScanning.value = true
   }
 }
 
@@ -469,6 +488,33 @@ onUnmounted(() => {
 @keyframes pulse {
   0%, 100% { transform: scale(1); opacity: 0.5; }
   50% { transform: scale(1.02); opacity: 0.8; }
+}
+
+/* Processing state */
+.target--processing .target__corner {
+  border-color: var(--success);
+  animation: corner-glow 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes corner-glow {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.target__spinner {
+  position: absolute;
+  inset: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .scanner__hint {
