@@ -774,7 +774,7 @@ async function processRefund() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          amount: refundAmount.value || selectedOrder.value.amount,
+          amount: refundAmount.value || null,  // null = remboursement total
           reason: refundReason.value || undefined
         })
       }
