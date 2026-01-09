@@ -617,8 +617,12 @@ Best regards`
     validation: {
       firstNameMin: 'Minimum 2 characters',
       lastNameMin: 'Minimum 2 characters',
-      emailInvalid: 'Invalid email'
-    }
+      emailInvalid: 'Invalid email',
+      termsRequired: 'You must accept the terms and conditions',
+      fillFields: 'Please fill in all required fields'
+    },
+    paymentCancelled: 'Payment cancelled. You can try again.',
+    paypalError: 'PayPal error. Please try again or choose another payment method.'
   },
   seo: {
     title: 'Baba Event - Premium Albanian Cultural Events | Concerts, Festivals, Weddings',

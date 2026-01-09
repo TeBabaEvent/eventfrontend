@@ -209,6 +209,24 @@
                       </div>
                     </Transition>
                   </div>
+
+                  <!-- Terms & Conditions Checkbox -->
+                  <div class="terms-section">
+                    <label class="terms-checkbox" :class="{ 'terms-checkbox--error': touched.email && !formData.termsAccepted }"> <!-- Simple error logic reused -->
+                      <input
+                        type="checkbox"
+                        v-model="formData.termsAccepted"
+                        :disabled="isLoading"
+                      />
+                      <span class="terms-text">
+                        {{ t('booking.acceptTerms') }}
+                        <router-link to="/cgv" target="_blank">{{ t('booking.termsLink') }}</router-link>
+                        {{ t('common.and') }}
+                        <router-link to="/confidentialite" target="_blank">{{ t('booking.privacyLink') }}</router-link>
+                      </span>
+                    </label>
+                  </div>
+
                 </form>
               </div>
             </Transition>
@@ -262,8 +280,8 @@
 
             <!-- PayPal Buttons Container -->
             <!-- Utilisation de v-show pour préserver le DOM, mais avec une clé pour forcer le redraw si nécessaire -->
-            <div 
-              v-show="formData.paymentMethod === 'online' && totalAmount > 0" 
+            <div
+              v-show="formData.paymentMethod === 'online' && totalAmount > 0"
               class="paypal-buttons-wrapper"
             >
               <div ref="paypalButtonContainer" id="paypal-button-container"></div>
@@ -328,7 +346,8 @@ const formData = ref({
   lastName: '',
   email: '',
   phone: '',
-  paymentMethod: 'online' as 'online' | 'cash'
+  paymentMethod: 'online' as 'online' | 'cash',
+  termsAccepted: false
 })
 const errorMessage = ref<string | null>(null)
 
@@ -360,7 +379,6 @@ function markTouched(field: 'firstName' | 'lastName' | 'email') {
   touched[field] = true
 }
 
-// Checkout
 // Checkout
 const { initiateCartPayment, capturePayment, isLoading, error: checkoutError } = useCheckout()
 
@@ -399,7 +417,7 @@ const isFormValid = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return totalQuantity.value > 0 && isFormValid.value
+  return totalQuantity.value > 0 && isFormValid.value && formData.value.termsAccepted
 })
 
 // Methods
@@ -437,8 +455,9 @@ function closeDrawer() {
 
 function resetForm() {
   Object.keys(packQuantities).forEach(key => delete packQuantities[key])
-  formData.value = { firstName: '', lastName: '', email: '', phone: '', paymentMethod: 'online' }
+  formData.value = { firstName: '', lastName: '', email: '', phone: '', paymentMethod: 'online', termsAccepted: false }
   errorMessage.value = null
+  currentOrderNumber.value = ''
   // Reset touched state
   touched.firstName = false
   touched.lastName = false
@@ -452,7 +471,7 @@ async function handleSubmit() {
 
   // Pour le paiement cash ou gratuit (montant 0), soumission standard
   // Pour online > 0, c'est géré par les boutons PayPal directement
-  
+
   // Build checkout items
   const items = selectedPacks.value.map(pack => ({
     event_id: props.event!.id,
@@ -465,7 +484,8 @@ async function handleSubmit() {
     customer_name: `${formData.value.firstName.trim()} ${formData.value.lastName.trim()}`,
     customer_email: formData.value.email.trim().toLowerCase(),
     customer_phone: formData.value.phone?.trim() || undefined,
-    payment_method: (totalAmount.value > 0 ? formData.value.paymentMethod : 'online') as 'online' | 'cash'
+    payment_method: (totalAmount.value > 0 ? formData.value.paymentMethod : 'online') as 'online' | 'cash',
+    terms_accepted: true
   }
 
   const result = await initiateCartPayment(checkoutData, true) // Auto-redirect pour cash/free
@@ -484,7 +504,7 @@ async function renderPayPalButtons() {
   if (paypalButtonContainer.value.children.length > 0) {
       return
   }
-  
+
   // On nettoie le conteneur par sécurité (devrait être vide si on arrive ici)
   paypalButtonContainer.value.innerHTML = ''
 
@@ -497,8 +517,8 @@ async function renderPayPalButtons() {
       return
     }
 
-    const paypal = await loadScript({ 
-      clientId, 
+    const paypal = await loadScript({
+      clientId,
       currency: "EUR",
       intent: "capture"
     })
@@ -515,7 +535,7 @@ async function renderPayPalButtons() {
         shape: 'rect',
         label: 'pay'
       },
-      
+
       // Validation initiale (désactive le clic si invalide - optionnel)
       // onInit: (data, actions) => {
       //   if (!canSubmit.value) actions.disable()
@@ -524,11 +544,13 @@ async function renderPayPalButtons() {
 
       createOrder: async (data, actions) => {
         // Validation explicite au clic
-        if (!isFormValid.value || totalQuantity.value === 0) {
+        if (!isFormValid.value || totalQuantity.value === 0 || !formData.value.termsAccepted) {
            touched.firstName = true
            touched.lastName = true
            touched.email = true
-           errorMessage.value = t('booking.validation.fillFields') // "Veuillez remplir tous les champs"
+           errorMessage.value = !formData.value.termsAccepted
+            ? t('booking.validation.termsRequired')
+            : t('booking.validation.fillFields')
            throw new Error("Form invalid")
         }
 
@@ -543,12 +565,13 @@ async function renderPayPalButtons() {
           customer_name: `${formData.value.firstName.trim()} ${formData.value.lastName.trim()}`,
           customer_email: formData.value.email.trim().toLowerCase(),
           customer_phone: formData.value.phone?.trim() || undefined,
-          payment_method: 'online' as 'online' | 'cash'
+          payment_method: 'online' as 'online' | 'cash',
+          terms_accepted: true
         }
 
         // Création session sans redirect automatique
         const result = await initiateCartPayment(checkoutData, false)
-        
+
         if (!result || !result.paypal_order_id) {
              const err = checkoutError.value || "Erreur création commande"
              errorMessage.value = err
@@ -571,9 +594,15 @@ async function renderPayPalButtons() {
         }
       },
 
+      onCancel: (data) => {
+        // L'utilisateur a fermé la popup PayPal sans payer
+        console.log("PayPal cancelled by user:", data)
+        errorMessage.value = t('booking.paymentCancelled')
+      },
+
       onError: (err) => {
         console.error("PayPal Error:", err)
-        errorMessage.value = "PayPal Error: " + (err.message || 'Unknown')
+        errorMessage.value = t('booking.paypalError')
       }
     })
 
@@ -587,8 +616,7 @@ async function renderPayPalButtons() {
   }
 }
 
-// Watchers pour afficher les boutons
-// Watchers pour afficher les boutons
+// Watchers pour afficher les boutons PayPal
 watch(() => formData.value.paymentMethod, async (method) => {
   if (method === 'online' && totalAmount.value > 0) {
     await renderPayPalButtons()
@@ -602,11 +630,11 @@ watch(totalAmount, async (amount) => {
         // Mais pour éviter l'erreur de container, on vérifie si on doit rerender
         // Le mieux est de laisser le bouton tel quel car le createOrder prendra le nouveau montant
         // SAUF si on veut afficher le montant dans le bouton (ce qui n'est pas le cas ici par défaut)
-        
+
         // Si on a besoin de ré-initialiser :
         // if (paypalButtonContainer.value) paypalButtonContainer.value.innerHTML = ''
         // await renderPayPalButtons()
-        
+
         // Ici on appelle juste render au cas où il n'était pas là (ex: passage de 0 à 10€)
         await renderPayPalButtons()
     }
@@ -1124,6 +1152,59 @@ onUnmounted(() => {
   font-size: 0.75rem;
   margin-top: 0.125rem;
   flex-shrink: 0;
+}
+
+/* Terms Checkbox */
+.terms-section {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.terms-checkbox:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.terms-checkbox input {
+  margin-top: 0.25rem;
+  accent-color: var(--color-primary, #dc143c);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.terms-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+.terms-text a {
+  color: var(--color-primary, #dc143c);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.terms-text a:hover {
+  text-decoration: underline;
+}
+
+.terms-checkbox--error .terms-text {
+  color: #fca5a5;
+}
+
+.terms-checkbox--error input {
+  outline: 2px solid #ef4444;
 }
 
 /* Submit Button Cash Variant */

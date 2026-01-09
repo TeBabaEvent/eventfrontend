@@ -617,8 +617,12 @@ Me respekt`
     validation: {
       firstNameMin: 'Minimumi 2 karaktere',
       lastNameMin: 'Minimumi 2 karaktere',
-      emailInvalid: 'Email i pavlefshëm'
-    }
+      emailInvalid: 'Email i pavlefshëm',
+      termsRequired: 'Duhet të pranoni kushtet e përgjithshme',
+      fillFields: 'Ju lutem plotësoni të gjitha fushat e detyrueshme'
+    },
+    paymentCancelled: 'Pagesa u anulua. Mund të provoni përsëri.',
+    paypalError: 'Gabim PayPal. Ju lutem provoni përsëri ose zgjidhni një metodë tjetër pagese.'
   },
   seo: {
     title: 'Baba Event - Ngjarje Premium Kulturore Shqiptare | Koncerte, Festivale, Dasma',

@@ -621,8 +621,12 @@ Cordialement`
     validation: {
       firstNameMin: 'Minimum 2 caractères',
       lastNameMin: 'Minimum 2 caractères',
-      emailInvalid: 'Email invalide'
-    }
+      emailInvalid: 'Email invalide',
+      termsRequired: 'Vous devez accepter les conditions générales',
+      fillFields: 'Veuillez remplir tous les champs obligatoires'
+    },
+    paymentCancelled: 'Paiement annulé. Vous pouvez réessayer.',
+    paypalError: 'Erreur PayPal. Veuillez réessayer ou choisir un autre mode de paiement.'
   },
   seo: {
     title: 'Baba Event - Événements Culturels Albanais Premium | Concerts, Festivals, Mariages',

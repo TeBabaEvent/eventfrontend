@@ -171,6 +171,7 @@ export interface CheckoutData {
   customer_name: string
   customer_email: string
   customer_phone?: string
+  terms_accepted: boolean
 }
 
 export interface CheckoutResponse {
@@ -190,6 +191,7 @@ export interface CartCheckoutData {
   customer_email: string
   customer_phone?: string
   payment_method?: 'online' | 'cash'
+  terms_accepted: boolean
 }
 
 export interface CartCheckoutResponse {

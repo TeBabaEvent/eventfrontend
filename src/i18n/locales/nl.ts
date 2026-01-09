@@ -617,8 +617,12 @@ Met vriendelijke groeten`
     validation: {
       firstNameMin: 'Minimaal 2 tekens',
       lastNameMin: 'Minimaal 2 tekens',
-      emailInvalid: 'Ongeldig e-mailadres'
-    }
+      emailInvalid: 'Ongeldig e-mailadres',
+      termsRequired: 'U moet de algemene voorwaarden accepteren',
+      fillFields: 'Vul alle verplichte velden in'
+    },
+    paymentCancelled: 'Betaling geannuleerd. U kunt het opnieuw proberen.',
+    paypalError: 'PayPal-fout. Probeer het opnieuw of kies een andere betaalmethode.'
   },
   seo: {
     title: 'Baba Event - Premium Albanese Culturele Evenementen | Concerten, Festivals, Bruiloften',
