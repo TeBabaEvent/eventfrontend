@@ -16,6 +16,21 @@ const router = createRouter({
       component: () => import('@/views/EventDetail.vue')
     },
     {
+      path: '/mentions-legales',
+      name: 'mentions-legales',
+      component: () => import('@/views/legal/MentionsLegales.vue')
+    },
+    {
+      path: '/confidentialite',
+      name: 'privacy-policy',
+      component: () => import('@/views/legal/PrivacyPolicy.vue')
+    },
+    {
+      path: '/cgv',
+      name: 'sales-terms',
+      component: () => import('@/views/legal/SalesTerms.vue')
+    },
+    {
       path: '/payment/complete',
       name: 'payment-complete',
       component: () => import('@/views/PaymentComplete.vue')

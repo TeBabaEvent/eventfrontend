@@ -121,9 +121,9 @@
           &copy; {{ currentYear }} <strong>{{ appName }}</strong>. {{ t('footer.legal.copyright') }}
         </p>
         <div class="footer__legal">
-          <a href="#" class="footer__legal-link">{{ t('footer.legal.terms') }}</a>
-          <a href="#" class="footer__legal-link">{{ t('footer.legal.privacy') }}</a>
-          <a href="#" class="footer__legal-link">{{ t('footer.legal.cgv') }}</a>
+          <router-link :to="{ name: 'mentions-legales' }" class="footer__legal-link">{{ t('footer.legal.terms') }}</router-link>
+          <router-link :to="{ name: 'privacy-policy' }" class="footer__legal-link">{{ t('footer.legal.privacy') }}</router-link>
+          <router-link :to="{ name: 'sales-terms' }" class="footer__legal-link">{{ t('footer.legal.cgv') }}</router-link>
         </div>
       </div>
     </div>
