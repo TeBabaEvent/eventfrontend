@@ -140,6 +140,7 @@ const { validateTicket, authError } = useScanner()
 const videoRef = ref<HTMLVideoElement>()
 const scanResult = ref<ScanResponse | null>(null)
 const cameraError = ref<string | null>(null)
+const cameraReady = ref(false)
 
 // Scanner state machine: 'idle' | 'scanning' | 'processing' | 'result'
 const scannerState = ref<'idle' | 'scanning' | 'processing' | 'result'>('idle')
@@ -227,14 +228,21 @@ function formatTime(dateString: string): string {
 }
 
 async function startScanning() {
-  if (!videoRef.value) return
+  console.log('[Scanner] startScanning called, videoRef:', !!videoRef.value)
 
-  console.log('[Scanner] Starting...')
+  // Wait for video element to be available
+  if (!videoRef.value) {
+    await nextTick()
+    if (!videoRef.value) {
+      console.error('[Scanner] Video element not found')
+      return
+    }
+  }
 
-  // Reset all states
+  // Reset states
   cameraError.value = null
   scanResult.value = null
-  scannerState.value = 'idle'
+  cameraReady.value = false
 
   // Destroy existing scanner if any
   if (qrScanner.value) {
@@ -246,46 +254,65 @@ async function startScanning() {
 
   try {
     const hasCamera = await QrScanner.hasCamera()
+    console.log('[Scanner] Has camera:', hasCamera)
+
     if (!hasCamera) {
       cameraError.value = 'Aucune caméra détectée sur cet appareil'
+      scannerState.value = 'idle'
       return
     }
 
+    // Create scanner with proper configuration
     qrScanner.value = new QrScanner(
       videoRef.value,
-      (result) => handleQrDetection(result.data),
+      (result) => {
+        console.log('[Scanner] QR detected by library')
+        handleQrDetection(result.data)
+      },
       {
         returnDetailedScanResult: true,
         highlightScanRegion: false,
         highlightCodeOutline: false,
         maxScansPerSecond: 5,
-        preferredCamera: 'environment'
+        preferredCamera: 'environment',
+        // Important: callback called when camera is ready
+        onDecodeError: () => { /* ignore decode errors, they're normal */ }
       }
     )
 
+    console.log('[Scanner] Starting camera...')
     await qrScanner.value.start()
+
+    cameraReady.value = true
     scannerState.value = 'scanning'
-    console.log('[Scanner] Started successfully')
+    console.log('[Scanner] Camera started, state:', scannerState.value)
+
   } catch (err) {
     const error = err as Error
-    console.error('[Scanner] Camera error:', error)
+    console.error('[Scanner] Camera error:', error.message, error)
     scannerState.value = 'idle'
+    cameraReady.value = false
 
     if (error.message?.includes('NotAllowedError') || error.message?.includes('Permission')) {
       cameraError.value = 'Accès à la caméra refusé. Autorisez l\'accès dans les paramètres de votre navigateur.'
     } else if (error.message?.includes('NotFoundError')) {
       cameraError.value = 'Aucune caméra disponible sur cet appareil.'
+    } else if (error.message?.includes('NotReadableError')) {
+      cameraError.value = 'La caméra est utilisée par une autre application.'
     } else if (error.message?.includes('https') || error.message?.includes('secure')) {
       cameraError.value = 'Une connexion sécurisée (HTTPS) est requise.'
     } else {
-      cameraError.value = 'Impossible d\'accéder à la caméra.'
+      cameraError.value = `Impossible d'accéder à la caméra: ${error.message}`
     }
   }
 }
 
 function stopScanning() {
+  console.log('[Scanner] Stopping...')
   if (qrScanner.value) {
-    qrScanner.value.pause(true)
+    // pause(false) = stop scanning but keep camera/video running
+    // pause(true) = stop scanning AND stop camera (causes black screen!)
+    qrScanner.value.pause(false)
   }
   scannerState.value = 'idle'
 }
@@ -316,6 +343,12 @@ async function processQrCode(qrData: string) {
   scannerState.value = 'processing'
   lastScan.value = { code: qrData, time: Date.now() }
 
+  // Pause QR detection but KEEP camera running (false = keep video)
+  // This prevents detecting more QR codes while we process this one
+  if (qrScanner.value) {
+    qrScanner.value.pause(false) // IMPORTANT: false keeps the camera video active!
+  }
+
   // Haptic feedback on detection
   if (navigator.vibrate) {
     navigator.vibrate(30)
@@ -326,11 +359,6 @@ async function processQrCode(qrData: string) {
 
     if (result) {
       console.log('[Scanner] Result:', result.valid ? 'SUCCESS' : result.result)
-
-      // Pause scanner and show result
-      if (qrScanner.value) {
-        qrScanner.value.pause(true)
-      }
 
       scanResult.value = result
       scannerState.value = 'result'
@@ -346,12 +374,33 @@ async function processQrCode(qrData: string) {
       // API returned null - go back to scanning
       console.log('[Scanner] No result from API, resuming...')
       lastScan.value = null
-      scannerState.value = 'scanning'
+      resumeScanning()
     }
   } catch (error) {
     console.error('[Scanner] Error:', error)
     lastScan.value = null
-    scannerState.value = 'scanning'
+    resumeScanning()
+  }
+}
+
+// Resume scanning after pause (camera still running)
+function resumeScanning() {
+  console.log('[Scanner] Resuming...')
+  if (qrScanner.value && cameraReady.value) {
+    try {
+      // $resume() is the correct method to resume after pause()
+      // It re-enables QR detection without restarting the camera
+      qrScanner.value.start()
+      scannerState.value = 'scanning'
+      console.log('[Scanner] Resumed successfully')
+    } catch (err) {
+      console.error('[Scanner] Resume failed:', err)
+      // If resume fails, try full restart
+      startScanning()
+    }
+  } else {
+    console.log('[Scanner] No scanner or camera not ready, reinitializing...')
+    startScanning()
   }
 }
 
@@ -365,24 +414,7 @@ async function resetScan() {
   await nextTick()
 
   // Resume scanning
-  if (qrScanner.value) {
-    try {
-      // Unpause the scanner
-      qrScanner.value.pause(false)
-
-      // Set state to scanning
-      scannerState.value = 'scanning'
-
-      console.log('[Scanner] Resumed - state:', scannerState.value)
-    } catch (err) {
-      console.error('[Scanner] Resume failed:', err)
-      // Reinitialize completely
-      await startScanning()
-    }
-  } else {
-    console.log('[Scanner] No scanner instance, reinitializing...')
-    await startScanning()
-  }
+  resumeScanning()
 }
 
 function playSound(success: boolean) {
@@ -422,10 +454,20 @@ watch(authError, (hasError) => {
 })
 
 onMounted(async () => {
+  console.log('[Scanner] Component mounted')
+
   if (!authStore.isAuthenticated) {
     router.push({ path: '/login', query: { redirect: '/scanner' } })
     return
   }
+
+  // Wait for next tick to ensure video element is in DOM
+  await nextTick()
+
+  // Small delay to ensure browser has rendered the video element
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  console.log('[Scanner] Starting camera on mount, videoRef:', !!videoRef.value)
 
   // Auto-start camera
   await startScanning()
