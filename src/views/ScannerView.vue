@@ -1,219 +1,150 @@
 <template>
-  <div class="scanner-app">
-    <!-- Top Bar - Minimal -->
-    <header class="top-bar">
-      <button
-        v-if="canAccessDashboard"
-        @click="goToDashboard"
-        class="top-bar__btn top-bar__btn--back"
-      >
-        <i class="fas fa-arrow-left"></i>
-        <span>Dashboard</span>
-      </button>
-      <div v-else class="top-bar__spacer"></div>
+  <div class="scanner" :class="{ 'scanner--result': scanResult }">
+    <!-- Fullscreen Camera -->
+    <div class="scanner__camera">
+      <video ref="videoRef" class="scanner__video" autoplay playsinline muted></video>
 
-      <!-- Status Indicator -->
-      <div class="status-indicator" :class="{ 'status-indicator--active': isScanning }">
-        <span class="status-dot"></span>
-        <span class="status-text">{{ isScanning ? 'Actif' : 'En pause' }}</span>
+      <!-- Gradient overlays for depth -->
+      <div class="scanner__gradient scanner__gradient--top"></div>
+      <div class="scanner__gradient scanner__gradient--bottom"></div>
+
+      <!-- Scan target area -->
+      <div v-if="!scanResult && !cameraError" class="scanner__target">
+        <div class="target">
+          <div class="target__corner target__corner--tl"></div>
+          <div class="target__corner target__corner--tr"></div>
+          <div class="target__corner target__corner--bl"></div>
+          <div class="target__corner target__corner--br"></div>
+          <div v-if="isScanning" class="target__pulse"></div>
+        </div>
+        <p class="scanner__hint">Placez le QR code dans le cadre</p>
       </div>
 
-      <button @click="logout" class="top-bar__btn top-bar__btn--logout">
-        <i class="fas fa-sign-out-alt"></i>
+      <!-- Camera Error -->
+      <div v-if="cameraError" class="scanner__error">
+        <div class="error-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <p class="error-text">{{ cameraError }}</p>
+        <button @click="startScanning" class="error-retry">
+          Réessayer
+        </button>
+      </div>
+    </div>
+
+    <!-- Top Controls -->
+    <header class="scanner__header">
+      <button v-if="canAccessDashboard" @click="goToDashboard" class="header-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div v-else class="header-spacer"></div>
+
+      <div class="header-status" :class="{ 'header-status--active': isScanning }">
+        <span class="status-dot"></span>
+        <span>{{ isScanning ? 'Scanner actif' : 'En pause' }}</span>
+      </div>
+
+      <button @click="logout" class="header-btn header-btn--logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
       </button>
     </header>
 
-    <!-- Main Scanner Area -->
-    <main class="scanner-area">
-      <!-- Event Info (when detected) -->
-      <transition name="slide-down">
-        <div v-if="currentEventName" class="event-info">
-          <i class="fas fa-calendar-check"></i>
-          <span>{{ currentEventName }}</span>
-        </div>
-      </transition>
+    <!-- Bottom Control -->
+    <div v-if="!scanResult && !cameraError" class="scanner__control">
+      <button
+        @click="isScanning ? stopScanning() : startScanning()"
+        class="scan-toggle"
+        :class="{ 'scan-toggle--active': isScanning }"
+      >
+        <span class="scan-toggle__ring"></span>
+        <span class="scan-toggle__inner">
+          <svg v-if="!isScanning" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <svg v-else viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
+          </svg>
+        </span>
+      </button>
+    </div>
 
-      <!-- Scanner Viewport -->
-      <div class="viewport" :class="{ 'viewport--active': isScanning, 'viewport--result': scanResult }">
-        <!-- Camera Feed -->
-        <div v-show="!scanResult" class="camera-feed">
-          <!-- Camera Error Message -->
-          <div v-if="cameraError" class="camera-error">
-            <i class="fas fa-exclamation-triangle"></i>
-            <p>{{ cameraError }}</p>
-            <button @click="startScanning" class="retry-btn">
-              <i class="fas fa-redo"></i>
-              Réessayer
-            </button>
+    <!-- Result Overlay -->
+    <transition name="result">
+      <div v-if="scanResult" class="result" :class="resultClass">
+        <div class="result__content">
+          <!-- Success/Error Icon -->
+          <div class="result__icon">
+            <svg v-if="scanResult.valid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 13l4 4L19 7"/>
+            </svg>
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M6 18L18 6M6 6l12 12"/>
+            </svg>
           </div>
 
-          <video ref="videoRef" class="camera-video" autoplay playsinline muted></video>
+          <!-- Status Text -->
+          <h2 class="result__status">{{ scanResult.valid ? 'Accès autorisé' : getErrorTitle() }}</h2>
 
-          <!-- Scan Frame Overlay -->
-          <div class="scan-overlay">
-            <div class="scan-frame">
-              <svg class="frame-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <!-- Corner brackets -->
-                <path d="M0,25 L0,8 Q0,0 8,0 L25,0" class="frame-corner"/>
-                <path d="M75,0 L92,0 Q100,0 100,8 L100,25" class="frame-corner"/>
-                <path d="M100,75 L100,92 Q100,100 92,100 L75,100" class="frame-corner"/>
-                <path d="M25,100 L8,100 Q0,100 0,92 L0,75" class="frame-corner"/>
-              </svg>
-
-              <!-- Scan line animation -->
-              <div v-if="isScanning" class="scan-beam"></div>
+          <!-- Ticket Details (only for valid tickets) -->
+          <div v-if="scanResult.valid && scanResult.holder" class="result__details">
+            <div class="detail">
+              <span class="detail__label">Titulaire</span>
+              <span class="detail__value">{{ scanResult.holder }}</span>
+            </div>
+            <div v-if="scanResult.pack_name" class="detail">
+              <span class="detail__label">Type</span>
+              <span class="detail__value">{{ scanResult.pack_name }}</span>
             </div>
           </div>
 
-          <!-- Camera Controls -->
-          <div class="camera-controls">
-            <button
-              @click="isScanning ? stopScanning() : startScanning()"
-              class="control-btn"
-              :class="isScanning ? 'control-btn--active' : ''"
-            >
-              <div class="control-btn__inner">
-                <i :class="isScanning ? 'fas fa-pause' : 'fas fa-play'"></i>
-              </div>
-            </button>
-          </div>
-        </div>
+          <!-- Error details (only for errors) -->
+          <p v-if="!scanResult.valid" class="result__error-msg">{{ getErrorMessage() }}</p>
 
-        <!-- Scan Result -->
-        <transition name="result-appear">
-          <div v-if="scanResult" class="result-display" :class="resultClass">
-            <!-- Result Icon -->
-            <div class="result-icon">
-              <div class="result-icon__circle">
-                <i :class="resultIcon"></i>
-              </div>
-            </div>
-
-            <!-- Result Message -->
-            <p class="result-message">{{ scanResult.message }}</p>
-
-            <!-- Ticket Info -->
-            <div v-if="scanResult.holder || scanResult.event_name" class="ticket-info">
-              <div v-if="scanResult.event_name" class="ticket-row ticket-row--event">
-                <span class="ticket-row__icon"><i class="fas fa-calendar"></i></span>
-                <span class="ticket-row__value">{{ scanResult.event_name }}</span>
-              </div>
-              <div v-if="scanResult.holder" class="ticket-row">
-                <span class="ticket-row__label">Titulaire</span>
-                <span class="ticket-row__value">{{ scanResult.holder }}</span>
-              </div>
-              <div v-if="scanResult.ticket_code" class="ticket-row">
-                <span class="ticket-row__label">Code</span>
-                <span class="ticket-row__value ticket-row__value--mono">{{ scanResult.ticket_code }}</span>
-              </div>
-              <div v-if="scanResult.pack_name" class="ticket-row">
-                <span class="ticket-row__label">Pack</span>
-                <span class="ticket-row__value">{{ scanResult.pack_name }}</span>
-              </div>
-              <div v-if="scanResult.scanned_at" class="ticket-row">
-                <span class="ticket-row__label">Heure</span>
-                <span class="ticket-row__value">{{ formatDateTime(scanResult.scanned_at) }}</span>
-              </div>
-            </div>
-
-            <!-- Next Scan Button -->
-            <button @click="resetScan" class="next-btn">
-              <span>Scanner suivant</span>
-              <i class="fas fa-arrow-right"></i>
-            </button>
-          </div>
-        </transition>
-      </div>
-
-      <!-- Stats Bar -->
-      <transition name="fade-up">
-        <div v-if="stats" class="stats-bar">
-          <div class="stat">
-            <span class="stat__value">{{ stats.success_count || 0 }}</span>
-            <span class="stat__label">Validés</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat">
-            <span class="stat__value">{{ (stats.invalid_count || 0) + (stats.already_used_count || 0) }}</span>
-            <span class="stat__label">Refusés</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat">
-            <span class="stat__value">{{ stats.scanned_tickets || 0 }}</span>
-            <span class="stat__label">Entrées</span>
-          </div>
-        </div>
-      </transition>
-    </main>
-
-    <!-- History Panel -->
-    <aside v-if="recentScans.length > 0" class="history-panel">
-      <div class="history-header">
-        <span>Derniers scans</span>
-        <span class="history-count">{{ recentScans.length }}</span>
-      </div>
-      <div class="history-scroll">
-        <div
-          v-for="scan in recentScans"
-          :key="scan.id"
-          class="history-entry"
-          :class="`history-entry--${scan.result}`"
-        >
-          <div class="history-entry__icon">
-            <i :class="getHistoryIcon(scan.result)"></i>
-          </div>
-          <div class="history-entry__info">
-            <span class="history-entry__name">{{ scan.holder || 'Inconnu' }}</span>
-            <span class="history-entry__time">{{ formatTime(scan.scanned_at) }}</span>
-          </div>
+          <!-- Next Button -->
+          <button @click="resetScan" class="result__next">
+            <span>Scanner suivant</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </button>
         </div>
       </div>
-    </aside>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, shallowRef, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useScanner } from '@/composables/useScanner'
 import { logger } from '@/services/logger'
-import type { ScanResponse, ScanLog, ScanStats } from '@/types'
+import type { ScanResponse } from '@/types'
 import QrScanner from 'qr-scanner'
 
 const router = useRouter()
-const { locale } = useI18n()
 const authStore = useAuthStore()
-const { validateTicket, getStats, getHistory, authError } = useScanner()
+const { validateTicket, authError } = useScanner()
 
 // State
 const videoRef = ref<HTMLVideoElement>()
 const isScanning = ref(false)
-const currentEventId = ref<string>('')
-const currentEventName = ref<string>('')
-const stats = ref<ScanStats | null>(null)
-const recentScans = ref<ScanLog[]>([])
 const scanResult = ref<ScanResponse | null>(null)
 const cameraError = ref<string | null>(null)
 
 // Use shallowRef for non-reactive complex objects
 const qrScanner = shallowRef<QrScanner | null>(null)
 let lastScanTime = 0
-const SCAN_DEBOUNCE_MS = 1500 // Prevent scanning same QR within 1.5s
+const SCAN_DEBOUNCE_MS = 1500
 
-// Reusable AudioContext for sounds (avoid memory leaks)
+// Audio
 let audioContext: AudioContext | null = null
-function getAudioContext(): AudioContext | null {
-  try {
-    if (!audioContext || audioContext.state === 'closed') {
-      audioContext = new AudioContext()
-    }
-    return audioContext
-  } catch {
-    return null
-  }
-}
 
 // Computed
 const canAccessDashboard = computed(() => {
@@ -223,19 +154,7 @@ const canAccessDashboard = computed(() => {
 
 const resultClass = computed(() => {
   if (!scanResult.value) return ''
-  return scanResult.value.valid ? 'result-display--success' : 'result-display--error'
-})
-
-const resultIcon = computed(() => {
-  if (!scanResult.value) return ''
-  if (scanResult.value.valid) return 'fas fa-check'
-  switch (scanResult.value.result) {
-    case 'already_used': return 'fas fa-redo'
-    case 'expired': return 'fas fa-clock'
-    case 'cancelled': return 'fas fa-ban'
-    case 'wrong_event': return 'fas fa-calendar-times'
-    default: return 'fas fa-times'
-  }
+  return scanResult.value.valid ? 'result--success' : 'result--error'
 })
 
 // Methods
@@ -248,38 +167,64 @@ function logout() {
   router.push('/login')
 }
 
+function getErrorTitle(): string {
+  if (!scanResult.value) return 'Erreur'
+  switch (scanResult.value.result) {
+    case 'already_used': return 'Déjà scanné'
+    case 'expired': return 'Billet expiré'
+    case 'cancelled': return 'Billet annulé'
+    case 'wrong_event': return 'Mauvais événement'
+    default: return 'Billet invalide'
+  }
+}
+
+function getErrorMessage(): string {
+  if (!scanResult.value) return ''
+  switch (scanResult.value.result) {
+    case 'already_used':
+      return scanResult.value.scanned_at
+        ? `Entrée enregistrée à ${formatTime(scanResult.value.scanned_at)}`
+        : 'Ce billet a déjà été utilisé'
+    case 'expired': return 'Ce billet n\'est plus valide'
+    case 'cancelled': return 'Ce billet a été remboursé'
+    case 'wrong_event': return 'Ce billet appartient à un autre événement'
+    default: return 'QR code non reconnu'
+  }
+}
+
+function formatTime(dateString: string): string {
+  return new Intl.DateTimeFormat('fr', {
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date(dateString))
+}
+
 async function startScanning() {
   if (!videoRef.value) return
-
   cameraError.value = null
 
   try {
-    // Check if camera is available before creating scanner
     const hasCamera = await QrScanner.hasCamera()
     if (!hasCamera) {
-      cameraError.value = 'Aucune caméra détectée'
+      cameraError.value = 'Aucune caméra détectée sur cet appareil'
       return
     }
 
     qrScanner.value = new QrScanner(
       videoRef.value,
       (result) => {
-        // Debounce: prevent scanning same QR within 1.5s
         const now = Date.now()
-        if (now - lastScanTime < SCAN_DEBOUNCE_MS) {
-          return
-        }
+        if (now - lastScanTime < SCAN_DEBOUNCE_MS) return
         lastScanTime = now
 
         if (isScanning.value) {
-          isScanning.value = false
           handleScan(result.data)
         }
       },
       {
         returnDetailedScanResult: true,
-        highlightScanRegion: true,
-        highlightCodeOutline: true
+        highlightScanRegion: false,
+        highlightCodeOutline: false
       }
     )
 
@@ -289,19 +234,17 @@ async function startScanning() {
     const error = err as Error
     logger.error('Camera error:', error)
 
-    // Provide user-friendly error messages
     if (error.message?.includes('NotAllowedError') || error.message?.includes('Permission')) {
-      cameraError.value = 'Accès caméra refusé. Autorisez l\'accès dans les paramètres.'
+      cameraError.value = 'Accès à la caméra refusé. Autorisez l\'accès dans les paramètres de votre navigateur.'
     } else if (error.message?.includes('NotFoundError')) {
-      cameraError.value = 'Aucune caméra trouvée sur cet appareil.'
+      cameraError.value = 'Aucune caméra disponible sur cet appareil.'
     } else if (error.message?.includes('https') || error.message?.includes('secure')) {
-      cameraError.value = 'HTTPS requis pour accéder à la caméra.'
+      cameraError.value = 'Une connexion sécurisée (HTTPS) est requise.'
     } else {
-      cameraError.value = 'Erreur lors de l\'accès à la caméra.'
+      cameraError.value = 'Impossible d\'accéder à la caméra.'
     }
   }
 }
-
 
 function stopScanning() {
   if (qrScanner.value) {
@@ -311,137 +254,81 @@ function stopScanning() {
 }
 
 async function handleScan(qrData: string) {
-  const result = await validateTicket(qrData)
+  isScanning.value = false
 
+  const result = await validateTicket(qrData)
   if (result) {
     scanResult.value = result
 
-    if (result.valid) {
-      playSuccessSound()
-    } else {
-      playErrorSound()
+    // Haptic feedback if available
+    if (navigator.vibrate) {
+      navigator.vibrate(result.valid ? [50] : [50, 50, 50])
     }
 
-    if (result.event_id) {
-      currentEventId.value = result.event_id
-      currentEventName.value = result.event_name || ''
-    }
-
-    await Promise.all([loadStats(), loadHistory()])
+    // Audio feedback
+    playSound(result.valid)
   }
 }
 
 function resetScan() {
   scanResult.value = null
-  if (qrScanner.value && !isScanning.value) {
+  if (qrScanner.value) {
     qrScanner.value.start()
     isScanning.value = true
   }
 }
 
-async function loadStats() {
-  if (!currentEventId.value) {
-    stats.value = null
-    return
-  }
-  const result = await getStats(currentEventId.value)
-  if (result) stats.value = result
-}
-
-async function loadHistory() {
-  const result = await getHistory(currentEventId.value || undefined, 8)
-  if (result) recentScans.value = result
-}
-
-function formatTime(dateString: string) {
-  return new Intl.DateTimeFormat(locale.value, {
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(dateString))
-}
-
-function formatDateTime(dateString: string) {
-  return new Intl.DateTimeFormat(locale.value, {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(dateString))
-}
-
-function getHistoryIcon(result: string) {
-  switch (result) {
-    case 'success': return 'fas fa-check'
-    case 'already_used': return 'fas fa-redo'
-    case 'expired': return 'fas fa-clock'
-    case 'cancelled': return 'fas fa-ban'
-    case 'wrong_event': return 'fas fa-calendar-times'
-    default: return 'fas fa-times'
-  }
-}
-
-function playSuccessSound() {
-  const ctx = getAudioContext()
-  if (!ctx) return
-
+function playSound(success: boolean) {
   try {
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
+    if (!audioContext || audioContext.state === 'closed') {
+      audioContext = new AudioContext()
+    }
+
+    const osc = audioContext.createOscillator()
+    const gain = audioContext.createGain()
     osc.connect(gain)
-    gain.connect(ctx.destination)
-    osc.frequency.value = 880
-    osc.type = 'sine'
-    gain.gain.setValueAtTime(0.3, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2)
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.2)
-  } catch { /* ignore */ }
+    gain.connect(audioContext.destination)
+
+    if (success) {
+      osc.frequency.value = 880
+      osc.type = 'sine'
+      gain.gain.setValueAtTime(0.15, audioContext.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15)
+      osc.start(audioContext.currentTime)
+      osc.stop(audioContext.currentTime + 0.15)
+    } else {
+      osc.frequency.value = 200
+      osc.type = 'square'
+      gain.gain.setValueAtTime(0.1, audioContext.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25)
+      osc.start(audioContext.currentTime)
+      osc.stop(audioContext.currentTime + 0.25)
+    }
+  } catch { /* ignore audio errors */ }
 }
 
-function playErrorSound() {
-  const ctx = getAudioContext()
-  if (!ctx) return
-
-  try {
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-    osc.frequency.value = 220
-    osc.type = 'square'
-    gain.gain.setValueAtTime(0.2, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3)
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.3)
-  } catch { /* ignore */ }
-}
-
-// Rediriger vers login si session expirée
-watch(authError, (hasAuthError) => {
-  if (hasAuthError) {
+// Auth error watcher
+watch(authError, (hasError) => {
+  if (hasError) {
     router.push({ path: '/login', query: { redirect: '/scanner' } })
   }
 })
 
 onMounted(async () => {
-  // Vérifier l'authentification avant de charger
   if (!authStore.isAuthenticated) {
     router.push({ path: '/login', query: { redirect: '/scanner' } })
     return
   }
 
-  // Charger l'historique une seule fois au démarrage
-  await loadHistory()
+  // Auto-start camera
+  await startScanning()
 })
 
 onUnmounted(() => {
-  // Cleanup QR scanner
   if (qrScanner.value) {
     qrScanner.value.destroy()
     qrScanner.value = null
   }
-
-  // Cleanup AudioContext
   if (audioContext && audioContext.state !== 'closed') {
     audioContext.close().catch(() => {})
     audioContext = null
@@ -450,169 +337,39 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ============================================
-   PROFESSIONAL QR SCANNER - Clean & Focused
-   ============================================ */
+/* =============================================
+   PROFESSIONAL SCANNER - Minimal & Clean
+   ============================================= */
 
-.scanner-app {
-  --bg-dark: #09090b;
-  --bg-surface: #18181b;
-  --bg-elevated: #27272a;
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-medium: rgba(255, 255, 255, 0.1);
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --accent: #dc143c;
-  --accent-glow: rgba(220, 20, 60, 0.5);
+.scanner {
+  --black: #000000;
+  --white: #ffffff;
+  --gray-50: #fafafa;
+  --gray-100: #f4f4f5;
+  --gray-400: #a1a1aa;
+  --gray-500: #71717a;
+  --gray-800: #27272a;
+  --gray-900: #18181b;
   --success: #22c55e;
-  --success-glow: rgba(34, 197, 94, 0.4);
+  --success-bg: rgba(34, 197, 94, 0.12);
   --error: #ef4444;
-  --error-glow: rgba(239, 68, 68, 0.4);
+  --error-bg: rgba(239, 68, 68, 0.12);
 
+  position: fixed;
+  inset: 0;
+  background: var(--black);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: var(--bg-dark);
-  color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
 
-/* ============================================
-   TOP BAR
-   ============================================ */
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-subtle);
-  flex-shrink: 0;
-}
+/* =============================================
+   CAMERA LAYER
+   ============================================= */
 
-.top-bar__spacer {
-  width: 80px;
-}
-
-.top-bar__btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: transparent;
-  border: 1px solid var(--border-medium);
-  border-radius: 8px;
-  color: var(--text-secondary);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.top-bar__btn:hover {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  border-color: var(--border-medium);
-}
-
-.top-bar__btn--back {
-  padding-right: 1rem;
-}
-
-.top-bar__btn--logout {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  justify-content: center;
-}
-
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  background: var(--bg-elevated);
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  transition: all 0.3s ease;
-}
-
-.status-indicator--active .status-dot {
-  background: var(--success);
-  box-shadow: 0 0 8px var(--success);
-}
-
-.status-indicator--active .status-text {
-  color: var(--success);
-}
-
-/* ============================================
-   SCANNER AREA
-   ============================================ */
-.scanner-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  gap: 1rem;
-  overflow: hidden;
-}
-
-/* Event Info */
-.event-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.15), rgba(220, 20, 60, 0.05));
-  border: 1px solid rgba(220, 20, 60, 0.2);
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.event-info i {
-  color: var(--accent);
-}
-
-/* ============================================
-   VIEWPORT
-   ============================================ */
-.viewport {
-  flex: 1;
-  position: relative;
-  background: var(--bg-surface);
-  border-radius: 20px;
-  overflow: hidden;
-  border: 2px solid var(--border-subtle);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  /* Fix CLS: Reserve minimum aspect ratio */
-  min-height: 300px;
-  aspect-ratio: 4 / 3;
-  contain: layout; /* Improve rendering performance */
-}
-
-.viewport--active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 0 40px var(--accent-glow);
-}
-
-/* Camera Feed */
-.camera-feed {
+.scanner__camera {
   position: absolute;
   inset: 0;
   display: flex;
@@ -620,468 +377,449 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-.camera-video {
+.scanner__video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Fix CLS: Prevent video from causing layout shifts */
-  position: absolute;
-  inset: 0;
 }
 
-/* Camera Error */
-.camera-error {
+.scanner__gradient {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 200px;
+  pointer-events: none;
+}
+
+.scanner__gradient--top {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+
+.scanner__gradient--bottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+
+/* =============================================
+   SCAN TARGET
+   ============================================= */
+
+.scanner__target {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 2rem;
-  text-align: center;
-  z-index: 10;
-  background: var(--bg-surface);
+  gap: 2rem;
 }
 
-.camera-error i {
-  font-size: 3rem;
-  color: var(--error);
-}
-
-.camera-error p {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  max-width: 280px;
-  margin: 0;
-}
-
-.retry-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: var(--accent);
-  border: none;
-  border-radius: 10px;
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.retry-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px var(--accent-glow);
-}
-
-/* Scan Overlay */
-.scan-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.scan-frame {
+.target {
   position: relative;
-  width: min(280px, 70vw);
+  width: min(280px, 65vw);
   aspect-ratio: 1;
 }
 
-.frame-svg {
+.target__corner {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-color: var(--white);
+  border-style: solid;
+  border-width: 0;
+}
+
+.target__corner--tl {
+  top: 0; left: 0;
+  border-top-width: 3px;
+  border-left-width: 3px;
+  border-top-left-radius: 16px;
+}
+
+.target__corner--tr {
+  top: 0; right: 0;
+  border-top-width: 3px;
+  border-right-width: 3px;
+  border-top-right-radius: 16px;
+}
+
+.target__corner--bl {
+  bottom: 0; left: 0;
+  border-bottom-width: 3px;
+  border-left-width: 3px;
+  border-bottom-left-radius: 16px;
+}
+
+.target__corner--br {
+  bottom: 0; right: 0;
+  border-bottom-width: 3px;
+  border-right-width: 3px;
+  border-bottom-right-radius: 16px;
+}
+
+.target__pulse {
+  position: absolute;
+  inset: -8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.02); opacity: 0.8; }
+}
+
+.scanner__hint {
+  color: var(--white);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: center;
+  opacity: 0.8;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  margin: 0;
+}
+
+/* =============================================
+   CAMERA ERROR
+   ============================================= */
+
+.scanner__error {
   position: absolute;
   inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: var(--black);
+}
+
+.error-icon {
+  width: 64px;
+  height: 64px;
+  color: var(--gray-400);
+}
+
+.error-icon svg {
   width: 100%;
   height: 100%;
 }
 
-.frame-corner {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 3;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 6px var(--accent-glow));
-}
-
-.scan-beam {
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  box-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow);
-  animation: beam-scan 2s ease-in-out infinite;
-}
-
-@keyframes beam-scan {
-  0%, 100% { top: 10%; opacity: 0.5; }
-  50% { top: 85%; opacity: 1; }
-}
-
-/* Camera Controls */
-.camera-controls {
-  position: absolute;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  pointer-events: auto;
-}
-
-.control-btn {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.control-btn:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: scale(1.05);
-}
-
-.control-btn--active {
-  border-color: var(--accent);
-  background: rgba(220, 20, 60, 0.2);
-}
-
-.control-btn__inner {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  color: var(--bg-dark);
-  transition: all 0.2s ease;
-}
-
-.control-btn--active .control-btn__inner {
-  background: var(--accent);
-  color: white;
-}
-
-/* ============================================
-   RESULT DISPLAY
-   ============================================ */
-.result-display {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  background: var(--bg-surface);
-}
-
-.result-icon {
-  margin-bottom: 1rem;
-}
-
-.result-icon__circle {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  animation: icon-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes icon-pop {
-  0% { transform: scale(0); }
-  100% { transform: scale(1); }
-}
-
-.result-display--success .result-icon__circle {
-  background: rgba(34, 197, 94, 0.15);
-  color: var(--success);
-  box-shadow: 0 0 40px var(--success-glow);
-}
-
-.result-display--error .result-icon__circle {
-  background: rgba(239, 68, 68, 0.15);
-  color: var(--error);
-  box-shadow: 0 0 40px var(--error-glow);
-}
-
-.result-message {
-  font-size: 1.25rem;
-  font-weight: 700;
+.error-text {
+  color: var(--gray-400);
+  font-size: 1rem;
   text-align: center;
-  margin: 0 0 1.25rem 0;
-  color: var(--text-primary);
+  max-width: 300px;
+  line-height: 1.5;
+  margin: 0;
 }
 
-/* Ticket Info */
-.ticket-info {
-  width: 100%;
-  max-width: 320px;
-  background: var(--bg-elevated);
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 1.25rem;
-}
-
-.ticket-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.ticket-row:last-child {
-  border-bottom: none;
-}
-
-.ticket-row--event {
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.12), rgba(220, 20, 60, 0.05));
-  justify-content: flex-start;
-  gap: 0.625rem;
-  font-weight: 600;
-}
-
-.ticket-row__icon {
-  color: var(--accent);
-}
-
-.ticket-row__label {
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-}
-
-.ticket-row__value {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.ticket-row__value--mono {
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 0.8125rem;
-  letter-spacing: 0.02em;
-}
-
-/* Next Button */
-.next-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.875rem 1.75rem;
-  background: var(--accent);
+.error-retry {
+  padding: 0.875rem 2rem;
+  background: var(--white);
   border: none;
-  border-radius: 12px;
-  color: white;
+  border-radius: 100px;
+  color: var(--black);
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
-.next-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px var(--accent-glow);
+.error-retry:active {
+  transform: scale(0.97);
+  opacity: 0.9;
 }
 
-.next-btn i {
-  font-size: 0.875rem;
-  transition: transform 0.2s ease;
-}
+/* =============================================
+   HEADER
+   ============================================= */
 
-.next-btn:hover i {
-  transform: translateX(3px);
-}
-
-/* ============================================
-   STATS BAR
-   ============================================ */
-.stats-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  padding: 0.875rem 1.5rem;
-  background: var(--bg-surface);
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.125rem;
-}
-
-.stat__value {
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.stat__label {
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-}
-
-.stat-divider {
-  width: 1px;
-  height: 32px;
-  background: var(--border-medium);
-}
-
-/* ============================================
-   HISTORY PANEL
-   ============================================ */
-.history-panel {
-  flex-shrink: 0;
-  background: var(--bg-surface);
-  border-top: 1px solid var(--border-subtle);
-  max-height: 180px;
-}
-
-.history-header {
+.scanner__header {
+  position: relative;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 1rem 1.25rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
 }
 
-.history-count {
-  padding: 0.125rem 0.5rem;
-  background: var(--bg-elevated);
-  border-radius: 10px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.history-scroll {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.history-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.history-entry {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg-elevated);
-  border-radius: 10px;
-  flex-shrink: 0;
-  min-width: 140px;
-}
-
-.history-entry__icon {
-  width: 28px;
-  height: 28px;
+.header-btn {
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: var(--white);
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 
-.history-entry--success .history-entry__icon {
-  background: rgba(34, 197, 94, 0.15);
+.header-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.header-btn:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.header-spacer {
+  width: 44px;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 100px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--gray-400);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gray-500);
+  transition: all 0.3s ease;
+}
+
+.header-status--active .status-dot {
+  background: var(--success);
+  box-shadow: 0 0 12px var(--success);
+}
+
+.header-status--active {
+  color: var(--white);
+}
+
+/* =============================================
+   BOTTOM CONTROL
+   ============================================= */
+
+.scanner__control {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  padding-bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1rem));
+}
+
+.scan-toggle {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.scan-toggle__ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.scan-toggle--active .scan-toggle__ring {
+  border-color: var(--success);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+}
+
+.scan-toggle__inner {
+  position: absolute;
+  inset: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--white);
+  border-radius: 50%;
+  color: var(--black);
+  transition: all 0.2s ease;
+}
+
+.scan-toggle--active .scan-toggle__inner {
+  background: var(--success);
+  color: var(--white);
+}
+
+.scan-toggle__inner svg {
+  width: 24px;
+  height: 24px;
+}
+
+.scan-toggle:active .scan-toggle__inner {
+  transform: scale(0.92);
+}
+
+/* =============================================
+   RESULT OVERLAY
+   ============================================= */
+
+.result {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.result--success {
+  background: var(--success);
+}
+
+.result--error {
+  background: var(--error);
+}
+
+.result__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 320px;
+  width: 100%;
+}
+
+.result__icon {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+  animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.result__icon svg {
+  width: 48px;
+  height: 48px;
+  color: var(--white);
+}
+
+@keyframes pop {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.result__status {
+  color: var(--white);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.result__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  width: 100%;
+}
+
+.detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.375rem 0;
+}
+
+.detail__label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.detail__value {
+  color: var(--white);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.result__error-msg {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1rem;
+  margin: 0.5rem 0 0 0;
+  line-height: 1.4;
+}
+
+.result__next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 2rem;
+  padding: 1rem 2rem;
+  background: var(--white);
+  border: none;
+  border-radius: 100px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.result--success .result__next {
   color: var(--success);
 }
 
-.history-entry--already_used .history-entry__icon {
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
-}
-
-.history-entry--invalid .history-entry__icon {
-  background: rgba(239, 68, 68, 0.15);
+.result--error .result__next {
   color: var(--error);
 }
 
-.history-entry__info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+.result__next svg {
+  width: 20px;
+  height: 20px;
 }
 
-.history-entry__name {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.result__next:active {
+  transform: scale(0.97);
+  opacity: 0.9;
 }
 
-.history-entry__time {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-}
-
-/* ============================================
+/* =============================================
    TRANSITIONS
-   ============================================ */
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
+   ============================================= */
+
+.result-enter-active {
+  animation: result-in 0.3s ease-out;
 }
 
-.slide-down-enter-from,
-.slide-down-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.fade-up-enter-active,
-.fade-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-up-enter-from,
-.fade-up-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.result-appear-enter-active {
-  animation: result-in 0.35s ease-out;
-}
-
-.result-appear-leave-active {
+.result-leave-active {
   animation: result-out 0.2s ease-in;
 }
 
 @keyframes result-in {
-  0% { opacity: 0; transform: scale(0.9); }
+  0% { opacity: 0; transform: scale(1.1); }
   100% { opacity: 1; transform: scale(1); }
 }
 
@@ -1090,27 +828,10 @@ onUnmounted(() => {
   100% { opacity: 0; transform: scale(0.95); }
 }
 
-/* ============================================
-   RESPONSIVE & SAFE AREAS
-   ============================================ */
-@supports (padding-top: env(safe-area-inset-top)) {
-  .top-bar {
-    padding-top: max(0.75rem, env(safe-area-inset-top));
-  }
-
-  .history-panel {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
-
-@media (max-height: 600px) {
-  .scanner-area {
-    padding: 0.75rem;
-    gap: 0.75rem;
-  }
-
-  .history-panel {
-    max-height: 120px;
-  }
+/* Hide when showing result */
+.scanner--result .scanner__header,
+.scanner--result .scanner__control {
+  opacity: 0;
+  pointer-events: none;
 }
 </style>
