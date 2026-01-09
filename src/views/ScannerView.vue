@@ -125,7 +125,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, shallowRef, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useScanner } from '@/composables/useScanner'
@@ -136,17 +136,21 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { validateTicket, authError } = useScanner()
 
-// State
+// Core state
 const videoRef = ref<HTMLVideoElement>()
-const isScanning = ref(false)
-const isProcessing = ref(false) // Feedback immédiat pendant l'appel API
 const scanResult = ref<ScanResponse | null>(null)
 const cameraError = ref<string | null>(null)
 
-// Anti-duplicate scanning
-const lastScannedCode = ref<string | null>(null)
-const lastScanTime = ref<number>(0)
-const SCAN_COOLDOWN_MS = 3000 // 3 seconds before same QR can be scanned again
+// Scanner state machine: 'idle' | 'scanning' | 'processing' | 'result'
+const scannerState = ref<'idle' | 'scanning' | 'processing' | 'result'>('idle')
+
+// Computed states for template
+const isScanning = computed(() => scannerState.value === 'scanning')
+const isProcessing = computed(() => scannerState.value === 'processing')
+
+// Anti-duplicate: store code + timestamp
+const lastScan = ref<{ code: string; time: number } | null>(null)
+const SCAN_COOLDOWN_MS = 2500
 
 // Use shallowRef for non-reactive complex objects
 const qrScanner = shallowRef<QrScanner | null>(null)
@@ -166,15 +170,18 @@ const resultClass = computed(() => {
 })
 
 const statusClass = computed(() => {
-  if (isProcessing.value) return 'header-status--processing'
-  if (isScanning.value) return 'header-status--active'
+  if (scannerState.value === 'processing') return 'header-status--processing'
+  if (scannerState.value === 'scanning') return 'header-status--active'
   return ''
 })
 
 const statusText = computed(() => {
-  if (isProcessing.value) return 'Vérification...'
-  if (isScanning.value) return 'Scanner actif'
-  return 'En pause'
+  switch (scannerState.value) {
+    case 'processing': return 'Vérification...'
+    case 'scanning': return 'Scanner actif'
+    case 'result': return 'Résultat'
+    default: return 'En pause'
+  }
 })
 
 // Methods
@@ -221,7 +228,21 @@ function formatTime(dateString: string): string {
 
 async function startScanning() {
   if (!videoRef.value) return
+
+  console.log('[Scanner] Starting...')
+
+  // Reset all states
   cameraError.value = null
+  scanResult.value = null
+  scannerState.value = 'idle'
+
+  // Destroy existing scanner if any
+  if (qrScanner.value) {
+    try {
+      qrScanner.value.destroy()
+    } catch { /* ignore */ }
+    qrScanner.value = null
+  }
 
   try {
     const hasCamera = await QrScanner.hasCamera()
@@ -232,26 +253,23 @@ async function startScanning() {
 
     qrScanner.value = new QrScanner(
       videoRef.value,
-      (result) => {
-        // Guard against race conditions - only process if actively scanning
-        if (isScanning.value && !isProcessing.value) {
-          handleScan(result.data)
-        }
-      },
+      (result) => handleQrDetection(result.data),
       {
         returnDetailedScanResult: true,
         highlightScanRegion: false,
         highlightCodeOutline: false,
-        maxScansPerSecond: 8, // Good balance between speed and CPU
-        preferredCamera: 'environment' // Prefer back camera (better quality)
+        maxScansPerSecond: 5,
+        preferredCamera: 'environment'
       }
     )
 
     await qrScanner.value.start()
-    isScanning.value = true
+    scannerState.value = 'scanning'
+    console.log('[Scanner] Started successfully')
   } catch (err) {
     const error = err as Error
     console.error('[Scanner] Camera error:', error)
+    scannerState.value = 'idle'
 
     if (error.message?.includes('NotAllowedError') || error.message?.includes('Permission')) {
       cameraError.value = 'Accès à la caméra refusé. Autorisez l\'accès dans les paramètres de votre navigateur.'
@@ -267,51 +285,55 @@ async function startScanning() {
 
 function stopScanning() {
   if (qrScanner.value) {
-    qrScanner.value.stop()
-    isScanning.value = false
-  }
-}
-
-async function handleScan(qrData: string) {
-  // Prevent race condition - atomic check and set
-  if (isProcessing.value) {
-    console.log('[Scanner] Already processing, ignoring...')
-    return
-  }
-
-  // Check for duplicate scan (same QR code within cooldown period)
-  const now = Date.now()
-  if (lastScannedCode.value === qrData && (now - lastScanTime.value) < SCAN_COOLDOWN_MS) {
-    console.log('[Scanner] Same QR code detected within cooldown, ignoring...')
-    return
-  }
-
-  // Immediate state change to prevent duplicate scans
-  isProcessing.value = true
-  isScanning.value = false
-
-  // Track this scan for duplicate prevention
-  lastScannedCode.value = qrData
-  lastScanTime.value = now
-
-  // Pause scanning but keep camera running for smooth UX
-  if (qrScanner.value) {
     qrScanner.value.pause(true)
   }
+  scannerState.value = 'idle'
+}
+
+// Called by QrScanner when a QR is detected
+function handleQrDetection(qrData: string) {
+  // Only process if in scanning state
+  if (scannerState.value !== 'scanning') {
+    return
+  }
+
+  // Anti-duplicate: check if same QR was scanned recently
+  const now = Date.now()
+  if (lastScan.value && lastScan.value.code === qrData) {
+    if (now - lastScan.value.time < SCAN_COOLDOWN_MS) {
+      return // Same QR within cooldown, ignore
+    }
+  }
+
+  // Process this scan
+  processQrCode(qrData)
+}
+
+async function processQrCode(qrData: string) {
+  console.log('[Scanner] Processing:', qrData.substring(0, 20) + '...')
+
+  // Transition to processing state
+  scannerState.value = 'processing'
+  lastScan.value = { code: qrData, time: Date.now() }
 
   // Haptic feedback on detection
   if (navigator.vibrate) {
     navigator.vibrate(30)
   }
 
-  console.log('[Scanner] QR detected, validating...')
-
   try {
     const result = await validateTicket(qrData)
 
     if (result) {
       console.log('[Scanner] Result:', result.valid ? 'SUCCESS' : result.result)
+
+      // Pause scanner and show result
+      if (qrScanner.value) {
+        qrScanner.value.pause(true)
+      }
+
       scanResult.value = result
+      scannerState.value = 'result'
 
       // Haptic feedback for result
       if (navigator.vibrate) {
@@ -321,49 +343,45 @@ async function handleScan(qrData: string) {
       // Audio feedback
       playSound(result.valid)
     } else {
-      // API returned null - network error or auth issue
+      // API returned null - go back to scanning
       console.log('[Scanner] No result from API, resuming...')
-      resumeScanning()
+      lastScan.value = null
+      scannerState.value = 'scanning'
     }
   } catch (error) {
-    console.error('[Scanner] Error during validation:', error)
-    resumeScanning()
-  } finally {
-    isProcessing.value = false
+    console.error('[Scanner] Error:', error)
+    lastScan.value = null
+    scannerState.value = 'scanning'
   }
 }
 
-function resumeScanning() {
-  if (qrScanner.value) {
-    // Ensure clean state before resuming
-    isProcessing.value = false
-    qrScanner.value.pause(false)
-    isScanning.value = true
-    console.log('[Scanner] Scanning resumed - isScanning:', isScanning.value, 'isProcessing:', isProcessing.value)
-  }
-}
+async function resetScan() {
+  console.log('[Scanner] Reset requested')
 
-function resetScan() {
-  console.log('[Scanner] Reset scan requested')
-
-  // Clear all scan-related states
+  // Clear result immediately
   scanResult.value = null
-  isProcessing.value = false
 
-  // Clear duplicate tracking to allow fresh scans
-  // But keep a short delay to prevent immediate re-detection
-  lastScannedCode.value = null
-  lastScanTime.value = 0
+  // Wait for Vue to update DOM (hide result overlay)
+  await nextTick()
 
+  // Resume scanning
   if (qrScanner.value) {
-    // Small delay before resuming to prevent immediate re-detection of same QR
-    setTimeout(() => {
-      resumeScanning()
-    }, 300)
+    try {
+      // Unpause the scanner
+      qrScanner.value.pause(false)
+
+      // Set state to scanning
+      scannerState.value = 'scanning'
+
+      console.log('[Scanner] Resumed - state:', scannerState.value)
+    } catch (err) {
+      console.error('[Scanner] Resume failed:', err)
+      // Reinitialize completely
+      await startScanning()
+    }
   } else {
-    // Scanner was destroyed, reinitialize
-    console.log('[Scanner] Scanner not found, reinitializing...')
-    startScanning()
+    console.log('[Scanner] No scanner instance, reinitializing...')
+    await startScanning()
   }
 }
 
