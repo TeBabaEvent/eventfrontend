@@ -22,6 +22,7 @@
               :to="item.path"
               class="sidebar-nav__link"
               :class="{ 'active': isActiveRoute(item.path) }"
+              @click="closeSidebar"
             >
               <span class="sidebar-nav__icon-wrap">
                 <i :class="['sidebar-nav__icon', item.icon]"></i>
