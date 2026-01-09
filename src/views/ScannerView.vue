@@ -143,6 +143,11 @@ const isProcessing = ref(false) // Feedback immédiat pendant l'appel API
 const scanResult = ref<ScanResponse | null>(null)
 const cameraError = ref<string | null>(null)
 
+// Anti-duplicate scanning
+const lastScannedCode = ref<string | null>(null)
+const lastScanTime = ref<number>(0)
+const SCAN_COOLDOWN_MS = 3000 // 3 seconds before same QR can be scanned again
+
 // Use shallowRef for non-reactive complex objects
 const qrScanner = shallowRef<QrScanner | null>(null)
 
@@ -274,9 +279,20 @@ async function handleScan(qrData: string) {
     return
   }
 
+  // Check for duplicate scan (same QR code within cooldown period)
+  const now = Date.now()
+  if (lastScannedCode.value === qrData && (now - lastScanTime.value) < SCAN_COOLDOWN_MS) {
+    console.log('[Scanner] Same QR code detected within cooldown, ignoring...')
+    return
+  }
+
   // Immediate state change to prevent duplicate scans
   isProcessing.value = true
   isScanning.value = false
+
+  // Track this scan for duplicate prevention
+  lastScannedCode.value = qrData
+  lastScanTime.value = now
 
   // Pause scanning but keep camera running for smooth UX
   if (qrScanner.value) {
@@ -319,18 +335,31 @@ async function handleScan(qrData: string) {
 
 function resumeScanning() {
   if (qrScanner.value) {
+    // Ensure clean state before resuming
+    isProcessing.value = false
     qrScanner.value.pause(false)
     isScanning.value = true
-    console.log('[Scanner] Scanning resumed')
+    console.log('[Scanner] Scanning resumed - isScanning:', isScanning.value, 'isProcessing:', isProcessing.value)
   }
 }
 
 function resetScan() {
   console.log('[Scanner] Reset scan requested')
+
+  // Clear all scan-related states
   scanResult.value = null
+  isProcessing.value = false
+
+  // Clear duplicate tracking to allow fresh scans
+  // But keep a short delay to prevent immediate re-detection
+  lastScannedCode.value = null
+  lastScanTime.value = 0
 
   if (qrScanner.value) {
-    resumeScanning()
+    // Small delay before resuming to prevent immediate re-detection of same QR
+    setTimeout(() => {
+      resumeScanning()
+    }, 300)
   } else {
     // Scanner was destroyed, reinitialize
     console.log('[Scanner] Scanner not found, reinitializing...')
@@ -502,6 +531,7 @@ onUnmounted(() => {
   border-color: var(--white);
   border-style: solid;
   border-width: 0;
+  transition: border-color 0.2s ease;
 }
 
 .target__corner--tl {
