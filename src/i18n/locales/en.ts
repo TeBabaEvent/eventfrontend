@@ -688,6 +688,10 @@ Best regards`
       title: 'Payment failed',
       subtitle: 'An error occurred during payment. Please try again.'
     },
+    cancelled: {
+      title: 'Payment cancelled',
+      subtitle: 'You cancelled the payment. You can try again whenever you want.'
+    },
     error: {
       title: 'Error',
       notFound: 'Order not found or invalid order number.'

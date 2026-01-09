@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
   CHECKOUT_CREATE: '/api/checkout/create-session',
   CART_CHECKOUT_CREATE: '/api/checkout/create-cart-session',
   CHECKOUT_CAPTURE: (orderNumber: string) => `/api/checkout/capture-payment/${orderNumber}`,
+  CHECKOUT_CANCEL: (orderNumber: string) => `/api/checkout/cancel/${orderNumber}`,
   ORDER_BY_NUMBER: (orderNumber: string) => `/api/checkout/order/${orderNumber}`,
 
   // Scan & Validation

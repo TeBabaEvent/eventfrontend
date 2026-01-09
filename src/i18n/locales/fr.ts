@@ -692,6 +692,10 @@ Cordialement`
       title: 'Paiement échoué',
       subtitle: 'Une erreur est survenue lors du paiement. Veuillez réessayer.'
     },
+    cancelled: {
+      title: 'Paiement annulé',
+      subtitle: 'Vous avez annulé le paiement. Vous pouvez réessayer quand vous le souhaitez.'
+    },
     error: {
       title: 'Erreur',
       notFound: 'Commande introuvable ou numéro de commande invalide.'

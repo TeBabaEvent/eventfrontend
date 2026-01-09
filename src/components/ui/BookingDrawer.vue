@@ -206,7 +206,7 @@
                     :disabled="isLoading"
                   >
                     <div class="payment-method-card__icon payment-method-card__icon--bancontact">
-                      <span class="bancontact-logo">BC</span>
+                      <img :src="bancontactLogo" alt="Bancontact" />
                     </div>
                     <div class="payment-method-card__info">
                       <span class="payment-method-card__name">Bancontact</span>
@@ -226,7 +226,7 @@
                     :disabled="isLoading"
                   >
                     <div class="payment-method-card__icon payment-method-card__icon--card">
-                      <i class="fas fa-credit-card"></i>
+                      <img :src="visaLogo" alt="Visa" />
                     </div>
                     <div class="payment-method-card__info">
                       <span class="payment-method-card__name">{{ t('booking.paymentMethods.card') }}</span>
@@ -246,7 +246,7 @@
                     :disabled="isLoading"
                   >
                     <div class="payment-method-card__icon payment-method-card__icon--paypal">
-                      <i class="fab fa-paypal"></i>
+                      <img :src="paypalLogo" alt="PayPal" />
                     </div>
                     <div class="payment-method-card__info">
                       <span class="payment-method-card__name">PayPal</span>
@@ -266,7 +266,7 @@
                     :disabled="isLoading"
                   >
                     <div class="payment-method-card__icon payment-method-card__icon--cash">
-                      <i class="fas fa-money-bill-wave"></i>
+                      <i class="fas fa-coins"></i>
                     </div>
                     <div class="payment-method-card__info">
                       <span class="payment-method-card__name">{{ t('booking.payCash') }}</span>
@@ -408,6 +408,11 @@ import { useI18n } from 'vue-i18n'
 import type { Event, Pack } from '@/types'
 import { useCheckout } from '@/composables/useCheckout'
 import { formatPrice } from '@/utils'
+
+// Payment method logos (official)
+import bancontactLogo from '@/assets/images/payment/Bancontact-Original-logo-RGB.svg'
+import paypalLogo from '@/assets/images/payment/PP_logo_h_100x26.png'
+import visaLogo from '@/assets/images/payment/visa-svgrepo-com.svg'
 
 const { t, locale } = useI18n()
 
@@ -2029,37 +2034,27 @@ onUnmounted(() => {
 }
 
 .payment-method-card__icon img {
-  height: 24px;
-  width: auto;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
 .payment-method-card__icon--bancontact {
-  background: linear-gradient(135deg, #005498 0%, #003d70 100%);
-}
-
-.bancontact-logo {
-  font-weight: 700;
-  font-size: 1rem;
-  color: #fff;
-  letter-spacing: -0.5px;
+  background: #fff;
+  padding: 6px;
+  overflow: hidden;
 }
 
 .payment-method-card__icon--card {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-
-.payment-method-card__icon--card i {
-  color: #fff;
-  font-size: 1.5rem;
+  background: #fff;
+  padding: 6px;
+  overflow: hidden;
 }
 
 .payment-method-card__icon--paypal {
-  background: linear-gradient(135deg, #0070ba 0%, #003087 100%);
-}
-
-.payment-method-card__icon--paypal i {
-  color: #fff;
+  background: #fff;
+  padding: 6px;
+  overflow: hidden;
 }
 
 .payment-method-card__icon--cash {
@@ -2068,6 +2063,7 @@ onUnmounted(() => {
 
 .payment-method-card__icon--cash i {
   color: #fff;
+  font-size: 1.5rem;
 }
 
 .payment-method-card__info {
@@ -2149,8 +2145,8 @@ onUnmounted(() => {
 
   .payment-method-card__icon img,
   .payment-method-card__icon svg {
-    height: 20px;
-    width: 20px;
+    width: 100%;
+    height: 100%;
   }
 
   .payment-method-card__name {

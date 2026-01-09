@@ -177,8 +177,33 @@
           </div>
         </div>
 
+        <!-- Cancelled State -->
+        <div v-else-if="order && order.status === 'cancelled'" key="cancelled" class="payment-card payment-card--cancelled">
+          <div class="payment-card__icon payment-card__icon--warning">
+            <i class="fas fa-ban"></i>
+          </div>
+
+          <h1 class="payment-card__title">{{ $t('payment.cancelled.title') }}</h1>
+          <p class="payment-card__subtitle">{{ $t('payment.cancelled.subtitle') }}</p>
+
+          <div class="order-number-display">
+            <span class="label">{{ $t('payment.orderNumber') }}</span>
+            <span class="value">{{ order.order_number }}</span>
+          </div>
+
+          <div class="payment-card__actions">
+            <button class="btn btn--primary" @click="goToEvent">
+              <i class="fas fa-redo"></i>
+              {{ $t('payment.tryAgain') }}
+            </button>
+            <button class="btn btn--ghost" @click="goToHome">
+              {{ $t('payment.backToHome') }}
+            </button>
+          </div>
+        </div>
+
         <!-- Failed State -->
-        <div v-else-if="order && (order.status === 'failed' || order.status === 'cancelled')" key="failed" class="payment-card payment-card--failed">
+        <div v-else-if="order && order.status === 'failed'" key="failed" class="payment-card payment-card--failed">
           <div class="payment-card__icon payment-card__icon--error">
             <i class="fas fa-times"></i>
           </div>
@@ -232,12 +257,14 @@ import type { Order } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
-const { isLoading, error, getOrderByNumber, pollOrderStatus } = useCheckout()
+const { isLoading, error, getOrderByNumber, pollOrderStatus, cancelOrder } = useCheckout()
 
 const order = ref<Order | null>(null)
 const isInitializing = ref(true)  // True until first API call completes
 
 const orderNumber = computed(() => route.query.order as string | undefined)
+// Récupérer le paramètre status de l'URL (cancelled, failed, etc.)
+const urlStatus = computed(() => route.query.status as string | undefined)
 
 // Show loading state during initialization OR during API calls
 const showLoading = computed(() => isInitializing.value || (isLoading.value && !order.value))
@@ -292,10 +319,18 @@ async function loadOrderStatus() {
   }
 
   try {
+    // Si le paramètre URL indique une annulation ou un échec,
+    // on met d'abord à jour le statut côté backend
+    if (urlStatus.value === 'cancelled' || urlStatus.value === 'failed') {
+      await cancelOrder(orderNumber.value)
+    }
+
+    // Charger la commande depuis l'API
     order.value = await getOrderByNumber(orderNumber.value)
 
-    // Si la commande est en attente, démarrer le polling automatique
-    if (order.value && order.value.status === 'pending') {
+    // Si la commande est en attente ET qu'on n'a pas reçu d'indication d'annulation/échec,
+    // démarrer le polling automatique
+    if (order.value && order.value.status === 'pending' && !urlStatus.value) {
       startPolling()
     }
   } finally {
@@ -434,6 +469,11 @@ onMounted(() => {
   opacity: 1;
 }
 
+.payment-card--cancelled::before {
+  background: linear-gradient(90deg, transparent, #f59e0b, transparent);
+  opacity: 1;
+}
+
 /* Icon */
 .payment-card__icon {
   width: 72px;
@@ -455,6 +495,11 @@ onMounted(() => {
 .payment-card__icon--error {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
+}
+
+.payment-card__icon--warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
 }
 
 .payment-card__icon--loading {

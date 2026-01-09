@@ -688,6 +688,10 @@ Me respekt`
       title: 'Pagesa dështoi',
       subtitle: 'Ndodhi një gabim gjatë pagesës. Ju lutem provoni përsëri.'
     },
+    cancelled: {
+      title: 'Pagesa u anulua',
+      subtitle: 'Ju keni anuluar pagesën. Mund të provoni përsëri kur të dëshironi.'
+    },
     error: {
       title: 'Gabim',
       notFound: 'Porosi e pa gjetur ose numër porosis i pavlefshëm.'

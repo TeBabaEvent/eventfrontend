@@ -688,6 +688,10 @@ Met vriendelijke groeten`
       title: 'Betaling mislukt',
       subtitle: 'Er is een fout opgetreden tijdens de betaling. Probeer het opnieuw.'
     },
+    cancelled: {
+      title: 'Betaling geannuleerd',
+      subtitle: 'Je hebt de betaling geannuleerd. Je kunt het opnieuw proberen wanneer je wilt.'
+    },
     error: {
       title: 'Fout',
       notFound: 'Bestelling niet gevonden of ongeldig bestelnummer.'

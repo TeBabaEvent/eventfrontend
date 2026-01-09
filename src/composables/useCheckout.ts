@@ -234,6 +234,46 @@ export function useCheckout() {
     }
   }
 
+  /**
+   * Annule une commande en attente
+   * Appelé quand l'utilisateur annule le paiement sur PayPal
+   *
+   * @param orderNumber - Numéro de commande à annuler
+   * @returns Promise avec le statut de la commande
+   */
+  async function cancelOrder(orderNumber: string): Promise<{ status: string } | null> {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.CHECKOUT_CANCEL(orderNumber))
+
+      const response = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Erreur inconnue' }))
+        throw new Error(errorData.detail || `Erreur HTTP: ${response.status}`)
+      }
+
+      const result = await response.json()
+      logger.log('Order cancelled:', result)
+      return result
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Erreur lors de l'annulation"
+      error.value = errorMessage
+      logger.error('Cancel order error:', err)
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     isLoading,
     error,
@@ -242,5 +282,6 @@ export function useCheckout() {
     getOrderByNumber,
     pollOrderStatus,
     capturePayment,
+    cancelOrder,
   }
 }
