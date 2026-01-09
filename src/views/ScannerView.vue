@@ -173,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed, onMounted, onUnmounted } from 'vue'
+import { ref, shallowRef, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
@@ -185,7 +185,7 @@ import QrScanner from 'qr-scanner'
 const router = useRouter()
 const { locale } = useI18n()
 const authStore = useAuthStore()
-const { validateTicket, getStats, getHistory } = useScanner()
+const { validateTicket, getStats, getHistory, authError } = useScanner()
 
 // State
 const videoRef = ref<HTMLVideoElement>()
@@ -199,7 +199,6 @@ const cameraError = ref<string | null>(null)
 
 // Use shallowRef for non-reactive complex objects
 const qrScanner = shallowRef<QrScanner | null>(null)
-let statsInterval: number | null = null
 let lastScanTime = 0
 const SCAN_DEBOUNCE_MS = 1500 // Prevent scanning same QR within 1.5s
 
@@ -417,12 +416,22 @@ function playErrorSound() {
   } catch { /* ignore */ }
 }
 
+// Rediriger vers login si session expirée
+watch(authError, (hasAuthError) => {
+  if (hasAuthError) {
+    router.push({ path: '/login', query: { redirect: '/scanner' } })
+  }
+})
+
 onMounted(async () => {
+  // Vérifier l'authentification avant de charger
+  if (!authStore.isAuthenticated) {
+    router.push({ path: '/login', query: { redirect: '/scanner' } })
+    return
+  }
+
+  // Charger l'historique une seule fois au démarrage
   await loadHistory()
-  statsInterval = window.setInterval(() => {
-    loadStats()
-    loadHistory()
-  }, 10000)
 })
 
 onUnmounted(() => {
@@ -430,12 +439,6 @@ onUnmounted(() => {
   if (qrScanner.value) {
     qrScanner.value.destroy()
     qrScanner.value = null
-  }
-
-  // Cleanup interval
-  if (statsInterval) {
-    clearInterval(statsInterval)
-    statsInterval = null
   }
 
   // Cleanup AudioContext

@@ -2,14 +2,17 @@ import { ref, onUnmounted } from 'vue'
 import { buildApiUrl, API_ENDPOINTS, getAuthHeaders } from '@/config/api'
 import type { ScanRequest, ScanResponse, ScanStats, ScanLog } from '@/types'
 import { logger } from '@/services/logger'
+import { useAuthStore } from '@/stores/auth'
 
 export function useScanner() {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const lastScanResult = ref<ScanResponse | null>(null)
+  const authError = ref(false) // Flag pour erreur 401
 
   // AbortController for request cancellation
   let abortController: AbortController | null = null
+  const authStore = useAuthStore()
 
   function cancelPendingRequests() {
     if (abortController) {
@@ -55,6 +58,28 @@ export function useScanner() {
       })
 
       if (!response.ok) {
+        // Handle 401 - try refresh then retry once
+        if (response.status === 401) {
+          const refreshed = await authStore.refreshToken()
+          if (refreshed) {
+            // Retry the request with new token
+            const retryResponse = await fetch(buildApiUrl(API_ENDPOINTS.SCAN_VALIDATE), {
+              method: 'POST',
+              credentials: 'include',
+              headers: getAuthHeaders(),
+              body: JSON.stringify(scanData),
+              signal: controller.signal
+            })
+            if (retryResponse.ok) {
+              const result: ScanResponse = await retryResponse.json()
+              lastScanResult.value = result
+              return result
+            }
+          }
+          // Refresh failed or retry failed - set auth error flag
+          authError.value = true
+          throw new Error('Session expirée - veuillez vous reconnecter')
+        }
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.detail || 'Erreur lors de la validation du ticket')
       }
@@ -100,6 +125,10 @@ export function useScanner() {
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          authError.value = true
+          return null
+        }
         throw new Error('Erreur lors de la récupération des statistiques')
       }
 
@@ -138,6 +167,10 @@ export function useScanner() {
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          authError.value = true
+          return null
+        }
         throw new Error('Erreur lors de la récupération de l\'historique')
       }
 
@@ -179,6 +212,7 @@ export function useScanner() {
     isLoading,
     error,
     lastScanResult,
+    authError, // Flag pour détecter session expirée
 
     // Méthodes
     validateTicket,
