@@ -152,6 +152,7 @@ const isProcessing = computed(() => scannerState.value === 'processing')
 // Anti-duplicate: store code + timestamp
 const lastScan = ref<{ code: string; time: number } | null>(null)
 const SCAN_COOLDOWN_MS = 2500
+const PROCESSING_TIMEOUT_MS = 15000 // Max 15s pour une validation
 
 // Use shallowRef for non-reactive complex objects
 const qrScanner = shallowRef<QrScanner | null>(null)
@@ -363,10 +364,28 @@ async function processQrCode(qrData: string) {
     navigator.vibrate(30)
   }
 
+  // Timeout protection to prevent stuck processing state
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
+  const timeoutPromise = new Promise<null>((resolve) => {
+    timeoutId = setTimeout(() => {
+      console.warn('[Scanner] Processing timeout reached!')
+      resolve(null)
+    }, PROCESSING_TIMEOUT_MS)
+  })
+
   try {
     console.log('[Scanner] Calling validateTicket API...')
-    const result = await validateTicket(qrData)
-    console.log('[Scanner] API returned:', result ? 'result received' : 'null')
+
+    // Race between API call and timeout
+    const result = await Promise.race([
+      validateTicket(qrData),
+      timeoutPromise
+    ])
+
+    // Clear timeout if API responded first
+    if (timeoutId) clearTimeout(timeoutId)
+
+    console.log('[Scanner] API returned:', result ? 'result received' : 'null/timeout')
 
     if (result) {
       console.log('[Scanner] Result:', result.valid ? 'VALID' : 'INVALID', '- reason:', result.result)
@@ -383,40 +402,41 @@ async function processQrCode(qrData: string) {
       // Audio feedback
       playSound(result.valid)
     } else {
-      // API returned null - go back to scanning
-      console.log('[Scanner] No result from API, resuming scanner...')
+      // API returned null or timeout - go back to scanning
+      console.log('[Scanner] No result from API (or timeout), resuming scanner...')
       lastScan.value = null
-      resumeScanning()
+      await resumeScanning()
     }
   } catch (error) {
+    if (timeoutId) clearTimeout(timeoutId)
     console.error('[Scanner] Exception in processQrCode:', error)
     lastScan.value = null
-    resumeScanning()
+    await resumeScanning()
   }
 
   console.log('[Scanner] processQrCode completed in', Date.now() - startTime, 'ms')
 }
 
 // Resume scanning after pause (camera still running)
-function resumeScanning() {
+async function resumeScanning() {
   console.log('[Scanner] resumeScanning called, qrScanner:', !!qrScanner.value, 'cameraReady:', cameraReady.value)
 
   if (qrScanner.value && cameraReady.value) {
     try {
-      // start() re-enables QR detection
+      // start() re-enables QR detection - IT'S A PROMISE!
       console.log('[Scanner] Calling qrScanner.start()...')
-      qrScanner.value.start()
+      await qrScanner.value.start()
       scannerState.value = 'scanning'
       console.log('[Scanner] Resumed successfully, state:', scannerState.value)
     } catch (err) {
       console.error('[Scanner] Resume failed with error:', err)
       // If resume fails, try full restart
       console.log('[Scanner] Attempting full restart...')
-      startScanning()
+      await startScanning()
     }
   } else {
     console.log('[Scanner] No scanner or camera not ready, reinitializing...')
-    startScanning()
+    await startScanning()
   }
 }
 
@@ -425,14 +445,17 @@ async function resetScan() {
 
   // Clear result immediately
   scanResult.value = null
-  console.log('[Scanner] scanResult cleared')
+
+  // Reset cooldown to allow re-scanning the same QR code intentionally
+  lastScan.value = null
+  console.log('[Scanner] scanResult and lastScan cleared')
 
   // Wait for Vue to update DOM (hide result overlay)
   await nextTick()
   console.log('[Scanner] nextTick completed, calling resumeScanning...')
 
   // Resume scanning
-  resumeScanning()
+  await resumeScanning()
 }
 
 function playSound(success: boolean) {
