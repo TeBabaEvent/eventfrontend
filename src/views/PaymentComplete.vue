@@ -340,14 +340,31 @@ async function loadOrderStatus() {
 
 /**
  * Démarre le polling automatique pour les paiements en attente
+ * Utilise un polling agressif au début (1.5s) puis normal (3s)
  */
 async function startPolling() {
   if (!orderNumber.value) return
 
-  // Polling toutes les 3 secondes, max 40 tentatives (2 minutes)
+  // Phase 1: Polling rapide pendant les 15 premières secondes (1.5s interval)
+  // Le webhook PayPal arrive généralement dans les 5-10 secondes
+  const quickPollOrder = await pollOrderStatus(
+    orderNumber.value,
+    10,  // 10 tentatives
+    1500, // 1.5 secondes
+    (updatedOrder) => {
+      order.value = updatedOrder
+    }
+  )
+
+  if (quickPollOrder && (quickPollOrder.status === 'completed' || quickPollOrder.status === 'failed' || quickPollOrder.status === 'cancelled')) {
+    order.value = quickPollOrder
+    return
+  }
+
+  // Phase 2: Si toujours pending, continuer avec un polling normal (3s)
   const finalOrder = await pollOrderStatus(
     orderNumber.value,
-    40,
+    30,  // 30 tentatives supplémentaires (~1.5 minutes)
     3000,
     (updatedOrder) => {
       order.value = updatedOrder
