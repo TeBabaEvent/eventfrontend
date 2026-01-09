@@ -8,6 +8,9 @@
       <div class="scanner__gradient scanner__gradient--top"></div>
       <div class="scanner__gradient scanner__gradient--bottom"></div>
 
+      <!-- Detection flash effect -->
+      <div v-if="isProcessing" class="scanner__flash"></div>
+
       <!-- Scan target area -->
       <div v-if="!scanResult && !cameraError" class="scanner__target">
         <div class="target" :class="{ 'target--processing': isProcessing }">
@@ -45,9 +48,9 @@
       </button>
       <div v-else class="header-spacer"></div>
 
-      <div class="header-status" :class="{ 'header-status--active': isScanning }">
+      <div class="header-status" :class="statusClass">
         <span class="status-dot"></span>
-        <span>{{ isScanning ? 'Scanner actif' : 'En pause' }}</span>
+        <span>{{ statusText }}</span>
       </div>
 
       <button @click="logout" class="header-btn header-btn--logout">
@@ -157,6 +160,18 @@ const resultClass = computed(() => {
   return scanResult.value.valid ? 'result--success' : 'result--error'
 })
 
+const statusClass = computed(() => {
+  if (isProcessing.value) return 'header-status--processing'
+  if (isScanning.value) return 'header-status--active'
+  return ''
+})
+
+const statusText = computed(() => {
+  if (isProcessing.value) return 'Vérification...'
+  if (isScanning.value) return 'Scanner actif'
+  return 'En pause'
+})
+
 // Methods
 function goToDashboard() {
   router.push('/dashboard')
@@ -213,7 +228,7 @@ async function startScanning() {
     qrScanner.value = new QrScanner(
       videoRef.value,
       (result) => {
-        // Process immediately - no debounce needed since we stop scanning
+        // Guard against race conditions - only process if actively scanning
         if (isScanning.value && !isProcessing.value) {
           handleScan(result.data)
         }
@@ -222,7 +237,8 @@ async function startScanning() {
         returnDetailedScanResult: true,
         highlightScanRegion: false,
         highlightCodeOutline: false,
-        maxScansPerSecond: 5 // Limit CPU usage
+        maxScansPerSecond: 8, // Good balance between speed and CPU
+        preferredCamera: 'environment' // Prefer back camera (better quality)
       }
     )
 
@@ -252,48 +268,73 @@ function stopScanning() {
 }
 
 async function handleScan(qrData: string) {
-  // Immediate visual feedback
+  // Prevent race condition - atomic check and set
+  if (isProcessing.value) {
+    console.log('[Scanner] Already processing, ignoring...')
+    return
+  }
+
+  // Immediate state change to prevent duplicate scans
   isProcessing.value = true
   isScanning.value = false
 
-  // Stop camera while processing
-  qrScanner.value?.stop()
+  // Pause scanning but keep camera running for smooth UX
+  if (qrScanner.value) {
+    qrScanner.value.pause(true)
+  }
 
   // Haptic feedback on detection
   if (navigator.vibrate) {
     navigator.vibrate(30)
   }
 
-  console.log('[Scanner] QR detected, validating...') // Always log for debugging
+  console.log('[Scanner] QR detected, validating...')
 
-  const result = await validateTicket(qrData)
+  try {
+    const result = await validateTicket(qrData)
 
-  isProcessing.value = false
+    if (result) {
+      console.log('[Scanner] Result:', result.valid ? 'SUCCESS' : result.result)
+      scanResult.value = result
 
-  if (result) {
-    console.log('[Scanner] Result:', result.valid ? 'SUCCESS' : result.result)
-    scanResult.value = result
+      // Haptic feedback for result
+      if (navigator.vibrate) {
+        navigator.vibrate(result.valid ? [50] : [50, 30, 50])
+      }
 
-    // Haptic feedback for result
-    if (navigator.vibrate) {
-      navigator.vibrate(result.valid ? [50] : [50, 30, 50])
+      // Audio feedback
+      playSound(result.valid)
+    } else {
+      // API returned null - network error or auth issue
+      console.log('[Scanner] No result from API, resuming...')
+      resumeScanning()
     }
+  } catch (error) {
+    console.error('[Scanner] Error during validation:', error)
+    resumeScanning()
+  } finally {
+    isProcessing.value = false
+  }
+}
 
-    // Audio feedback
-    playSound(result.valid)
-  } else {
-    console.log('[Scanner] No result from API')
-    // Restart scanning if no result
-    qrScanner.value?.start()
+function resumeScanning() {
+  if (qrScanner.value) {
+    qrScanner.value.pause(false)
     isScanning.value = true
+    console.log('[Scanner] Scanning resumed')
   }
 }
 
 function resetScan() {
+  console.log('[Scanner] Reset scan requested')
   scanResult.value = null
+
   if (qrScanner.value) {
-    qrScanner.value.start()
-    isScanning.value = true
+    resumeScanning()
+  } else {
+    // Scanner was destroyed, reinitialize
+    console.log('[Scanner] Scanner not found, reinitializing...')
+    startScanning()
   }
 }
 
@@ -418,6 +459,20 @@ onUnmounted(() => {
 .scanner__gradient--bottom {
   bottom: 0;
   background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+
+/* Flash effect on QR detection */
+.scanner__flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+  animation: flash 0.3s ease-out forwards;
+}
+
+@keyframes flash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* =============================================
@@ -652,6 +707,21 @@ onUnmounted(() => {
 
 .header-status--active {
   color: var(--white);
+}
+
+.header-status--processing .status-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 12px #f59e0b;
+  animation: blink 0.5s ease-in-out infinite;
+}
+
+.header-status--processing {
+  color: var(--white);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 /* =============================================
