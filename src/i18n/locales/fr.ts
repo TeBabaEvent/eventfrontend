@@ -618,6 +618,18 @@ Cordialement`
     payCash: 'Paiement sur place',
     payCashDesc: 'Réservez et contactez-nous pour payer en cash',
     cashWarning: 'Les places ne sont pas garanties. Les paiements en ligne sont prioritaires.',
+    backToForm: 'Retour',
+    choosePaymentMethod: 'Choisissez votre mode de paiement',
+    choosePaymentMethodDesc: 'Sélectionnez comment vous souhaitez payer',
+    continueToPayment: 'Continuer',
+    payWith: 'Payer avec',
+    paymentMethods: {
+      bancontactDesc: 'Paiement rapide et sécurisé',
+      card: 'Carte bancaire',
+      cardDesc: 'Visa, Mastercard, American Express',
+      paypalDesc: 'Payez avec votre compte PayPal',
+      cashDesc: 'Réservez et payez sur place'
+    },
     acceptTerms: "J'accepte les",
     termsLink: 'conditions générales de vente',
     privacyLink: 'la politique de confidentialité',

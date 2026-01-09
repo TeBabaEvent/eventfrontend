@@ -614,6 +614,18 @@ Me respekt`
     payCash: 'Paguaj në vend',
     payCashDesc: 'Rezervoni dhe na kontaktoni për të paguar cash',
     cashWarning: 'Vendet nuk garantohen. Pagesat online kanë përparësi.',
+    backToForm: 'Kthehu',
+    choosePaymentMethod: 'Zgjidhni metodën e pagesës',
+    choosePaymentMethodDesc: 'Zgjidhni si dëshironi të paguani',
+    continueToPayment: 'Vazhdo',
+    payWith: 'Paguaj me',
+    paymentMethods: {
+      bancontactDesc: 'Pagesë e shpejtë dhe e sigurt',
+      card: 'Kartë bankare',
+      cardDesc: 'Visa, Mastercard, American Express',
+      paypalDesc: 'Paguani me llogarinë tuaj PayPal',
+      cashDesc: 'Rezervoni dhe paguani në vend'
+    },
     acceptTerms: 'Pranoj',
     termsLink: 'kushtet e shitjes',
     privacyLink: 'politikën e privatësisë',

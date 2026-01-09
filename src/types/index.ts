@@ -191,6 +191,7 @@ export interface CartCheckoutData {
   customer_email: string
   customer_phone?: string
   payment_method?: 'online' | 'cash'
+  payment_source?: 'paypal' | 'bancontact' | 'card' // For online payments
   terms_accepted: boolean
 }
 

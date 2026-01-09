@@ -614,6 +614,18 @@ Best regards`
     payCash: 'Pay on site',
     payCashDesc: 'Reserve and contact us to pay cash',
     cashWarning: 'Seats are not guaranteed. Online payments have priority.',
+    backToForm: 'Back',
+    choosePaymentMethod: 'Choose your payment method',
+    choosePaymentMethodDesc: 'Select how you would like to pay',
+    continueToPayment: 'Continue',
+    payWith: 'Pay with',
+    paymentMethods: {
+      bancontactDesc: 'Fast and secure payment',
+      card: 'Credit/Debit Card',
+      cardDesc: 'Visa, Mastercard, American Express',
+      paypalDesc: 'Pay with your PayPal account',
+      cashDesc: 'Reserve and pay on site'
+    },
     acceptTerms: 'I accept the',
     termsLink: 'terms and conditions',
     privacyLink: 'privacy policy',

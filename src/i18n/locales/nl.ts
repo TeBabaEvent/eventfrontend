@@ -614,6 +614,18 @@ Met vriendelijke groeten`
     payCash: 'Betalen ter plaatse',
     payCashDesc: 'Reserveer en neem contact met ons op om cash te betalen',
     cashWarning: 'Plaatsen zijn niet gegarandeerd. Online betalingen hebben voorrang.',
+    backToForm: 'Terug',
+    choosePaymentMethod: 'Kies uw betaalmethode',
+    choosePaymentMethodDesc: 'Selecteer hoe u wilt betalen',
+    continueToPayment: 'Doorgaan',
+    payWith: 'Betalen met',
+    paymentMethods: {
+      bancontactDesc: 'Snelle en veilige betaling',
+      card: 'Bankkaart',
+      cardDesc: 'Visa, Mastercard, American Express',
+      paypalDesc: 'Betaal met uw PayPal-account',
+      cashDesc: 'Reserveer en betaal ter plaatse'
+    },
     acceptTerms: 'Ik accepteer de',
     termsLink: 'algemene voorwaarden',
     privacyLink: 'het privacybeleid',

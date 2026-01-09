@@ -23,6 +23,8 @@
 
           <!-- Content -->
           <div class="booking-drawer__content">
+            <!-- Step 1: Packs + Customer Form -->
+            <template v-if="currentStep === 1">
             <!-- Packs Selection -->
             <div class="packs-section">
               <div class="section-label">
@@ -153,68 +155,6 @@
                     </Transition>
                   </div>
 
-                  <!-- Payment Method Selection (only for paid tickets) -->
-                  <div v-if="totalAmount > 0" class="payment-method-section">
-                    <div class="section-label section-label--inline">
-                      <i class="fas fa-credit-card"></i>
-                      <span>{{ t('booking.paymentMethod') }}</span>
-                    </div>
-
-                    <div class="payment-options">
-                      <label
-                        class="payment-option"
-                        :class="{ 'payment-option--selected': formData.paymentMethod === 'online' }"
-                      >
-                        <input
-                          type="radio"
-                          v-model="formData.paymentMethod"
-                          value="online"
-                          :disabled="isLoading"
-                        />
-                        <div class="payment-option__content">
-                          <div class="payment-option__icon">
-                            <i class="fas fa-lock"></i>
-                          </div>
-                          <div class="payment-option__info">
-                            <span class="payment-option__title">{{ t('booking.payOnline') }}</span>
-                            <span class="payment-option__desc">{{ t('booking.payOnlineDesc') }}</span>
-                          </div>
-                          <i class="fas fa-check payment-option__check"></i>
-                        </div>
-                      </label>
-
-                      <label
-                        class="payment-option"
-                        :class="{ 'payment-option--selected': formData.paymentMethod === 'cash' }"
-                      >
-                        <input
-                          type="radio"
-                          v-model="formData.paymentMethod"
-                          value="cash"
-                          :disabled="isLoading"
-                        />
-                        <div class="payment-option__content">
-                          <div class="payment-option__icon payment-option__icon--cash">
-                            <i class="fas fa-money-bill-wave"></i>
-                          </div>
-                          <div class="payment-option__info">
-                            <span class="payment-option__title">{{ t('booking.payCash') }}</span>
-                            <span class="payment-option__desc">{{ t('booking.payCashDesc') }}</span>
-                          </div>
-                          <i class="fas fa-check payment-option__check"></i>
-                        </div>
-                      </label>
-                    </div>
-
-                    <!-- Cash Warning -->
-                    <Transition name="fade">
-                      <div v-if="formData.paymentMethod === 'cash'" class="cash-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>{{ t('booking.cashWarning') }}</span>
-                      </div>
-                    </Transition>
-                  </div>
-
                   <!-- Terms & Conditions Checkbox -->
                   <div class="terms-section">
                     <label class="terms-checkbox" :class="{ 'terms-checkbox--error': touched.email && !formData.termsAccepted }"> <!-- Simple error logic reused -->
@@ -235,6 +175,122 @@
                 </form>
               </div>
             </Transition>
+            </template>
+
+            <!-- Step 2: Payment Method Selection -->
+            <template v-if="currentStep === 2">
+              <div class="payment-step">
+                <!-- Back button -->
+                <button type="button" class="back-btn" @click="currentStep = 1" :disabled="isLoading">
+                  <i class="fas fa-arrow-left"></i>
+                  <span>{{ t('booking.backToForm') }}</span>
+                </button>
+
+                <!-- Step indicator -->
+                <div class="step-indicator">
+                  <div class="step-badge">
+                    <i class="fas fa-credit-card"></i>
+                  </div>
+                  <h3 class="step-title">{{ t('booking.choosePaymentMethod') }}</h3>
+                  <p class="step-subtitle">{{ t('booking.choosePaymentMethodDesc') }}</p>
+                </div>
+
+                <!-- Payment Methods Grid -->
+                <div class="payment-methods-grid">
+                  <!-- Bancontact -->
+                  <button
+                    type="button"
+                    class="payment-method-card"
+                    :class="{ 'payment-method-card--selected': selectedPaymentSource === 'bancontact' }"
+                    @click="selectedPaymentSource = 'bancontact'"
+                    :disabled="isLoading"
+                  >
+                    <div class="payment-method-card__icon payment-method-card__icon--bancontact">
+                      <img src="https://cdn.paypalobjects.com/images/checkout/latinum/Bancontact_2x.png" alt="Bancontact" />
+                    </div>
+                    <div class="payment-method-card__info">
+                      <span class="payment-method-card__name">Bancontact</span>
+                      <span class="payment-method-card__desc">{{ t('booking.paymentMethods.bancontactDesc') }}</span>
+                    </div>
+                    <div class="payment-method-card__check">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                  </button>
+
+                  <!-- Card -->
+                  <button
+                    type="button"
+                    class="payment-method-card"
+                    :class="{ 'payment-method-card--selected': selectedPaymentSource === 'card' }"
+                    @click="selectedPaymentSource = 'card'"
+                    :disabled="isLoading"
+                  >
+                    <div class="payment-method-card__icon payment-method-card__icon--card">
+                      <i class="fas fa-credit-card"></i>
+                      <div class="card-brands">
+                        <img src="https://cdn.paypalobjects.com/images/checkout/latinum/Visa_2x.png" alt="Visa" />
+                        <img src="https://cdn.paypalobjects.com/images/checkout/latinum/Mastercard_2x.png" alt="Mastercard" />
+                      </div>
+                    </div>
+                    <div class="payment-method-card__info">
+                      <span class="payment-method-card__name">{{ t('booking.paymentMethods.card') }}</span>
+                      <span class="payment-method-card__desc">{{ t('booking.paymentMethods.cardDesc') }}</span>
+                    </div>
+                    <div class="payment-method-card__check">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                  </button>
+
+                  <!-- PayPal -->
+                  <button
+                    type="button"
+                    class="payment-method-card"
+                    :class="{ 'payment-method-card--selected': selectedPaymentSource === 'paypal' }"
+                    @click="selectedPaymentSource = 'paypal'"
+                    :disabled="isLoading"
+                  >
+                    <div class="payment-method-card__icon payment-method-card__icon--paypal">
+                      <i class="fab fa-paypal"></i>
+                    </div>
+                    <div class="payment-method-card__info">
+                      <span class="payment-method-card__name">PayPal</span>
+                      <span class="payment-method-card__desc">{{ t('booking.paymentMethods.paypalDesc') }}</span>
+                    </div>
+                    <div class="payment-method-card__check">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                  </button>
+
+                  <!-- Cash (pay on site) -->
+                  <button
+                    type="button"
+                    class="payment-method-card"
+                    :class="{ 'payment-method-card--selected': selectedPaymentSource === 'cash' }"
+                    @click="selectedPaymentSource = 'cash'"
+                    :disabled="isLoading"
+                  >
+                    <div class="payment-method-card__icon payment-method-card__icon--cash">
+                      <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="payment-method-card__info">
+                      <span class="payment-method-card__name">{{ t('booking.payCash') }}</span>
+                      <span class="payment-method-card__desc">{{ t('booking.paymentMethods.cashDesc') }}</span>
+                    </div>
+                    <div class="payment-method-card__check">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                  </button>
+                </div>
+
+                <!-- Cash Warning -->
+                <Transition name="fade">
+                  <div v-if="selectedPaymentSource === 'cash'" class="cash-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>{{ t('booking.cashWarning') }}</span>
+                  </div>
+                </Transition>
+              </div>
+            </template>
           </div>
 
           <!-- Footer with Summary -->
@@ -261,15 +317,40 @@
               </div>
             </Transition>
 
-            <!-- Submit Button -->
+            <!-- Step 1: Continue Button -->
             <button
+              v-if="currentStep === 1"
+              type="button"
+              class="submit-btn"
+              :disabled="!canContinue"
+              @click="goToPaymentStep"
+            >
+              <span class="btn-content">
+                <!-- Free ticket - direct submit -->
+                <template v-if="totalAmount === 0">
+                  <i class="fas fa-ticket-alt"></i>
+                  <span>{{ t('booking.reserveNow') }}</span>
+                </template>
+                <!-- Paid ticket - go to payment selection -->
+                <template v-else>
+                  <i class="fas fa-credit-card"></i>
+                  <span>{{ t('booking.continueToPayment') }}</span>
+                </template>
+                <i class="fas fa-arrow-right btn-arrow"></i>
+              </span>
+            </button>
+
+            <!-- Step 2: Pay Button -->
+            <button
+              v-if="currentStep === 2"
               type="button"
               class="submit-btn"
               :class="{
-                'submit-btn--cash': formData.paymentMethod === 'cash' && totalAmount > 0,
-                'submit-btn--paypal': formData.paymentMethod === 'online' && totalAmount > 0
+                'submit-btn--cash': selectedPaymentSource === 'cash',
+                'submit-btn--bancontact': selectedPaymentSource === 'bancontact',
+                'submit-btn--paypal': selectedPaymentSource === 'paypal'
               }"
-              :disabled="!canSubmit || isLoading"
+              :disabled="!selectedPaymentSource || isLoading"
               @click="handleSubmit"
             >
               <span v-if="isLoading" class="btn-content">
@@ -278,18 +359,22 @@
               </span>
               <span v-else class="btn-content">
                 <!-- Cash payment -->
-                <template v-if="formData.paymentMethod === 'cash' && totalAmount > 0">
+                <template v-if="selectedPaymentSource === 'cash'">
                   <i class="fas fa-clock"></i>
                   <span>{{ t('booking.reserveCash') }} {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
                 </template>
-                <!-- Free ticket -->
-                <template v-else-if="totalAmount === 0">
-                  <i class="fas fa-ticket-alt"></i>
-                  <span>{{ t('booking.reserveNow') }}</span>
+                <!-- Bancontact -->
+                <template v-else-if="selectedPaymentSource === 'bancontact'">
+                  <span>{{ t('booking.payWith') }} Bancontact · {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
                 </template>
-                <!-- Online payment (PayPal redirect) -->
-                <template v-else>
+                <!-- PayPal -->
+                <template v-else-if="selectedPaymentSource === 'paypal'">
                   <i class="fab fa-paypal"></i>
+                  <span>{{ t('booking.payWith') }} PayPal · {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
+                </template>
+                <!-- Card -->
+                <template v-else-if="selectedPaymentSource === 'card'">
+                  <i class="fas fa-credit-card"></i>
                   <span>{{ t('booking.payNow') }} {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
                 </template>
                 <i class="fas fa-arrow-right btn-arrow"></i>
@@ -345,12 +430,13 @@ const panelRef = ref<HTMLElement | null>(null)
 
 // State
 const packQuantities = reactive<Record<string, number>>({})
+const currentStep = ref<1 | 2>(1) // 1 = form, 2 = payment method selection
+const selectedPaymentSource = ref<'paypal' | 'bancontact' | 'card' | 'cash' | null>(null)
 const formData = ref({
   firstName: '',
   lastName: '',
   email: '',
   phone: '',
-  paymentMethod: 'online' as 'online' | 'cash',
   termsAccepted: false
 })
 const errorMessage = ref<string | null>(null)
@@ -427,7 +513,8 @@ const isFormValid = computed(() => {
          phoneRegex.test(formData.value.phone.trim())
 })
 
-const canSubmit = computed(() => {
+// Step 1: Can continue to payment selection
+const canContinue = computed(() => {
   return totalQuantity.value > 0 && isFormValid.value && formData.value.termsAccepted
 })
 
@@ -466,7 +553,9 @@ function closeDrawer() {
 
 function resetForm() {
   Object.keys(packQuantities).forEach(key => delete packQuantities[key])
-  formData.value = { firstName: '', lastName: '', email: '', phone: '', paymentMethod: 'online', termsAccepted: false }
+  formData.value = { firstName: '', lastName: '', email: '', phone: '', termsAccepted: false }
+  currentStep.value = 1
+  selectedPaymentSource.value = null
   errorMessage.value = null
   // Reset touched state
   touched.firstName = false
@@ -475,12 +564,25 @@ function resetForm() {
   touched.phone = false
 }
 
-async function handleSubmit() {
-  if (!canSubmit.value || !props.event) return
+// Go to payment method selection (Step 2)
+function goToPaymentStep() {
+  if (!canContinue.value) return
 
+  // For free tickets, submit directly
+  if (totalAmount.value === 0) {
+    handleFreeTicket()
+    return
+  }
+
+  // Go to step 2 for payment selection
+  currentStep.value = 2
   errorMessage.value = null
+}
 
-  // Build checkout items
+// Handle free ticket booking
+async function handleFreeTicket() {
+  if (!props.event) return
+
   const items = selectedPacks.value.map(pack => ({
     event_id: props.event!.id,
     pack_id: pack.id,
@@ -492,11 +594,46 @@ async function handleSubmit() {
     customer_name: `${formData.value.firstName.trim()} ${formData.value.lastName.trim()}`,
     customer_email: formData.value.email.trim().toLowerCase(),
     customer_phone: formData.value.phone?.trim() || undefined,
-    payment_method: (totalAmount.value > 0 ? formData.value.paymentMethod : 'online') as 'online' | 'cash',
+    payment_method: 'online' as 'online' | 'cash',
     terms_accepted: true
   }
 
-  // Auto-redirect vers PayPal ou page de confirmation
+  const result = await initiateCartPayment(checkoutData, true)
+  if (!result) {
+    errorMessage.value = checkoutError.value ?? t('booking.error')
+  }
+}
+
+// Handle payment submission (Step 2)
+async function handleSubmit() {
+  if (!selectedPaymentSource.value || !props.event) return
+
+  errorMessage.value = null
+
+  // Build checkout items
+  const items = selectedPacks.value.map(pack => ({
+    event_id: props.event!.id,
+    pack_id: pack.id,
+    quantity: getPackQuantity(pack.id)
+  }))
+
+  // Determine payment method for backend
+  const isCash = selectedPaymentSource.value === 'cash'
+
+  // Cast payment_source to correct type (excluding 'cash')
+  const paymentSourceForApi = isCash ? undefined : selectedPaymentSource.value as 'paypal' | 'bancontact' | 'card'
+
+  const checkoutData = {
+    items,
+    customer_name: `${formData.value.firstName.trim()} ${formData.value.lastName.trim()}`,
+    customer_email: formData.value.email.trim().toLowerCase(),
+    customer_phone: formData.value.phone?.trim() || undefined,
+    payment_method: isCash ? 'cash' : 'online' as 'online' | 'cash',
+    payment_source: paymentSourceForApi,
+    terms_accepted: true
+  }
+
+  // Auto-redirect vers PayPal/Bancontact ou page de confirmation
   const result = await initiateCartPayment(checkoutData, true)
 
   if (!result) {
@@ -1770,10 +1907,210 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
 }
-</style>
 
-<!-- Style pour le bouton PayPal -->
-<style scoped>
+/* ========================= */
+/* STEP 2: PAYMENT SELECTION */
+/* ========================= */
+
+.payment-step {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.5rem;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease;
+  align-self: flex-start;
+}
+
+.back-btn:hover:not(:disabled) {
+  color: #fff;
+}
+
+.back-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.step-indicator {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.step-badge {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(220, 20, 60, 0.2) 0%, rgba(220, 20, 60, 0.1) 100%);
+  border: 2px solid rgba(220, 20, 60, 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.step-badge i {
+  font-size: 1.5rem;
+  color: #dc143c;
+}
+
+.step-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 0.5rem;
+}
+
+.step-subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+/* Payment Methods Grid */
+.payment-methods-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.payment-method-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.payment-method-card:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.payment-method-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.payment-method-card--selected {
+  background: rgba(220, 20, 60, 0.1);
+  border-color: #dc143c;
+}
+
+.payment-method-card--selected .payment-method-card__check {
+  opacity: 1;
+  color: #dc143c;
+}
+
+.payment-method-card__icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.payment-method-card__icon i {
+  font-size: 1.5rem;
+}
+
+.payment-method-card__icon img {
+  height: 24px;
+  width: auto;
+  object-fit: contain;
+}
+
+.payment-method-card__icon--bancontact {
+  background: linear-gradient(135deg, #005498 0%, #003d70 100%);
+}
+
+.payment-method-card__icon--card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.payment-method-card__icon--card i {
+  display: none;
+}
+
+.card-brands {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.card-brands img {
+  height: 18px;
+}
+
+.payment-method-card__icon--paypal {
+  background: linear-gradient(135deg, #0070ba 0%, #003087 100%);
+}
+
+.payment-method-card__icon--paypal i {
+  color: #fff;
+}
+
+.payment-method-card__icon--cash {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.payment-method-card__icon--cash i {
+  color: #fff;
+}
+
+.payment-method-card__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.payment-method-card__name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.payment-method-card__desc {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.payment-method-card__check {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: 1.25rem;
+}
+
+/* Submit button variants for Step 2 */
+.submit-btn--bancontact {
+  background: linear-gradient(135deg, #005498 0%, #003d70 100%);
+}
+
+.submit-btn--bancontact:hover:not(:disabled) {
+  background: linear-gradient(135deg, #003d70 0%, #002850 100%);
+  box-shadow: 0 6px 20px rgba(0, 84, 152, 0.35);
+}
+
 .submit-btn--paypal {
   background: linear-gradient(135deg, #0070ba 0%, #003087 100%);
 }
@@ -1782,4 +2119,71 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #003087 0%, #001f5c 100%);
   box-shadow: 0 6px 20px rgba(0, 112, 186, 0.35);
 }
+
+/* Mobile responsiveness for payment step */
+@media (max-width: 480px) {
+  .payment-step {
+    gap: 1rem;
+    padding: 0.25rem;
+  }
+
+  .step-badge {
+    width: 48px;
+    height: 48px;
+  }
+
+  .step-badge i {
+    font-size: 1.25rem;
+  }
+
+  .step-title {
+    font-size: 1.125rem;
+  }
+
+  .payment-method-card {
+    padding: 0.875rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .payment-method-card__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .payment-method-card__icon i {
+    font-size: 1.25rem;
+  }
+
+  .payment-method-card__icon img {
+    height: 20px;
+  }
+
+  .card-brands img {
+    height: 14px;
+  }
+
+  .payment-method-card__name {
+    font-size: 0.9375rem;
+  }
+
+  .payment-method-card__desc {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .payment-method-card {
+    padding: 0.75rem;
+  }
+
+  .payment-method-card__icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .card-brands img {
+    height: 12px;
+  }
+}
 </style>
+
