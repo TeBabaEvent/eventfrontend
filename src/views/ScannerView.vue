@@ -319,33 +319,42 @@ function stopScanning() {
 
 // Called by QrScanner when a QR is detected
 function handleQrDetection(qrData: string) {
+  console.log('[Scanner] handleQrDetection, state:', scannerState.value, 'data length:', qrData.length)
+
   // Only process if in scanning state
   if (scannerState.value !== 'scanning') {
+    console.log('[Scanner] Ignored: not in scanning state')
     return
   }
 
   // Anti-duplicate: check if same QR was scanned recently
   const now = Date.now()
   if (lastScan.value && lastScan.value.code === qrData) {
-    if (now - lastScan.value.time < SCAN_COOLDOWN_MS) {
+    const elapsed = now - lastScan.value.time
+    if (elapsed < SCAN_COOLDOWN_MS) {
+      console.log('[Scanner] Ignored: duplicate within cooldown, elapsed:', elapsed, 'ms')
       return // Same QR within cooldown, ignore
     }
   }
 
   // Process this scan
+  console.log('[Scanner] Processing QR code...')
   processQrCode(qrData)
 }
 
 async function processQrCode(qrData: string) {
-  console.log('[Scanner] Processing:', qrData.substring(0, 20) + '...')
+  const startTime = Date.now()
+  console.log('[Scanner] processQrCode start, data:', qrData.substring(0, 30) + '...')
 
   // Transition to processing state
   scannerState.value = 'processing'
   lastScan.value = { code: qrData, time: Date.now() }
+  console.log('[Scanner] State changed to: processing')
 
   // Pause QR detection but KEEP camera running (false = keep video)
   // This prevents detecting more QR codes while we process this one
   if (qrScanner.value) {
+    console.log('[Scanner] Pausing scanner (keepVideo=true)...')
     qrScanner.value.pause(false) // IMPORTANT: false keeps the camera video active!
   }
 
@@ -355,13 +364,16 @@ async function processQrCode(qrData: string) {
   }
 
   try {
+    console.log('[Scanner] Calling validateTicket API...')
     const result = await validateTicket(qrData)
+    console.log('[Scanner] API returned:', result ? 'result received' : 'null')
 
     if (result) {
-      console.log('[Scanner] Result:', result.valid ? 'SUCCESS' : result.result)
+      console.log('[Scanner] Result:', result.valid ? 'VALID' : 'INVALID', '- reason:', result.result)
 
       scanResult.value = result
       scannerState.value = 'result'
+      console.log('[Scanner] State changed to: result')
 
       // Haptic feedback for result
       if (navigator.vibrate) {
@@ -372,30 +384,34 @@ async function processQrCode(qrData: string) {
       playSound(result.valid)
     } else {
       // API returned null - go back to scanning
-      console.log('[Scanner] No result from API, resuming...')
+      console.log('[Scanner] No result from API, resuming scanner...')
       lastScan.value = null
       resumeScanning()
     }
   } catch (error) {
-    console.error('[Scanner] Error:', error)
+    console.error('[Scanner] Exception in processQrCode:', error)
     lastScan.value = null
     resumeScanning()
   }
+
+  console.log('[Scanner] processQrCode completed in', Date.now() - startTime, 'ms')
 }
 
 // Resume scanning after pause (camera still running)
 function resumeScanning() {
-  console.log('[Scanner] Resuming...')
+  console.log('[Scanner] resumeScanning called, qrScanner:', !!qrScanner.value, 'cameraReady:', cameraReady.value)
+
   if (qrScanner.value && cameraReady.value) {
     try {
-      // $resume() is the correct method to resume after pause()
-      // It re-enables QR detection without restarting the camera
+      // start() re-enables QR detection
+      console.log('[Scanner] Calling qrScanner.start()...')
       qrScanner.value.start()
       scannerState.value = 'scanning'
-      console.log('[Scanner] Resumed successfully')
+      console.log('[Scanner] Resumed successfully, state:', scannerState.value)
     } catch (err) {
-      console.error('[Scanner] Resume failed:', err)
+      console.error('[Scanner] Resume failed with error:', err)
       // If resume fails, try full restart
+      console.log('[Scanner] Attempting full restart...')
       startScanning()
     }
   } else {
@@ -405,13 +421,15 @@ function resumeScanning() {
 }
 
 async function resetScan() {
-  console.log('[Scanner] Reset requested')
+  console.log('[Scanner] resetScan called, current state:', scannerState.value, 'scanResult:', !!scanResult.value)
 
   // Clear result immediately
   scanResult.value = null
+  console.log('[Scanner] scanResult cleared')
 
   // Wait for Vue to update DOM (hide result overlay)
   await nextTick()
+  console.log('[Scanner] nextTick completed, calling resumeScanning...')
 
   // Resume scanning
   resumeScanning()
@@ -474,6 +492,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  console.log('[Scanner] Component unmounting, cleaning up...')
   if (qrScanner.value) {
     qrScanner.value.destroy()
     qrScanner.value = null
@@ -482,6 +501,7 @@ onUnmounted(() => {
     audioContext.close().catch(() => {})
     audioContext = null
   }
+  console.log('[Scanner] Cleanup complete')
 })
 </script>
 
