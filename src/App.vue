@@ -8,6 +8,7 @@ import { useAnimations } from '@/composables/useAnimations'
 import { usePerformance } from '@/composables/usePerformance'
 import { useSeo } from '@/composables/useSeo'
 import Lenis from 'lenis'
+import 'lenis/dist/lenis.css' // Recommended CSS for better compatibility
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import GlobalBackground from '@/components/layout/GlobalBackground.vue'
@@ -18,7 +19,12 @@ const route = useRoute()
 const authStore = useAuthStore()
 const appStore = useAppStore()
 const { setToastInstance } = useToast()
-const { initialize: initAnimations, isEnabled: animationsEnabled } = useAnimations()
+const {
+  initialize: initAnimations,
+  isEnabled: animationsEnabled,
+  gsap: gsapRef,
+  ScrollTrigger: scrollTriggerRef
+} = useAnimations()
 const { startMonitoring } = usePerformance()
 
 // Initialize SEO with dynamic meta tags
@@ -26,8 +32,7 @@ useSeo()
 
 const toastRef = ref()
 let lenis: Lenis | null = null
-let rafId: number | null = null
-let visibilityHandler: (() => void) | null = null
+let lenisTickerCallback: ((time: number) => void) | null = null
 
 // iOS viewport height fix - prevents jarring repositioning when URL bar changes
 const setViewportHeight = () => {
@@ -98,36 +103,37 @@ onMounted(async () => {
     touchMultiplier: 2
   })
 
-  // RAF animation loop for Lenis
-  function animate(time: number) {
-    lenis?.raf(time)
-    rafId = requestAnimationFrame(animate)
-  }
+  // ═══════════════════════════════════════════════════════════════
+  // LENIS ↔ GSAP SYNCHRONIZATION (Best Practice)
+  // Using gsap.ticker instead of manual RAF for perfect sync
+  // ═══════════════════════════════════════════════════════════════
 
-  // Start/stop RAF based on page visibility to save CPU when tab is hidden
-  visibilityHandler = () => {
-    if (document.hidden) {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId)
-        rafId = null
-      }
-    } else if (lenis && rafId === null) {
-      rafId = requestAnimationFrame(animate)
+  const gsap = gsapRef.value
+  const ScrollTrigger = scrollTriggerRef.value
+
+  if (gsap && ScrollTrigger) {
+    // Sync Lenis scroll position with ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update)
+
+    // Use GSAP ticker for Lenis RAF (time is in seconds, Lenis expects ms)
+    lenisTickerCallback = (time: number) => {
+      lenis?.raf(time * 1000)
     }
-  }
-  document.addEventListener('visibilitychange', visibilityHandler)
+    gsap.ticker.add(lenisTickerCallback)
 
-  // Start animation loop
-  rafId = requestAnimationFrame(animate)
+    // Disable GSAP lag smoothing for smoother scroll-linked animations
+    gsap.ticker.lagSmoothing(0)
+  } else {
+    // Fallback: manual RAF if GSAP not available (shouldn't happen on desktop)
+    const animate = (time: number) => {
+      lenis?.raf(time)
+      requestAnimationFrame(animate)
+    }
+    requestAnimationFrame(animate)
+  }
 })
 
 onUnmounted(() => {
-  // Clean up visibility handler
-  if (visibilityHandler) {
-    document.removeEventListener('visibilitychange', visibilityHandler)
-    visibilityHandler = null
-  }
-
   // Clean up viewport resize handler
   window.removeEventListener('resize', handleViewportResize)
   if (resizeTimeout) {
@@ -135,11 +141,13 @@ onUnmounted(() => {
     resizeTimeout = null
   }
 
-  if (rafId !== null) {
-    cancelAnimationFrame(rafId)
-    rafId = null
+  // Clean up GSAP ticker callback
+  if (lenisTickerCallback && gsapRef.value) {
+    gsapRef.value.ticker.remove(lenisTickerCallback)
+    lenisTickerCallback = null
   }
 
+  // Destroy Lenis instance
   if (lenis) {
     lenis.destroy()
     lenis = null

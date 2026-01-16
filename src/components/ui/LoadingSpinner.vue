@@ -34,7 +34,7 @@ withDefaults(defineProps<Props>(), {
   right: 0;
   bottom: 0;
   background: transparent;
-  z-index: 9999;
+  z-index: var(--z-loading-spinner);
 }
 
 .spinner-circle {

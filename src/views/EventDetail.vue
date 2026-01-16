@@ -1278,6 +1278,9 @@ const copyEventLink = async () => {
   .event-hero__background--skeleton::before {
     width: 300px;
     height: 150px;
+    /* 🚀 PERFORMANCE: Disable expensive blur on mobile */
+    filter: none;
+    animation: none;
   }
 
   .skeleton-title {

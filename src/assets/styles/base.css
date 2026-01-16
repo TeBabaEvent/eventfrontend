@@ -1,4 +1,6 @@
 /* Styles de base pour Baba Event */
+@import './variables.css';
+@import './utilities.css';
 
 /* Reset et normalisation */
 *,
@@ -220,10 +222,6 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
-
-/* Import styles */
-@import './variables.css';
-@import './utilities.css';
 
 /* Formulaires */
 input,

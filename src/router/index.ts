@@ -99,13 +99,15 @@ const router = createRouter({
     }
   ],
   scrollBehavior(to, _from, savedPosition) {
+    // NOTE: Use 'auto' instead of 'smooth' because Lenis handles smooth scrolling on desktop.
+    // Using 'smooth' here would cause double-smoothing (browser + Lenis) and jank.
     if (to.hash) {
       // Delay for lazy-loaded components to mount
       return new Promise((resolve) => {
         setTimeout(() => {
           resolve({
             el: to.hash,
-            behavior: 'smooth',
+            behavior: 'auto',
             top: 80
           })
         }, 300)
@@ -114,7 +116,7 @@ const router = createRouter({
     if (savedPosition) {
       return savedPosition
     }
-    return { top: 0, behavior: 'smooth' }
+    return { top: 0, behavior: 'auto' }
   }
 })
 

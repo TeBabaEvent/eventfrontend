@@ -1,10 +1,14 @@
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import { logger } from '@/services/logger'
 import type gsap from 'gsap'
 import type { ScrollTrigger as ScrollTriggerType } from 'gsap/ScrollTrigger'
 
 let gsapInstance: typeof gsap | null = null
 let ScrollTriggerInstance: typeof ScrollTriggerType | null = null
+
+// Reactive refs for external access (e.g., Lenis integration)
+const gsapRef = shallowRef<typeof gsap | null>(null)
+const scrollTriggerRef = shallowRef<typeof ScrollTriggerType | null>(null)
 let isInitialized = false
 let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null
 // ✅ Store resize handler reference for proper cleanup
@@ -25,6 +29,19 @@ export interface AnimationContext {
   context: gsap.Context | null
   cleanup: () => void
 }
+
+export interface MatchMediaInstance {
+  mm: gsap.MatchMedia | null
+  cleanup: () => void
+}
+
+// Standard breakpoints for matchMedia
+export const BREAKPOINTS = {
+  mobile: `(max-width: ${MOBILE_BREAKPOINT}px)`,
+  desktop: `(min-width: ${MOBILE_BREAKPOINT + 1}px)`,
+  reducedMotion: '(prefers-reduced-motion: reduce)',
+  noReducedMotion: '(prefers-reduced-motion: no-preference)'
+} as const
 
 /**
  * Centralized animation lifecycle manager
@@ -68,6 +85,11 @@ export function useAnimations() {
       ScrollTriggerInstance = scrollTriggerModule.ScrollTrigger
 
       gsapInstance.registerPlugin(ScrollTriggerInstance)
+
+      // Expose instances via reactive refs for Lenis integration
+      gsapRef.value = gsapInstance
+      scrollTriggerRef.value = ScrollTriggerInstance
+
       setupResizeDebounce()
 
       isInitialized = true
@@ -124,7 +146,7 @@ export function useAnimations() {
       context,
       cleanup: () => {
         try {
-          context.kill()
+          // revert() already calls kill() internally - no need for both
           context.revert()
           activeContexts.delete(context)
         } catch (error) {
@@ -134,11 +156,54 @@ export function useAnimations() {
     }
   }
 
+  /**
+   * Create a gsap.matchMedia() instance for responsive animations
+   * Animations inside matchMedia auto-cleanup when conditions change
+   *
+   * @example
+   * const { mm } = createMatchMedia()
+   * if (mm) {
+   *   mm.add({
+   *     isDesktop: BREAKPOINTS.desktop,
+   *     isMobile: BREAKPOINTS.mobile
+   *   }, (context) => {
+   *     const { isDesktop } = context.conditions
+   *     if (isDesktop) {
+   *       gsap.to('.el', { x: 100 })
+   *     }
+   *     return () => { // optional cleanup }
+   *   })
+   * }
+   *
+   * onUnmounted(() => mm?.cleanup())
+   */
+  function createMatchMedia(): MatchMediaInstance {
+    if (!gsapInstance || !isEnabled.value) {
+      return {
+        mm: null,
+        cleanup: () => {}
+      }
+    }
+
+    const mm = gsapInstance.matchMedia()
+
+    return {
+      mm,
+      cleanup: () => {
+        try {
+          mm.revert()
+        } catch (error) {
+          logger.warn('MatchMedia cleanup error:', error)
+        }
+      }
+    }
+  }
+
   function cleanup() {
     try {
       activeContexts.forEach(context => {
         try {
-          context.kill()
+          // revert() already calls kill() internally
           context.revert()
         } catch (error) {
           logger.warn('Error cleaning up animation context:', error)
@@ -170,6 +235,10 @@ export function useAnimations() {
     isEnabled,
     initialize,
     createContext,
-    cleanup
+    createMatchMedia,
+    cleanup,
+    // Reactive refs for Lenis ↔ GSAP integration
+    gsap: gsapRef,
+    ScrollTrigger: scrollTriggerRef
   }
 }

@@ -151,15 +151,28 @@
   --transition-slow: 0.5s var(--ease-smooth);
   --transition-slower: 0.7s var(--ease-smooth);
 
-  /* Z-index */
+  /* Z-index - Unified System
+     Use these variables instead of hardcoded values!
+
+     Layer hierarchy (lowest to highest):
+     - Content: 1-100 (cards, sections)
+     - Navigation: 1000-1030 (dropdowns, sticky, fixed)
+     - Overlays: 1040-1090 (modals, drawers, toasts)
+     - Critical: 9999+ (loading, fullscreen overlays)
+  */
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
   --z-modal-backdrop: 1040;
   --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
-  --z-toast: 1080;
+  --z-drawer: 1060;
+  --z-popover: 1070;
+  --z-tooltip: 1080;
+  --z-toast: 1090;
+  /* Critical overlays - use sparingly */
+  --z-fullscreen-overlay: 9999;
+  --z-loading-spinner: 9999;
+  --z-max: 10000;
 
   /* Breakpoints (pour les media queries) */
   --breakpoint-sm: 640px;

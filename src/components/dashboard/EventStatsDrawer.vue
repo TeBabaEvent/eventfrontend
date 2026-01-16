@@ -368,7 +368,7 @@ const chartLabels = computed(() => {
 .drawer-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-drawer);
   display: flex;
   justify-content: flex-end;
   background: rgba(0, 0, 0, 0.75);
