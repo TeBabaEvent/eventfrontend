@@ -44,7 +44,9 @@ export function useScrollSpy(sectionIds: string[], offset: number = 100) {
   }, 100)
 
   onMounted(() => {
-    window.addEventListener('scroll', updateActiveSection)
+    // 🚀 CRITICAL: passive: true allows browser to scroll without waiting for JS handler
+    // This eliminates input lag on mobile devices
+    window.addEventListener('scroll', updateActiveSection, { passive: true })
     updateActiveSection() // Initial check
   })
 

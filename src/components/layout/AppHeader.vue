@@ -227,7 +227,9 @@ watch(animationsReady, async (ready) => {
 
 // Lifecycle
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
+  // 🚀 CRITICAL: passive: true allows browser to scroll without waiting for JS handler
+  // This eliminates input lag on mobile devices
+  window.addEventListener('scroll', handleScroll, { passive: true })
   handleScroll() // Initial check
 })
 
