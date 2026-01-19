@@ -83,6 +83,7 @@
   padding-top: 120px;
   padding-bottom: 80px;
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--color-white);
 }
 

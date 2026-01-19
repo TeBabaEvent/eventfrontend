@@ -22,10 +22,22 @@ export function useMobile() {
     prefersReducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }
 
+  // Track last width to ignore address bar changes (height-only changes)
+  let lastWidth = 0
+
   // 🚀 Debounced resize handler - only fires after resize stops (150ms)
+  // CRITICAL: Only check mobile on WIDTH changes, not height changes
+  // Height changes are typically caused by mobile browser address bar
   const handleResize = () => {
     if (resizeTimeout) clearTimeout(resizeTimeout)
-    resizeTimeout = setTimeout(checkMobile, 150)
+    resizeTimeout = setTimeout(() => {
+      // Only check if width actually changed (ignore address bar height changes)
+      const currentWidth = window.innerWidth
+      if (Math.abs(currentWidth - lastWidth) > 10) {
+        lastWidth = currentWidth
+        checkMobile()
+      }
+    }, 150)
   }
 
   // Combined check: skip animations if mobile OR reduced motion preferred
@@ -34,6 +46,8 @@ export function useMobile() {
   onMounted(() => {
     checkMobile()
     checkReducedMotion()
+    // Initialize last width for resize comparison
+    lastWidth = window.innerWidth
     window.addEventListener('resize', handleResize, { passive: true })
 
     // Listen for reduced motion changes

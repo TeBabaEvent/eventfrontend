@@ -392,7 +392,10 @@ onUnmounted(() => {
 
 .hero {
   position: relative;
+  /* Fallback for older browsers */
   min-height: 100vh;
+  /* Modern browsers: use dynamic viewport height */
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   padding-top: calc(var(--header-height) + 24px);
@@ -995,9 +998,10 @@ onUnmounted(() => {
 /* Mobile (max 768px) - Premium Experience */
 @media (max-width: 768px) {
   .hero {
-    /* Use svh as fallback, then JS-calculated --vh for stability */
+    /* CRITICAL: Use svh (small viewport height) for stable mobile experience
+     * svh uses the smallest possible viewport (with address bar visible)
+     * This prevents layout shifts when the address bar hides/shows */
     min-height: 100svh;
-    min-height: calc(var(--vh, 1vh) * 100);
     padding-top: 0;
     padding-bottom: 0;
     display: flex;
@@ -1013,7 +1017,6 @@ onUnmounted(() => {
     max-width: 100%;
     padding: 0;
     min-height: 100svh;
-    min-height: calc(var(--vh, 1vh) * 100);
     display: flex;
     flex-direction: column;
     justify-content: center;

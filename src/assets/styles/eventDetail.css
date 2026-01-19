@@ -6,6 +6,7 @@
 .event-detail-page {
   /* Le hero passe derrière la navbar transparente, comme sur la home */
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* ============================================
@@ -14,6 +15,7 @@
 .event-hero {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -501,7 +503,7 @@
 /* Tablet (1024px) */
 @media (max-width: 1024px) {
   .event-hero {
-    min-height: 100vh;
+    min-height: 100svh;
     padding: 100px 0 80px;
   }
 

@@ -13,6 +13,9 @@ let isInitialized = false
 let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null
 // ✅ Store resize handler reference for proper cleanup
 let resizeHandler: (() => void) | null = null
+// Track viewport dimensions to detect real resizes vs address bar changes
+let lastViewportWidth = 0
+let lastViewportHeight = 0
 
 const activeContexts = new Set<gsap.Context>()
 
@@ -105,6 +108,10 @@ export function useAnimations() {
     // ✅ Prevent duplicate listeners
     if (!ScrollTriggerInstance || resizeHandler) return
 
+    // Initialize viewport tracking
+    lastViewportWidth = window.innerWidth
+    lastViewportHeight = window.innerHeight
+
     // ✅ Store handler reference for cleanup
     resizeHandler = () => {
       if (resizeDebounceTimer) {
@@ -112,8 +119,22 @@ export function useAnimations() {
       }
 
       resizeDebounceTimer = setTimeout(() => {
-        if (ScrollTriggerInstance) {
+        if (!ScrollTriggerInstance) return
+
+        const currentWidth = window.innerWidth
+        const currentHeight = window.innerHeight
+
+        // CRITICAL FIX: Only refresh ScrollTrigger on REAL resizes
+        // Ignore small height changes (< 150px) which are typically caused by
+        // mobile browser address bar showing/hiding during scroll
+        const widthChanged = Math.abs(currentWidth - lastViewportWidth) > 10
+        const heightChanged = Math.abs(currentHeight - lastViewportHeight) > 150
+
+        // Only refresh on width changes or large height changes (orientation change)
+        if (widthChanged || heightChanged) {
           ScrollTriggerInstance.refresh()
+          lastViewportWidth = currentWidth
+          lastViewportHeight = currentHeight
         }
       }, 250)
     }

@@ -35,21 +35,40 @@ let lenis: Lenis | null = null
 let lenisTickerCallback: ((time: number) => void) | null = null
 
 // iOS viewport height fix - prevents jarring repositioning when URL bar changes
+// CRITICAL: Only set --vh ONCE on initial load, NOT on resize
+// Updating on resize causes layout shifts when the mobile address bar hides/shows
+let initialViewportHeight: number | null = null
+
 const setViewportHeight = () => {
   // Only apply on mobile
   if (window.innerWidth > 768) return
 
-  // Set a CSS custom property to the actual viewport height
-  const vh = window.innerHeight * 0.01
+  // CRITICAL FIX: Only set initial height, never update on resize
+  // This prevents glitches when mobile browser address bar changes size
+  if (initialViewportHeight === null) {
+    initialViewportHeight = window.innerHeight
+  }
+
+  // Use the INITIAL height, not current height
+  // Modern browsers use dvh/svh, this is a fallback for older browsers
+  const vh = initialViewportHeight * 0.01
   document.documentElement.style.setProperty('--vh', `${vh}px`)
 }
 
-// Debounced resize handler for viewport
-let resizeTimeout: ReturnType<typeof setTimeout> | null = null
-const handleViewportResize = () => {
-  if (resizeTimeout) clearTimeout(resizeTimeout)
-  // Debounce to prevent rapid updates during scroll
-  resizeTimeout = setTimeout(setViewportHeight, 150)
+// Only update viewport height on orientation change (90° rotation)
+// NOT on resize (which includes address bar changes)
+let lastOrientation: string | null = null
+const handleOrientationChange = () => {
+  const newOrientation = window.screen?.orientation?.type ||
+    (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait')
+
+  // Only reset if orientation actually changed
+  if (lastOrientation !== null && lastOrientation !== newOrientation) {
+    // Reset initial height so it recalculates for new orientation
+    initialViewportHeight = null
+    setViewportHeight()
+  }
+  lastOrientation = newOrientation
 }
 
 const hideLayout = computed(() => route.meta.hideLayout === true)
@@ -78,13 +97,15 @@ onMounted(async () => {
     setToastInstance(toastRef.value)
   }
 
-  // Set initial viewport height for iOS
+  // Set initial viewport height for iOS (once only, not on resize!)
   setViewportHeight()
-  window.addEventListener('resize', handleViewportResize, { passive: true })
-  // Also update on orientation change
-  window.addEventListener('orientationchange', () => {
-    setTimeout(setViewportHeight, 100)
-  })
+  // Initialize orientation tracking
+  lastOrientation = window.screen?.orientation?.type ||
+    (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait')
+
+  // Listen for orientation changes ONLY (not resize)
+  // Resize events from address bar changes should NOT update --vh
+  window.addEventListener('orientationchange', handleOrientationChange, { passive: true })
 
   startMonitoring()
 
@@ -134,12 +155,8 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  // Clean up viewport resize handler
-  window.removeEventListener('resize', handleViewportResize)
-  if (resizeTimeout) {
-    clearTimeout(resizeTimeout)
-    resizeTimeout = null
-  }
+  // Clean up orientation change handler
+  window.removeEventListener('orientationchange', handleOrientationChange)
 
   // Clean up GSAP ticker callback
   if (lenisTickerCallback && gsapRef.value) {
@@ -196,7 +213,10 @@ onUnmounted(() => {
 @import '@/assets/styles/base.css';
 
 .app {
+  /* Fallback for older browsers */
   min-height: 100vh;
+  /* Modern browsers: use dynamic viewport height to handle mobile address bar */
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -241,6 +261,7 @@ onUnmounted(() => {
 
 .suspense-fallback {
   min-height: 100vh;
+  min-height: 100dvh;
   background: transparent;
 }
 </style>

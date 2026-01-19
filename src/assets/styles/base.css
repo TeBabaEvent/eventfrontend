@@ -102,15 +102,19 @@ body {
   .full-height {
     /* Fallback: use svh which is the smallest viewport height */
     min-height: 100svh;
-    /* Override with JS-calculated value when available */
+    /* Override with JS-calculated value when available (only set once on load) */
     min-height: calc(var(--vh, 1vh) * 100);
   }
 
-  /* Smooth transitions for layout changes caused by URL bar */
+  /*
+   * CRITICAL FIX: Do NOT add transitions to body height/dimensions
+   * This causes visual glitches when mobile browser address bar changes
+   * The browser will handle the viewport change natively and smoothly
+   */
   body {
-    transition: height 0.2s ease-out;
     /* Ensure native touch scrolling works properly */
     touch-action: pan-y;
+    /* NO transition on body - causes glitches with address bar! */
   }
 
   /*

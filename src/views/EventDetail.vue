@@ -1036,6 +1036,7 @@ const copyEventLink = async () => {
 /* Error State */
 .error-state {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1092,6 +1093,7 @@ const copyEventLink = async () => {
    ============================================ */
 .event-hero--skeleton {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1271,7 +1273,7 @@ const copyEventLink = async () => {
 /* Responsive skeleton */
 @media (max-width: 768px) {
   .event-hero--skeleton {
-    min-height: 100vh;
+    min-height: 100svh;
     padding: 100px 1rem 60px;
   }
 
