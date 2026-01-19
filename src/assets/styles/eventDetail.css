@@ -46,8 +46,16 @@
 
 /* Mobile performance: disable will-change to save GPU memory */
 @media (max-width: 768px) {
+  /* CRITICAL FIX: Use fixed svh height instead of percentage
+   * Percentages recalculate when viewport changes (address bar)
+   * svh is stable and doesn't change during scroll */
+  .event-hero__background {
+    height: 100svh;
+  }
+
   .event-hero__image {
-    height: 110%;
+    /* Use svh-based height instead of percentage to prevent reflows */
+    height: 105svh;
     will-change: auto;
     /* Static state - no animated transforms on mobile */
   }
@@ -119,6 +127,12 @@
   .lineup-item,
   .event-highlight {
     will-change: auto !important;
+  }
+
+  /* CRITICAL: Fix overlay height to svh to prevent reflows */
+  .event-hero__overlay,
+  .event-hero__gradient {
+    height: 100svh !important;
   }
 
   /* 🚀 Use simpler transitions on mobile */
@@ -569,8 +583,10 @@
 /* Mobile Large (768px) */
 @media (max-width: 768px) {
   .event-hero {
+    /* CRITICAL: Use svh (small viewport height) NOT dvh on mobile
+     * svh = smallest viewport (with address bar visible) = stable, no reflows
+     * dvh = dynamic viewport (changes with address bar) = causes glitches */
     min-height: 100svh;
-    min-height: 100dvh;
     padding: 0;
     display: flex;
     align-items: center;
@@ -596,8 +612,8 @@
 
   .event-hero__content {
     max-width: 100%;
+    /* Use svh only - stable height that doesn't change with address bar */
     min-height: 100svh;
-    min-height: 100dvh;
     padding: 0 1.5rem;
     gap: 0.25rem;
     /* Same pattern as homepage - content fills viewport and centers */
