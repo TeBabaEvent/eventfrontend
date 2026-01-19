@@ -92,8 +92,10 @@ import { NAVIGATION_ITEMS } from '@/constants'
 import LanguageSelector from '@/components/ui/LanguageSelector.vue'
 import { useI18n } from 'vue-i18n'
 import { useAnimations } from '@/composables/useAnimations'
+import { useScrollLock } from '@/composables/useScrollLock'
 
 const { t } = useI18n()
+const { lock: lockScroll, unlock: unlockScroll } = useScrollLock()
 const route = useRoute()
 const router = useRouter()
 
@@ -161,12 +163,16 @@ const handleNavClick = async (href: string, event: Event) => {
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
-  document.body.style.overflow = isMenuOpen.value ? 'hidden' : ''
+  if (isMenuOpen.value) {
+    lockScroll()
+  } else {
+    unlockScroll()
+  }
 }
 
 const closeMenu = () => {
   isMenuOpen.value = false
-  document.body.style.overflow = ''
+  unlockScroll()
 }
 
 // GSAP Nav entrance animation
@@ -227,7 +233,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  document.body.style.overflow = ''
+  // Note: scroll lock cleanup is handled automatically by useScrollLock
 
   // Cleanup GSAP
   if (animationContext) {

@@ -408,6 +408,7 @@ import { useI18n } from 'vue-i18n'
 import type { Event, Pack } from '@/types'
 import { useCheckout } from '@/composables/useCheckout'
 import { formatPrice } from '@/utils'
+import { useScrollLock } from '@/composables/useScrollLock'
 
 // Payment method logos (official)
 import bancontactLogo from '@/assets/images/payment/Bancontact-Original-logo-RGB.svg'
@@ -415,6 +416,7 @@ import paypalLogo from '@/assets/images/payment/PP_logo_h_100x26.png'
 import visaLogo from '@/assets/images/payment/visa-svgrepo-com.svg'
 
 const { t, locale } = useI18n()
+const { lock: lockScroll, unlock: unlockScroll } = useScrollLock()
 
 const props = defineProps<{
   isOpen: boolean
@@ -655,11 +657,11 @@ watch(() => props.isOpen, (isOpen) => {
       }
     }
     // Bloquer le scroll du body
-    document.body.style.overflow = 'hidden'
+    lockScroll()
   } else {
     // Réinitialiser le formulaire quand le modal se ferme
     resetForm()
-    document.body.style.overflow = ''
+    unlockScroll()
   }
 })
 
@@ -676,7 +678,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
-  document.body.style.overflow = ''
+  // Note: scroll lock cleanup is handled automatically by useScrollLock
 })
 </script>
 

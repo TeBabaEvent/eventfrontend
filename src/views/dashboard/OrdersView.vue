@@ -544,6 +544,7 @@ import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
 import { useAdminDataStore } from '@/stores/adminData'
 import { useToast } from '@/composables/useToast'
 import { useAnimations } from '@/composables/useAnimations'
+import { useScrollLock } from '@/composables/useScrollLock'
 import { logger } from '@/services/logger'
 import SkeletonStatCard from '@/components/ui/SkeletonStatCard.vue'
 import type { OrderListItem, OrderDetail, OrderFilters, OrdersListResponse } from '@/types'
@@ -552,6 +553,7 @@ import type { AnimationContext } from '@/composables/useAnimations'
 const { t } = useI18n()
 const adminDataStore = useAdminDataStore()
 const { showToast } = useToast()
+const { lock: lockScroll, unlock: unlockScroll } = useScrollLock()
 
 // Animations
 const { initialize, createContext, isEnabled } = useAnimations()
@@ -857,9 +859,9 @@ function cancelRefund() {
 // Block body scroll when drawer is open
 watch(selectedOrder, (newVal) => {
   if (newVal) {
-    document.body.style.overflow = 'hidden'
+    lockScroll()
   } else {
-    document.body.style.overflow = ''
+    unlockScroll()
   }
 })
 
@@ -948,10 +950,9 @@ onMounted(async () => {
   })
 })
 
-// Cleanup animations and body scroll
+// Cleanup animations (scroll lock cleanup is handled automatically by useScrollLock)
 onUnmounted(() => {
   animationContext.value?.cleanup()
-  document.body.style.overflow = ''
 })
 </script>
 

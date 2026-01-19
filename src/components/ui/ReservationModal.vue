@@ -152,8 +152,10 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useScrollLock } from '@/composables/useScrollLock'
 
 const { t } = useI18n()
+const { lock: lockScroll, unlock: unlockScroll } = useScrollLock()
 
 const props = defineProps<{
   isOpen: boolean
@@ -182,9 +184,9 @@ watch(() => props.isOpen, (newValue) => {
       lastName: '',
       numberOfPeople: 1
     }
-    document.body.style.overflow = 'hidden'
+    lockScroll()
   } else {
-    document.body.style.overflow = ''
+    unlockScroll()
   }
 })
 
@@ -225,7 +227,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
-  document.body.style.overflow = ''
+  // Note: scroll lock cleanup is handled automatically by useScrollLock
 })
 </script>
 

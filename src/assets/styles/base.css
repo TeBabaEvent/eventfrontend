@@ -109,12 +109,14 @@ body {
   /* Smooth transitions for layout changes caused by URL bar */
   body {
     transition: height 0.2s ease-out;
+    /* Ensure native touch scrolling works properly */
+    touch-action: pan-y;
   }
 
-  /* Prevent pull-to-refresh from causing jank */
-  html {
-    overscroll-behavior-y: none;
-  }
+  /*
+   * NOTE: overscroll-behavior-y: none was removed to restore native scroll inertia
+   * This allows the natural iOS/Android scroll momentum and bounce effects
+   */
 }
 
 /* Typographie */

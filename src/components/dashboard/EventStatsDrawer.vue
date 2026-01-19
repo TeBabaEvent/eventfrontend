@@ -226,7 +226,10 @@
 import { ref, computed, watch } from 'vue'
 import { useAdminDataStore } from '@/stores/adminData'
 import { logger } from '@/services/logger'
+import { useScrollLock } from '@/composables/useScrollLock'
 import type { EventStats } from '@/types'
+
+const { lock: lockScroll, unlock: unlockScroll } = useScrollLock()
 
 const props = defineProps<{
   isOpen: boolean
@@ -250,9 +253,9 @@ watch(
   ([open, id]) => {
     if (open && id) {
       loadStats()
-      document.body.style.overflow = 'hidden'
+      lockScroll()
     } else {
-      document.body.style.overflow = ''
+      unlockScroll()
     }
   },
   { immediate: true }
