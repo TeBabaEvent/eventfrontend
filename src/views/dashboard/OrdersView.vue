@@ -950,9 +950,14 @@ onMounted(async () => {
   })
 })
 
-// Cleanup animations (scroll lock cleanup is handled automatically by useScrollLock)
+// Cleanup animations and debounce (scroll lock cleanup is handled automatically by useScrollLock)
 onUnmounted(() => {
   animationContext.value?.cleanup()
+  // Cleanup search debounce timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+    searchTimeout = null
+  }
 })
 </script>
 
@@ -1644,6 +1649,7 @@ onUnmounted(() => {
   width: 100%;
   max-width: 420px;
   height: 100vh;
+  height: 100dvh;
   max-height: 100%;
   background: #08080c;
   display: flex;

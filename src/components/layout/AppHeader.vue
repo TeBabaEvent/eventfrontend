@@ -296,7 +296,7 @@ onUnmounted(() => {
   z-index: 1;
   width: 100%;
   max-width: 100%;
-  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* REMOVED height transition - causes layout thrashing on mobile */
 }
 
 .header--scrolled .nav {
@@ -616,7 +616,7 @@ onUnmounted(() => {
     display: flex;
     position: fixed;
     top: 0;
-    right: -100%;
+    right: 0;
     width: min(85%, 360px);
     height: 100vh;
     height: 100dvh;
@@ -631,7 +631,10 @@ onUnmounted(() => {
     box-shadow:
       -20px 0 80px rgba(0, 0, 0, 0.6),
       -1px 0 0 rgba(220, 20, 60, 0.1);
-    transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 🚀 USE transform instead of right for GPU-accelerated animation */
+    transform: translateX(100%);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
     overflow-y: auto;
     overflow-x: hidden;
     z-index: var(--z-modal-backdrop);
@@ -654,7 +657,7 @@ onUnmounted(() => {
   }
 
   .nav__menu--mobile.nav__menu--open {
-    right: 0;
+    transform: translateX(0);
   }
 
   /* Close Button - Minimal */

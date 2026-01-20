@@ -179,6 +179,7 @@ const handleLogout = async () => {
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--color-black);
 }
 
@@ -193,6 +194,7 @@ const handleLogout = async () => {
   left: 0;
   top: 0;
   height: 100vh;
+  height: 100dvh;
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -462,6 +464,7 @@ const handleLogout = async () => {
   flex: 1;
   margin-left: 260px;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--color-black);
 }
 

@@ -384,6 +384,7 @@ const chartLabels = computed(() => {
   width: 100%;
   max-width: 420px;
   height: 100vh;
+  height: 100dvh;
   max-height: 100%;
   background: #08080c;
   display: flex;
