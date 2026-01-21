@@ -203,7 +203,7 @@
 import { computed, ref, watch, onUnmounted, type PropType } from 'vue'
 import { useRouter } from 'vue-router'
 import { formatPrice } from '@/utils'
-import { getOptimizedImageUrl, IMAGE_WIDTHS } from '@/utils/image'
+import { getOptimizedImageUrl } from '@/utils/image'
 import { getEventTitle } from '@/utils/translations'
 import type { Event } from '@/types'
 import { useI18n } from 'vue-i18n'
@@ -260,8 +260,7 @@ const displayTitle = computed(() => {
 
 const optimizedImage = computed(() => {
   const url = props.event.image_url || props.event.image || ''
-  const width = props.variant === 'large' ? IMAGE_WIDTHS.LARGE : IMAGE_WIDTHS.MEDIUM
-  return getOptimizedImageUrl(url, width)
+  return getOptimizedImageUrl(url)
 })
 
 // Calculate minimum price from packs

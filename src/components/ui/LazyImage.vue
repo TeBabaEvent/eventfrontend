@@ -17,7 +17,6 @@
     <img
       v-else
       :src="optimizedSrc"
-      :srcset="srcSet"
       :alt="alt"
       :class="imageClass"
       :loading="loading"
@@ -32,7 +31,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
-import { getOptimizedImageUrl, generateSrcSet } from '@/utils/image'
+import { getOptimizedImageUrl } from '@/utils/image'
 
 interface Props {
   src: string
@@ -42,26 +41,20 @@ interface Props {
   loading?: 'lazy' | 'eager'
   width?: number | string
   height?: number | string
-  resizeWidth?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   alt: '',
   imageClass: '',
   errorMessage: '',
-  loading: 'lazy',
-  resizeWidth: 800
+  loading: 'lazy'
 })
 
 const isLoading = ref(true)
 const hasError = ref(false)
 
 const optimizedSrc = computed(() => {
-  return getOptimizedImageUrl(props.src, props.resizeWidth)
-})
-
-const srcSet = computed(() => {
-  return generateSrcSet(props.src)
+  return getOptimizedImageUrl(props.src)
 })
 
 const onLoad = () => {

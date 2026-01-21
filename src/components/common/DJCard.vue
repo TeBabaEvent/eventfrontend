@@ -86,7 +86,7 @@ import { DJ_BADGES } from '@/constants'
 import type { Artist } from '@/types'
 import { useI18n } from 'vue-i18n'
 import { getArtistRole, getArtistDescription } from '@/utils/translations'
-import { getOptimizedImageUrl, IMAGE_WIDTHS } from '@/utils/image'
+import { getOptimizedImageUrl } from '@/utils/image'
 
 const { t, locale } = useI18n()
 
@@ -98,7 +98,7 @@ const props = defineProps({
 })
 
 const optimizedImage = computed(() => {
-  return getOptimizedImageUrl(props.dj.image_url || '', IMAGE_WIDTHS.SMALL)
+  return getOptimizedImageUrl(props.dj.image_url || '')
 })
 
 // Computed properties

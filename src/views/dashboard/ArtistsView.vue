@@ -31,7 +31,7 @@
       <article v-for="artist in artists" :key="artist.id" class="artist-card">
         <!-- Image -->
         <div class="artist-card__visual">
-          <img v-if="artist.image_url" :src="artist.image_url" :alt="artist.name">
+          <img v-if="artist.image_url" :src="getOptimizedImageUrl(artist.image_url)" :alt="artist.name">
           <div v-else class="artist-card__no-image">
             <i class="fas fa-user-music"></i>
           </div>
@@ -262,6 +262,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
+import { getOptimizedImageUrl } from '@/utils/image'
 import { useAdminDataStore } from '@/stores/adminData'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'

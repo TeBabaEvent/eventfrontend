@@ -26,73 +26,21 @@ const imageLoaded = ref(false)
 const imageError = ref(false)
 const imgRef = ref<HTMLImageElement>()
 
-// Helper to encode URL for wsrv.nl (avoid double-encoding)
-const encodeImageUrl = (url: string): string => {
-  // Check if URL is already encoded by looking for %XX patterns
-  const isAlreadyEncoded = /%[0-9A-Fa-f]{2}/.test(url)
-
-  if (isAlreadyEncoded) {
-    // URL already has percent-encoding, use as-is
-    return url.replace(/:/g, '%3A').replace(/\//g, '%2F')
-  }
-
-  // Not encoded, encode it
-  return encodeURIComponent(url)
-}
-
-// Generate optimized URLs for different formats
-const avifUrl = computed(() => {
+// For backend-stored images, we use direct URLs (backend handles optimization)
+const resolvedUrl = computed(() => {
   if (!props.src) return ''
-  // Use wsrv.nl for AVIF format
-  if (props.src.startsWith('http')) {
-    const baseUrl = 'https://wsrv.nl/?url='
-    let params = `${encodeImageUrl(props.src)}&w=${props.width}&q=80&output=avif&il`
-    if (props.height) {
-      params += `&h=${props.height}&fit=cover`
-    }
-    return `${baseUrl}${params}`
-  }
-  return props.src
+  return getOptimizedImageUrl(props.src)
 })
 
-const webpUrl = computed(() => {
-  if (!props.src) return ''
-  return getOptimizedImageUrl(props.src, props.width, props.height)
-})
+// No multi-format support needed for backend images (they're already WebP)
+const avifUrl = computed(() => '')
+const webpUrl = computed(() => resolvedUrl.value)
+const jpegUrl = computed(() => resolvedUrl.value)
 
-const jpegUrl = computed(() => {
-  if (!props.src) return ''
-  // Use wsrv.nl for JPEG format
-  if (props.src.startsWith('http')) {
-    const baseUrl = 'https://wsrv.nl/?url='
-    let params = `${encodeImageUrl(props.src)}&w=${props.width}&q=80&output=jpg&il`
-    if (props.height) {
-      params += `&h=${props.height}&fit=cover`
-    }
-    return `${baseUrl}${params}`
-  }
-  return props.src
-})
-
-// Generate srcset for different screen densities
-const generateDensitySrcSet = (baseUrl: string): string => {
-  if (!baseUrl || !props.width) return ''
-
-  const densities = [1, 2]
-  return densities
-    .map(density => {
-      const width = Math.round(props.width! * density)
-      let url = baseUrl
-      // Replace width parameter in URL
-      url = url.replace(/&w=\d+/, `&w=${width}`)
-      return `${url} ${density}x`
-    })
-    .join(', ')
-}
-
-const avifSrcSet = computed(() => generateDensitySrcSet(avifUrl.value))
-const webpSrcSet = computed(() => generateDensitySrcSet(webpUrl.value))
-const jpegSrcSet = computed(() => generateDensitySrcSet(jpegUrl.value))
+// No srcset needed for backend images
+const avifSrcSet = computed(() => '')
+const webpSrcSet = computed(() => '')
+const jpegSrcSet = computed(() => '')
 
 const handleLoad = () => {
   imageLoaded.value = true

@@ -65,13 +65,6 @@ export const WHATSAPP_MESSAGES = {
   contact: 'Bonjour, je souhaite discuter d\'un projet d\'événement'
 } as const
 
-// URLs des images par défaut
-export const DEFAULT_IMAGES = {
-  event: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=2070',
-  dj: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?q=80&w=2070',
-  placeholder: 'https://via.placeholder.com/400x300?text=Baba+Event'
-} as const
-
 export const SEO_CONFIG = {
   defaultTitle: 'Baba Event - Événements Culturels Albanais Premium',
   titleTemplate: '%s | Baba Event',

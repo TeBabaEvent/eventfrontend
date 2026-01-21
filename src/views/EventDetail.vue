@@ -497,17 +497,16 @@ const displayDescription = computed(() => {
   return translations?.[locale.value] || event.value.description || ''
 })
 
-// 🚀 Optimize hero image with wsrv.nl
+// Resolve hero image URL (backend handles optimization)
 const optimizedHeroImage = computed(() => {
   if (!event.value) return ''
   const url = event.value.image_url || event.value.image || ''
-  // 1920px width for hero, but compressed and WebP
-  return getOptimizedImageUrl(url, 1920)
+  return getOptimizedImageUrl(url)
 })
 
-// 🚀 Optimize artist images (small thumbnails)
+// Resolve artist image URL (backend handles optimization)
 const getOptimizedArtistImage = (url: string) => {
-  return getOptimizedImageUrl(url, 128) // 64px * 2 for retina
+  return getOptimizedImageUrl(url)
 }
 
 const googleMapsUrl = computed(() => {

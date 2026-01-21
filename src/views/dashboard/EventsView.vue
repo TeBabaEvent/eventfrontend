@@ -31,7 +31,7 @@
         <article v-for="event in sortedEvents" :key="event.id" class="event-card" :class="{ 'event-card--past': !isUpcoming(event) }">
           <!-- Image -->
           <div class="event-card__visual">
-            <img v-if="event.image_url" :src="event.image_url" :alt="event.title">
+            <img v-if="event.image_url" :src="getOptimizedImageUrl(event.image_url)" :alt="event.title">
             <div v-else class="event-card__no-image">
               <i class="fas fa-image"></i>
             </div>
@@ -409,6 +409,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted } from 'vue'
 import { buildApiUrl, getAuthHeaders, API_ENDPOINTS } from '@/config/api'
+import { getOptimizedImageUrl } from '@/utils/image'
 import { useAdminDataStore } from '@/stores/adminData'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'

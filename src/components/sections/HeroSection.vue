@@ -183,7 +183,7 @@ const featuredEvent = computed(() => {
 const optimizedHeroImage = computed(() => {
   if (!featuredEvent.value) return ''
   const url = featuredEvent.value.image_url || featuredEvent.value.image || ''
-  return getOptimizedImageUrl(url, 1200) // Larger width for hero
+  return getOptimizedImageUrl(url)
 })
 
 const featuredEventCategoryLabel = computed(() => {
