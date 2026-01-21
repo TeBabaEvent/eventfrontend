@@ -4,7 +4,8 @@
       "Bash(npm run type-check:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: eliminate EventDetail mobile scroll glitches\n\n- Replace 100dvh with 100svh on mobile \\(svh is stable, dvh changes with address bar\\)\n- Fix hero background, image, overlay, and gradient to use svh-based heights\n- Percentages \\(110%, 100%\\) caused reflows when viewport changed\n- svh \\(small viewport height\\) remains constant during scroll\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(git commit:*)"
     ]
   }
 }

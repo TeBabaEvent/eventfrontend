@@ -2,7 +2,7 @@
  * Composable pour l'upload d'images avec crop et preview.
  * Gère le drag & drop, la validation, le crop et l'upload vers le backend.
  */
-import { ref, computed } from 'vue'
+import { ref, computed, type ComputedRef } from 'vue'
 import { buildApiUrl, API_ENDPOINTS } from '@/config/api'
 import { logger } from '@/services/logger'
 
@@ -31,7 +31,7 @@ export interface UseImageUploadReturn {
   isDragging: ReturnType<typeof ref<boolean>>
 
   // Computed
-  hasImage: ReturnType<typeof computed<boolean>>
+  hasImage: ComputedRef<boolean>
 
   // Methods
   handleFileSelect: (event: Event) => void

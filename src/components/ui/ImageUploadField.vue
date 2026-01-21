@@ -105,7 +105,7 @@
               <div class="crop-container" ref="cropContainer">
                 <img
                   ref="cropImage"
-                  :src="originalPreviewUrl"
+                  :src="originalPreviewUrl ?? undefined"
                   alt="Crop preview"
                   class="crop-image"
                   @load="initCrop"
@@ -242,7 +242,7 @@ function handleFileSelect(event: Event) {
   baseHandleFileSelect(event)
   if (originalFile.value) {
     // Store original for crop
-    originalPreviewUrl.value = previewUrl.value
+    originalPreviewUrl.value = previewUrl.value ?? null
     emit('file-selected', originalFile.value)
   }
 }
@@ -250,7 +250,7 @@ function handleFileSelect(event: Event) {
 function handleDrop(event: DragEvent) {
   baseHandleDrop(event)
   if (originalFile.value) {
-    originalPreviewUrl.value = previewUrl.value
+    originalPreviewUrl.value = previewUrl.value ?? null
     emit('file-selected', originalFile.value)
   }
 }
@@ -440,10 +440,10 @@ function onResize(event: MouseEvent | TouchEvent) {
 }
 
 function getEventPosition(event: MouseEvent | TouchEvent): { x: number; y: number } {
-  if ('touches' in event) {
+  if ('touches' in event && event.touches[0]) {
     return { x: event.touches[0].clientX, y: event.touches[0].clientY }
   }
-  return { x: event.clientX, y: event.clientY }
+  return { x: (event as MouseEvent).clientX, y: (event as MouseEvent).clientY }
 }
 
 async function applyCrop() {
