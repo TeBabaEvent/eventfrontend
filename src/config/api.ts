@@ -54,7 +54,11 @@ export const API_ENDPOINTS = {
 
   // Admin - Users
   ADMIN_USERS: '/api/admin/users',
-  ADMIN_USER_BY_ID: (id: string) => `/api/admin/users/${id}`
+  ADMIN_USER_BY_ID: (id: string) => `/api/admin/users/${id}`,
+
+  // Upload - Images
+  UPLOAD_EVENT_IMAGE: (eventId: string) => `/api/upload/event/${eventId}/image`,
+  UPLOAD_ARTIST_IMAGE: (artistId: string) => `/api/upload/artist/${artistId}/image`
 } as const
 
 // Helper pour construire une URL complète

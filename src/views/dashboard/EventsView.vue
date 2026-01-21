@@ -267,14 +267,21 @@
               </div>
             </div>
 
-            <!-- Image URL -->
+            <!-- Image Upload -->
             <div class="form-row form-row--single">
               <div class="form-group">
-                <label class="form-label">
-                  <i class="fas fa-image"></i>
-                  URL de l'image
-                </label>
-                <input v-model="formData.image_url" type="url" class="form-input" placeholder="https://...">
+                <ImageUploadField
+                  ref="imageUploadRef"
+                  label="Image de l'événement"
+                  v-model="formData.image_url"
+                  :current-image-url="editingEvent?.image_url"
+                  :aspect-ratio="16/9"
+                  :max-size-m-b="10"
+                  entity-type="event"
+                  :entity-id="editingEvent?.id"
+                  @upload-complete="(url) => formData.image_url = url"
+                  @upload-error="(err) => toast.error(err)"
+                />
               </div>
             </div>
 
@@ -407,6 +414,7 @@ import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'
 import SkeletonCard from '@/components/ui/SkeletonCard.vue'
 import EventStatsDrawer from '@/components/dashboard/EventStatsDrawer.vue'
+import ImageUploadField from '@/components/ui/ImageUploadField.vue'
 import type { Event, Artist } from '@/types'
 
 const adminStore = useAdminDataStore()
@@ -435,6 +443,9 @@ const currentDescLang = ref('fr')
 // Stats drawer
 const isStatsDrawerOpen = ref(false)
 const selectedEventForStats = ref<Event | null>(null)
+
+// Image upload ref
+const imageUploadRef = ref<InstanceType<typeof ImageUploadField> | null>(null)
 
 function openStats(event: Event) {
   selectedEventForStats.value = event
@@ -616,6 +627,9 @@ async function handleSubmit() {
                        formData.value.description_translations.sq ||
                        formData.value.description
 
+    // Don't include image_url in initial save if we have a new file to upload
+    const hasNewImage = imageUploadRef.value?.hasFile
+
     const data = {
       title: primaryTitle,
       title_translations: formData.value.title_translations,
@@ -628,7 +642,7 @@ async function handleSubmit() {
       address: formData.value.address,
       city: formData.value.city,
       maps_embed_url: formData.value.maps_embed_url,
-      image_url: formData.value.image_url,
+      image_url: hasNewImage ? editingEvent.value?.image_url : formData.value.image_url,
       youtube_shorts_url: formData.value.youtube_shorts_url,
       instagram_reels_url: formData.value.instagram_reels_url,
       capacity: formData.value.capacity,
@@ -653,7 +667,7 @@ async function handleSubmit() {
 
     const response = await fetch(url, {
       method,
-      credentials: 'include', // ✅ Send auth cookie
+      credentials: 'include',
       headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
@@ -661,6 +675,19 @@ async function handleSubmit() {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || 'Erreur lors de la sauvegarde')
+    }
+
+    const savedEvent = await response.json()
+    const eventId = savedEvent.id || editingEvent.value?.id
+
+    // Upload image if we have a new file
+    if (hasNewImage && eventId && imageUploadRef.value) {
+      // Pass the eventId to the upload function (needed for new events)
+      const imageUrl = await imageUploadRef.value.upload(eventId)
+      if (imageUrl) {
+        // Image uploaded successfully - the backend already updated the event
+        logger.log('Image uploaded:', imageUrl)
+      }
     }
 
     adminStore.invalidateEvents()
@@ -715,6 +742,8 @@ function resetForm() {
   }
   currentTitleLang.value = 'fr'
   currentDescLang.value = 'fr'
+  // Clear image upload state
+  imageUploadRef.value?.clear()
 }
 
 function toggleArtist(artist: any) {

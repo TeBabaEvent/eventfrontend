@@ -4,102 +4,97 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Baba Event Frontend - A Vue 3 + TypeScript event management and ticketing platform for concerts, festivals, weddings, and VIP parties. Features public event pages, a ticket purchasing system with PayPal/Bancontact integration, QR code ticket scanning, and an admin dashboard.
+Baba Events is a Vue 3 event ticketing platform with multi-language support (FR, EN, NL, SQ). The frontend connects to a Python backend API (separate repository). The site is deployed on Railway at baba.events.
 
 ## Commands
 
 ```bash
 # Development
-npm run dev              # Start dev server (port 5173)
-npm run build            # Production build with type-checking
-npm run build-only       # Production build without type-checking
-npm run type-check       # Run vue-tsc type checking only
-npm run lint             # ESLint with auto-fix (cached)
-npm run format           # Prettier formatting for src/
+npm run dev          # Start dev server on port 5173
 
-# Production
-npm run preview          # Preview production build locally
-npm run start            # Serve built dist/ folder
+# Build & Production
+npm run build        # Type-check + production build
+npm run build-only   # Vite build without type-check
+npm run type-check   # TypeScript validation (vue-tsc)
+npm run preview      # Preview production build on port 4173
+
+# Code Quality
+npm run lint         # ESLint with auto-fix (cached)
+npm run format       # Prettier formatting for src/
 ```
 
 ## Architecture
 
-### State Management (Pinia Stores)
-- `auth.ts` - JWT authentication with httpOnly cookies, auto-refresh on 401, role-based access (admin, super_admin, steward, user)
-- `data.ts` - Public data with client-side cache (2min TTL), deduplicates concurrent API calls via shared promises, uses shallowRef for performance
-- `adminData.ts` - Admin dashboard data
-- `app.ts` - Global UI state (loading, theme, menu)
+### Core Stack
+- **Vue 3** with Composition API (`<script setup>`)
+- **Pinia** for state management
+- **Vue Router** with lazy-loaded routes
+- **vue-i18n** with dynamic locale loading
+- **GSAP + Lenis** for animations and smooth scrolling
+- **Vite 7** with Terser minification
 
-### Animation System (Critical Pattern)
-GSAP animations are lazy-loaded only on desktop (>1024px) for mobile performance. Always use the centralized composable:
+### Key Directories
+```
+src/
+├── config/api.ts       # API endpoints and base URL config
+├── services/api.ts     # ApiService singleton with auto token refresh
+├── stores/             # Pinia stores (auth, data, app, adminData)
+├── composables/        # Reusable logic (useToast, useCheckout, useScanner, etc.)
+├── types/index.ts      # All TypeScript interfaces (Event, Artist, Order, etc.)
+├── i18n/               # Translations with lazy loading per locale
+├── views/              # Route components
+│   ├── dashboard/      # Admin dashboard views
+│   └── legal/          # Legal pages
+├── components/
+│   ├── ui/             # Base components (BaseButton, BaseCard, etc.)
+│   ├── layout/         # AppHeader, AppFooter, GlobalBackground
+│   ├── sections/       # Page sections (HeroSection, EventsSection)
+│   └── common/         # Shared components (EventCard, DJCard)
+└── layouts/            # DashboardLayout
+```
 
+### Data Flow
+1. **API calls**: `src/services/api.ts` exports `api` singleton, uses `credentials: 'include'` for httpOnly cookie auth
+2. **State**: `useDataStore` caches events/artists with 2-min TTL and deduplicates concurrent requests
+3. **Auth**: `useAuthStore` manages JWT via httpOnly cookies, auto-refreshes on 401
+
+### Authentication
+- Backend sets httpOnly cookies (`access_token`, `refresh_token`)
+- Frontend never stores tokens in localStorage
+- `wasLoggedIn` localStorage flag enables token refresh on page reload
+- Roles: `admin`, `super_admin`, `steward`, `user`
+
+### i18n Pattern
 ```typescript
-import { useAnimations } from '@/composables/useAnimations'
+// Locales are lazy-loaded from src/i18n/locales/{fr,en,nl,sq}.ts
+import { loadLocale } from '@/i18n'
+await loadLocale('fr')
 
-const { initialize, createContext, isEnabled, isReady } = useAnimations()
-
-onMounted(async () => {
-  await initialize() // Loads GSAP only on desktop
-  if (isEnabled.value) {
-    const ctx = createContext(elementRef.value)
-    ctx.context?.add(() => { ctx.gsap!.to('.el', { opacity: 1 }) })
-  }
-})
-
-onUnmounted(() => ctx?.cleanup()) // REQUIRED - prevents memory leaks
+// Translation objects support *_translations fields on models
+// e.g., event.title_translations?.fr
 ```
 
-Never import GSAP directly. Check `isEnabled.value` before animating. Cleanup is mandatory.
-
-### API Service (`src/services/api.ts`)
-- Singleton `api` instance with automatic token refresh on 401
-- All requests include `credentials: 'include'` for httpOnly cookies
-- Supports AbortController for request cancellation
-- Endpoints defined in `src/config/api.ts`
-
-### i18n (4 languages)
-- Locales: fr (default), en, nl, sq
-- Lazy-loaded locale files in `src/i18n/locales/`
-- Detection priority: localStorage > browser > 'fr'
-- Use `loadLocale()` before switching languages
-
-### Routing
-- Public routes: `/`, `/events/:slug`, `/mentions-legales`, `/confidentialite`, `/cgv`, `/payment/complete`
-- Protected: `/scanner` (steward+), `/dashboard/*` (admin only)
-- Auth check happens via navigation guards with auto-redirect to `/login`
-
-### Component Organization
-```
-src/components/
-  common/     # Reusable: EventCard, DJCard
-  layout/     # AppHeader, AppFooter, GlobalBackground
-  sections/   # Homepage sections: Hero, Events, Team
-  ui/         # BaseButton, LoadingSpinner, Toast
-  dashboard/  # Admin-specific components
-  cart/       # Shopping cart components
-```
-
-### Type Definitions
-Core types in `src/types/index.ts`: Event, Artist, Pack, Order, Ticket, ScanResponse, etc.
-All entities support `*_translations` objects for multilingual content.
+### Path Alias
+`@/` maps to `src/` (configured in vite.config.ts and tsconfig)
 
 ## Environment Variables
-
-```env
-VITE_API_BASE_URL=http://localhost:8000  # Backend API (defaults to localhost:8000)
+```
+VITE_API_BASE_URL  # Backend API URL (default: http://localhost:8000)
 ```
 
-## Key Patterns
+## Code Patterns
 
-1. **Props**: Use `defineProps<Type>()` with TypeScript interfaces
-2. **Composition API**: All components use `<script setup lang="ts">`
-3. **Logging**: Use `logger` from `@/services/logger` (disabled in production)
-4. **Path alias**: `@` maps to `src/`
-5. **Build chunks**: vue-vendor, i18n, animations (GSAP lazy-loaded separately)
+### API Requests with Abort Support
+```typescript
+const controller = new AbortController()
+const events = await api.getEvents(controller.signal)
+// Cancel on unmount: controller.abort()
+```
 
-## Production Build Notes
+### Vue Component Structure
+All components use `<script setup lang="ts">` with Composition API. No Options API.
 
-- Terser removes console.log/debug/info
-- Source maps disabled
-- Images auto-optimized (PNG, JPEG, WebP, SVG)
-- Code splitting via lazy routes
+### Styling
+- CSS variables defined in `src/assets/styles/variables.css`
+- Base styles in `src/assets/styles/base.css`
+- Mobile-first with `dvh` for viewport height (iOS address bar handling)

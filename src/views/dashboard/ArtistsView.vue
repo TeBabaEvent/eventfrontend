@@ -184,14 +184,25 @@
               </div>
             </div>
 
-            <div class="form-row">
+            <!-- Image Upload -->
+            <div class="form-row form-row--single">
               <div class="form-group">
-                <label class="form-label">
-                  <i class="fas fa-image"></i>
-                  URL de l'image
-                </label>
-                <input v-model="formData.image_url" type="url" class="form-input" placeholder="https://...">
+                <ImageUploadField
+                  ref="imageUploadRef"
+                  label="Photo de l'artiste"
+                  v-model="formData.image_url"
+                  :current-image-url="editingArtist?.image_url"
+                  :aspect-ratio="1"
+                  :max-size-m-b="10"
+                  entity-type="artist"
+                  :entity-id="editingArtist?.id"
+                  @upload-complete="(url) => formData.image_url = url"
+                  @upload-error="(err) => toast.error(err)"
+                />
               </div>
+            </div>
+
+            <div class="form-row">
               <div class="form-group">
                 <label class="form-label">
                   <i class="fab fa-instagram"></i>
@@ -199,9 +210,6 @@
                 </label>
                 <input v-model="formData.instagram" type="url" class="form-input" placeholder="https://instagram.com/...">
               </div>
-            </div>
-
-            <div class="form-row">
               <div class="form-group">
                 <label class="form-label">
                   <i class="fas fa-star"></i>
@@ -209,11 +217,14 @@
                 </label>
                 <select v-model="formData.badge" class="form-select">
                   <option value="">Aucun badge</option>
-                  <option value="star">⭐ Star</option>
-                  <option value="fire">🔥 Trending</option>
-                  <option value="premium">💎 Premium</option>
+                  <option value="star">Star</option>
+                  <option value="fire">Trending</option>
+                  <option value="premium">Premium</option>
                 </select>
               </div>
+            </div>
+
+            <div class="form-row">
               <div class="form-group">
                 <label class="form-label">
                   <i class="fas fa-calendar-check"></i>
@@ -255,6 +266,7 @@ import { useAdminDataStore } from '@/stores/adminData'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/services/logger'
 import SkeletonCard from '@/components/ui/SkeletonCard.vue'
+import ImageUploadField from '@/components/ui/ImageUploadField.vue'
 import type { Artist } from '@/types'
 
 const adminStore = useAdminDataStore()
@@ -277,6 +289,9 @@ const isInitialLoading = ref(!adminStore.artistsLoaded)
 const submitError = ref<string | null>(null)
 const currentRoleLang = ref('fr')
 const currentDescLang = ref('fr')
+
+// Image upload ref
+const imageUploadRef = ref<InstanceType<typeof ImageUploadField> | null>(null)
 
 const formData = ref({
   name: '',
@@ -332,10 +347,14 @@ async function handleSubmit() {
                        formData.value.description_translations.sq ||
                        formData.value.description
 
+    // Don't include image_url in initial save if we have a new file to upload
+    const hasNewImage = imageUploadRef.value?.hasFile
+
     const data = {
       ...formData.value,
       role: primaryRole,
-      description: primaryDesc
+      description: primaryDesc,
+      image_url: hasNewImage ? editingArtist.value?.image_url : formData.value.image_url
     }
 
     const url = editingArtist.value
@@ -346,7 +365,7 @@ async function handleSubmit() {
 
     const response = await fetch(url, {
       method,
-      credentials: 'include', // ✅ Send auth cookie
+      credentials: 'include',
       headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
@@ -354,6 +373,19 @@ async function handleSubmit() {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || 'Erreur lors de la sauvegarde')
+    }
+
+    const savedArtist = await response.json()
+    const artistId = savedArtist.id || editingArtist.value?.id
+
+    // Upload image if we have a new file
+    if (hasNewImage && artistId && imageUploadRef.value) {
+      // Pass the artistId to the upload function (needed for new artists)
+      const imageUrl = await imageUploadRef.value.upload(artistId)
+      if (imageUrl) {
+        // Image uploaded successfully - the backend already updated the artist
+        logger.log('Image uploaded:', imageUrl)
+      }
     }
 
     adminStore.invalidateArtists()
@@ -460,6 +492,8 @@ function resetForm() {
   }
   currentRoleLang.value = 'fr'
   currentDescLang.value = 'fr'
+  // Clear image upload state
+  imageUploadRef.value?.clear()
 }
 
 function getBadgeIcon(badge: string): string {
