@@ -352,8 +352,8 @@ async function handleSubmit() {
     const hasNewImage = imageUploadRef.value?.hasFile
     const isImageMarkedForDeletion = imageUploadRef.value?.isMarkedForDeletion
 
-    // Determine image_url to send
-    let imageUrlToSend = formData.value.image_url
+    // Determine image_url to send (empty string = no image)
+    let imageUrlToSend: string | null = formData.value.image_url
     if (hasNewImage) {
       // Keep old URL temporarily, will be replaced after upload
       imageUrlToSend = editingArtist.value?.image_url || null
