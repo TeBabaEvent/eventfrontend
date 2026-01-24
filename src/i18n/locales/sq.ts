@@ -563,7 +563,8 @@ Me respekt`
     retry: 'Provo përsëri',
     confirm: 'Konfirmo',
     close: 'Mbyll',
-    free: 'FALAS'
+    free: 'FALAS',
+    and: 'dhe'
   },
   reservation: {
     badge: 'Rezervim',
@@ -624,8 +625,12 @@ Me respekt`
       card: 'Kartë bankare',
       cardDesc: 'Visa, Mastercard, American Express',
       paypalDesc: 'Paguani me llogarinë tuaj PayPal',
-      cashDesc: 'Rezervoni dhe paguani në vend'
+      cashDesc: 'Rezervoni dhe paguani në vend',
+      bankTransfer: 'Transfertë bankare',
+      bankTransferDesc: 'Paguani me transfertë bankare'
     },
+    reserveBankTransfer: 'Rezervo me transfertë',
+    bankTransferWarning: 'Të dhënat e transfertës do të dërgohen me email. Vendet garantohen vetëm pas marrjes së pagesës.',
     acceptTerms: 'Pranoj',
     termsLink: 'kushtet e shitjes',
     privacyLink: 'politikën e privatësisë',

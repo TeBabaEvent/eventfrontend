@@ -1,5 +1,11 @@
 // Types principaux de l'application Baba Event
 
+// Payment methods available for events
+export type PaymentMethod = 'bancontact' | 'card' | 'paypal' | 'cash' | 'bank_transfer'
+
+// All available payment methods (used for defaults)
+export const ALL_PAYMENT_METHODS: PaymentMethod[] = ['bancontact', 'card', 'paypal', 'cash', 'bank_transfer']
+
 export interface Event {
   id: string
   slug?: string  // URL-friendly slug for SEO
@@ -39,6 +45,11 @@ export interface Event {
   whatsappLink?: string
   artists?: Artist[]
   packs?: Pack[]
+  allowed_payment_methods?: PaymentMethod[]  // null/undefined = all methods allowed
+  // Bank transfer details (when bank_transfer is in allowed_payment_methods)
+  bank_account_iban?: string
+  bank_account_name?: string
+  bank_account_bic?: string
   created_at?: string
   updated_at?: string
 }
@@ -189,7 +200,7 @@ export interface CartCheckoutData {
   customer_name: string
   customer_email: string
   customer_phone?: string
-  payment_method?: 'online' | 'cash'
+  payment_method?: 'online' | 'cash' | 'bank_transfer'
   payment_source?: 'paypal' | 'bancontact' | 'card' // For online payments
   terms_accepted: boolean
 }

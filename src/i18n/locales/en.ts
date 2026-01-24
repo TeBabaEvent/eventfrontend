@@ -563,7 +563,8 @@ Best regards`
     retry: 'Retry',
     confirm: 'Confirm',
     close: 'Close',
-    free: 'FREE'
+    free: 'FREE',
+    and: 'and'
   },
   reservation: {
     badge: 'Booking',
@@ -624,8 +625,12 @@ Best regards`
       card: 'Credit/Debit Card',
       cardDesc: 'Visa, Mastercard, American Express',
       paypalDesc: 'Pay with your PayPal account',
-      cashDesc: 'Reserve and pay on site'
+      cashDesc: 'Reserve and pay on site',
+      bankTransfer: 'Bank Transfer',
+      bankTransferDesc: 'Pay by bank transfer'
     },
+    reserveBankTransfer: 'Reserve by transfer',
+    bankTransferWarning: 'Bank transfer details will be sent by email. Seats are only guaranteed after payment is received.',
     acceptTerms: 'I accept the',
     termsLink: 'terms and conditions',
     privacyLink: 'privacy policy',

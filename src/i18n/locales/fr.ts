@@ -567,7 +567,8 @@ Cordialement`
     retry: 'Réessayer',
     confirm: 'Confirmer',
     close: 'Fermer',
-    free: 'GRATUIT'
+    free: 'GRATUIT',
+    and: 'et'
   },
   reservation: {
     badge: 'Réservation',
@@ -628,8 +629,12 @@ Cordialement`
       card: 'Carte bancaire',
       cardDesc: 'Visa, Mastercard, American Express',
       paypalDesc: 'Payez avec votre compte PayPal',
-      cashDesc: 'Réservez et payez sur place'
+      cashDesc: 'Réservez et payez sur place',
+      bankTransfer: 'Virement bancaire',
+      bankTransferDesc: 'Payez par virement bancaire'
     },
+    reserveBankTransfer: 'Réserver par virement',
+    bankTransferWarning: 'Les informations de virement vous seront envoyées par email. Les places ne sont garanties qu\'après réception du paiement.',
     acceptTerms: "J'accepte les",
     termsLink: 'conditions générales de vente',
     privacyLink: 'la politique de confidentialité',

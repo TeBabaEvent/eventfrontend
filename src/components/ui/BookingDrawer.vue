@@ -199,6 +199,7 @@
                 <div class="payment-methods-grid">
                   <!-- Bancontact -->
                   <button
+                    v-if="isPaymentMethodAllowed('bancontact')"
                     type="button"
                     class="payment-method-card"
                     :class="{ 'payment-method-card--selected': selectedPaymentSource === 'bancontact' }"
@@ -219,6 +220,7 @@
 
                   <!-- Card -->
                   <button
+                    v-if="isPaymentMethodAllowed('card')"
                     type="button"
                     class="payment-method-card"
                     :class="{ 'payment-method-card--selected': selectedPaymentSource === 'card' }"
@@ -239,6 +241,7 @@
 
                   <!-- PayPal -->
                   <button
+                    v-if="isPaymentMethodAllowed('paypal')"
                     type="button"
                     class="payment-method-card"
                     :class="{ 'payment-method-card--selected': selectedPaymentSource === 'paypal' }"
@@ -259,6 +262,7 @@
 
                   <!-- Cash (pay on site) -->
                   <button
+                    v-if="isPaymentMethodAllowed('cash')"
                     type="button"
                     class="payment-method-card"
                     :class="{ 'payment-method-card--selected': selectedPaymentSource === 'cash' }"
@@ -276,13 +280,38 @@
                       <i class="fas fa-check-circle"></i>
                     </div>
                   </button>
+
+                  <!-- Bank Transfer -->
+                  <button
+                    v-if="isPaymentMethodAllowed('bank_transfer')"
+                    type="button"
+                    class="payment-method-card"
+                    :class="{ 'payment-method-card--selected': selectedPaymentSource === 'bank_transfer' }"
+                    @click="selectedPaymentSource = 'bank_transfer'"
+                    :disabled="isLoading"
+                  >
+                    <div class="payment-method-card__icon payment-method-card__icon--bank-transfer">
+                      <i class="fas fa-university"></i>
+                    </div>
+                    <div class="payment-method-card__info">
+                      <span class="payment-method-card__name">{{ t('booking.paymentMethods.bankTransfer') }}</span>
+                      <span class="payment-method-card__desc">{{ t('booking.paymentMethods.bankTransferDesc') }}</span>
+                    </div>
+                    <div class="payment-method-card__check">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                  </button>
                 </div>
 
-                <!-- Cash Warning -->
+                <!-- Cash/Bank Transfer Warning -->
                 <Transition name="fade">
                   <div v-if="selectedPaymentSource === 'cash'" class="cash-warning">
                     <i class="fas fa-exclamation-triangle"></i>
                     <span>{{ t('booking.cashWarning') }}</span>
+                  </div>
+                  <div v-else-if="selectedPaymentSource === 'bank_transfer'" class="cash-warning bank-transfer-warning">
+                    <i class="fas fa-info-circle"></i>
+                    <span>{{ t('booking.bankTransferWarning') }}</span>
                   </div>
                 </Transition>
               </div>
@@ -343,6 +372,7 @@
               class="submit-btn"
               :class="{
                 'submit-btn--cash': selectedPaymentSource === 'cash',
+                'submit-btn--bank-transfer': selectedPaymentSource === 'bank_transfer',
                 'submit-btn--bancontact': selectedPaymentSource === 'bancontact',
                 'submit-btn--paypal': selectedPaymentSource === 'paypal'
               }"
@@ -358,6 +388,11 @@
                 <template v-if="selectedPaymentSource === 'cash'">
                   <i class="fas fa-clock"></i>
                   <span>{{ t('booking.reserveCash') }} {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
+                </template>
+                <!-- Bank Transfer -->
+                <template v-else-if="selectedPaymentSource === 'bank_transfer'">
+                  <i class="fas fa-university"></i>
+                  <span>{{ t('booking.reserveBankTransfer') }} {{ formatPrice(totalAmount, '€', t('common.free')) }}</span>
                 </template>
                 <!-- Bancontact -->
                 <template v-else-if="selectedPaymentSource === 'bancontact'">
@@ -405,7 +440,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { Event, Pack } from '@/types'
+import type { Event, Pack, PaymentMethod } from '@/types'
+import { ALL_PAYMENT_METHODS } from '@/types'
 import { useCheckout } from '@/composables/useCheckout'
 import { formatPrice } from '@/utils'
 import { useScrollLock } from '@/composables/useScrollLock'
@@ -434,7 +470,7 @@ const panelRef = ref<HTMLElement | null>(null)
 // State
 const packQuantities = reactive<Record<string, number>>({})
 const currentStep = ref<1 | 2>(1) // 1 = form, 2 = payment method selection
-const selectedPaymentSource = ref<'paypal' | 'bancontact' | 'card' | 'cash' | null>(null)
+const selectedPaymentSource = ref<PaymentMethod | null>(null)
 const formData = ref({
   firstName: '',
   lastName: '',
@@ -506,6 +542,20 @@ const summaryBreakdown = computed(() => {
     .map(p => `${getPackName(p)} ×${getPackQuantity(p.id)}`)
     .join(', ')
 })
+
+// Get allowed payment methods for this event
+const allowedPaymentMethods = computed<PaymentMethod[]>(() => {
+  // If event has no allowed_payment_methods set (null/undefined/empty), allow all
+  if (!props.event?.allowed_payment_methods || props.event.allowed_payment_methods.length === 0) {
+    return [...ALL_PAYMENT_METHODS]
+  }
+  return props.event.allowed_payment_methods
+})
+
+// Check if a payment method is allowed
+function isPaymentMethodAllowed(method: PaymentMethod): boolean {
+  return allowedPaymentMethods.value.includes(method)
+}
 
 const isFormValid = computed(() => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -621,17 +671,26 @@ async function handleSubmit() {
   }))
 
   // Determine payment method for backend
-  const isCash = selectedPaymentSource.value === 'cash'
+  // Cash and bank_transfer are both "pending" payments (not online)
+  const isPendingPayment = selectedPaymentSource.value === 'cash' || selectedPaymentSource.value === 'bank_transfer'
 
-  // Cast payment_source to correct type (excluding 'cash')
-  const paymentSourceForApi = isCash ? undefined : selectedPaymentSource.value as 'paypal' | 'bancontact' | 'card'
+  // Cast payment_source to correct type (excluding 'cash' and 'bank_transfer')
+  const paymentSourceForApi = isPendingPayment ? undefined : selectedPaymentSource.value as 'paypal' | 'bancontact' | 'card'
+
+  // For bank_transfer, use 'bank_transfer' as payment_method, for cash use 'cash', otherwise 'online'
+  let paymentMethod: 'online' | 'cash' | 'bank_transfer' = 'online'
+  if (selectedPaymentSource.value === 'cash') {
+    paymentMethod = 'cash'
+  } else if (selectedPaymentSource.value === 'bank_transfer') {
+    paymentMethod = 'bank_transfer'
+  }
 
   const checkoutData = {
     items,
     customer_name: `${formData.value.firstName.trim()} ${formData.value.lastName.trim()}`,
     customer_email: formData.value.email.trim().toLowerCase(),
     customer_phone: formData.value.phone?.trim() || undefined,
-    payment_method: isCash ? 'cash' : 'online' as 'online' | 'cash',
+    payment_method: paymentMethod,
     payment_source: paymentSourceForApi,
     terms_accepted: true
   }
@@ -1240,6 +1299,27 @@ onUnmounted(() => {
 .submit-btn--cash:hover:not(:disabled) {
   background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
   box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
+}
+
+/* Submit Button Bank Transfer Variant */
+.submit-btn--bank-transfer {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.submit-btn--bank-transfer:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+}
+
+/* Bank Transfer Warning */
+.bank-transfer-warning {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+
+.bank-transfer-warning i {
+  color: #60a5fa;
 }
 
 /* ============================================
@@ -2064,6 +2144,15 @@ onUnmounted(() => {
 }
 
 .payment-method-card__icon--cash i {
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.payment-method-card__icon--bank-transfer {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.payment-method-card__icon--bank-transfer i {
   color: #fff;
   font-size: 1.5rem;
 }

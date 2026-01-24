@@ -563,7 +563,8 @@ Met vriendelijke groeten`
     retry: 'Opnieuw proberen',
     confirm: 'Bevestigen',
     close: 'Sluiten',
-    free: 'GRATIS'
+    free: 'GRATIS',
+    and: 'en'
   },
   reservation: {
     badge: 'Reservering',
@@ -624,8 +625,12 @@ Met vriendelijke groeten`
       card: 'Bankkaart',
       cardDesc: 'Visa, Mastercard, American Express',
       paypalDesc: 'Betaal met uw PayPal-account',
-      cashDesc: 'Reserveer en betaal ter plaatse'
+      cashDesc: 'Reserveer en betaal ter plaatse',
+      bankTransfer: 'Bankoverschrijving',
+      bankTransferDesc: 'Betaal via bankoverschrijving'
     },
+    reserveBankTransfer: 'Reserveren via overschrijving',
+    bankTransferWarning: 'Overschrijvingsgegevens worden per e-mail verzonden. Plaatsen zijn alleen gegarandeerd na ontvangst van de betaling.',
     acceptTerms: 'Ik accepteer de',
     termsLink: 'algemene voorwaarden',
     privacyLink: 'het privacybeleid',

@@ -389,6 +389,84 @@
               </div>
             </div>
 
+            <!-- Payment Methods -->
+            <div class="form-section">
+              <h3 class="form-section-title">
+                <i class="fas fa-credit-card"></i>
+                Méthodes de paiement
+              </h3>
+              <p class="form-section-hint">Sélectionnez les méthodes de paiement disponibles pour cet événement</p>
+              <div class="payment-methods-selector">
+                <div
+                  v-for="method in paymentMethodsConfig"
+                  :key="method.id"
+                  class="payment-method-toggle"
+                  :class="{ 'payment-method-toggle--active': isPaymentMethodEnabled(method.id) }"
+                >
+                  <label class="toggle-label">
+                    <div class="toggle-info">
+                      <i :class="method.icon"></i>
+                      <span>{{ method.label }}</span>
+                    </div>
+                    <div class="toggle-switch">
+                      <input
+                        type="checkbox"
+                        :checked="isPaymentMethodEnabled(method.id)"
+                        @change="togglePaymentMethod(method.id)"
+                      >
+                      <span class="toggle-slider"></span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bank Account Details (visible when bank_transfer is enabled) -->
+            <Transition name="slide-fade">
+              <div v-if="isBankTransferEnabled" class="form-section bank-account-section">
+                <h3 class="form-section-title">
+                  <i class="fas fa-university"></i>
+                  Coordonnées bancaires
+                </h3>
+                <p class="form-section-hint">Ces informations seront envoyées aux clients qui choisissent le virement bancaire</p>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Nom du bénéficiaire *</label>
+                    <input
+                      v-model="formData.bank_account_name"
+                      type="text"
+                      class="form-input"
+                      placeholder="Ex: BABA Events SPRL"
+                    >
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">IBAN *</label>
+                    <input
+                      v-model="formData.bank_account_iban"
+                      type="text"
+                      class="form-input"
+                      placeholder="Ex: BE68 5390 0754 7034"
+                    >
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">BIC/SWIFT (optionnel)</label>
+                    <input
+                      v-model="formData.bank_account_bic"
+                      type="text"
+                      class="form-input"
+                      placeholder="Ex: TRIOBEBB"
+                    >
+                  </div>
+                </div>
+                <p class="form-section-note">
+                  <i class="fas fa-info-circle"></i>
+                  La communication du virement sera automatiquement le numéro de commande (ex: BABA-XXXXX)
+                </p>
+              </div>
+            </Transition>
+
             <!-- Actions -->
             <div class="form-actions">
               <button type="button" class="btn btn--outline" @click="closeModal">
@@ -416,7 +494,8 @@ import { logger } from '@/services/logger'
 import SkeletonCard from '@/components/ui/SkeletonCard.vue'
 import EventStatsDrawer from '@/components/dashboard/EventStatsDrawer.vue'
 import ImageUploadField from '@/components/ui/ImageUploadField.vue'
-import type { Event, Artist } from '@/types'
+import type { Event, Artist, PaymentMethod } from '@/types'
+import { ALL_PAYMENT_METHODS } from '@/types'
 
 const adminStore = useAdminDataStore()
 const toast = useToast()
@@ -486,8 +565,42 @@ const formData = ref({
   instagram_reels_url: '',
   status: 'upcoming',
   selectedArtists: [] as any[],
-  selectedPacks: [] as any[]
+  selectedPacks: [] as any[],
+  allowed_payment_methods: [...ALL_PAYMENT_METHODS] as PaymentMethod[],
+  bank_account_iban: '',
+  bank_account_name: '',
+  bank_account_bic: ''
 })
+
+// Payment methods configuration
+const paymentMethodsConfig = [
+  { id: 'bancontact' as PaymentMethod, label: 'Bancontact', icon: 'fas fa-university' },
+  { id: 'card' as PaymentMethod, label: 'Carte bancaire (Visa/MC)', icon: 'fas fa-credit-card' },
+  { id: 'paypal' as PaymentMethod, label: 'PayPal', icon: 'fab fa-paypal' },
+  { id: 'cash' as PaymentMethod, label: 'Cash (sur place)', icon: 'fas fa-coins' },
+  { id: 'bank_transfer' as PaymentMethod, label: 'Virement bancaire', icon: 'fas fa-exchange-alt' }
+]
+
+function isPaymentMethodEnabled(methodId: PaymentMethod): boolean {
+  return formData.value.allowed_payment_methods.includes(methodId)
+}
+
+// Check if bank transfer is enabled to show bank account fields
+const isBankTransferEnabled = computed(() => {
+  return formData.value.allowed_payment_methods.includes('bank_transfer')
+})
+
+function togglePaymentMethod(methodId: PaymentMethod) {
+  const index = formData.value.allowed_payment_methods.indexOf(methodId)
+  if (index !== -1) {
+    // Don't allow disabling all methods
+    if (formData.value.allowed_payment_methods.length > 1) {
+      formData.value.allowed_payment_methods.splice(index, 1)
+    }
+  } else {
+    formData.value.allowed_payment_methods.push(methodId)
+  }
+}
 
 // Computed
 const sortedEvents = computed(() => {
@@ -574,7 +687,15 @@ async function editEvent(event: Event) {
     instagram_reels_url: event.instagram_reels_url || '',
     status: event.status || 'upcoming',
     selectedArtists: event.artists || [],
-    selectedPacks: event.packs || []
+    selectedPacks: event.packs || [],
+    // Load payment methods - if null/undefined, enable all methods
+    allowed_payment_methods: event.allowed_payment_methods?.length
+      ? [...event.allowed_payment_methods]
+      : [...ALL_PAYMENT_METHODS],
+    // Bank account details
+    bank_account_iban: event.bank_account_iban || '',
+    bank_account_name: event.bank_account_name || '',
+    bank_account_bic: event.bank_account_bic || ''
   }
   isModalOpen.value = true
 }
@@ -659,6 +780,10 @@ async function handleSubmit() {
       instagram_reels_url: formData.value.instagram_reels_url,
       capacity: formData.value.capacity,
       status: formData.value.status,
+      allowed_payment_methods: formData.value.allowed_payment_methods,
+      bank_account_iban: formData.value.bank_account_iban || null,
+      bank_account_name: formData.value.bank_account_name || null,
+      bank_account_bic: formData.value.bank_account_bic || null,
       artists: formData.value.selectedArtists.map((a: any, index: number) => ({
         artist_id: a.id || a.artist_id,
         start_time: a.start_time || null,
@@ -758,7 +883,11 @@ function resetForm() {
     instagram_reels_url: '',
     status: 'upcoming',
     selectedArtists: [],
-    selectedPacks: []
+    selectedPacks: [],
+    allowed_payment_methods: [...ALL_PAYMENT_METHODS],
+    bank_account_iban: '',
+    bank_account_name: '',
+    bank_account_bic: ''
   }
   currentTitleLang.value = 'fr'
   currentDescLang.value = 'fr'
@@ -1498,6 +1627,161 @@ function getStatusLabel(event: Event): string {
   .empty-state__text {
     font-size: 0.85rem;
   }
+}
+
+/* ============================================
+   PAYMENT METHODS SELECTOR
+   ============================================ */
+.form-section-hint {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 1rem;
+}
+
+.payment-methods-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.payment-method-toggle {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.payment-method-toggle--active {
+  background: rgba(var(--color-primary-rgb), 0.1);
+  border-color: rgba(var(--color-primary-rgb), 0.3);
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+}
+
+.toggle-info i {
+  width: 20px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+
+.payment-method-toggle--active .toggle-info {
+  color: var(--color-white);
+}
+
+.payment-method-toggle--active .toggle-info i {
+  color: var(--color-primary);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  transition: all 0.3s ease;
+}
+
+.toggle-slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--color-primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  background: var(--color-white);
+  transform: translateX(20px);
+}
+
+/* ============================================
+   BANK ACCOUNT SECTION
+   ============================================ */
+.bank-account-section {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.bank-account-section .form-section-title {
+  color: #60a5fa;
+}
+
+.bank-account-section .form-section-title i {
+  color: #3b82f6;
+}
+
+.form-section-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.form-section-note i {
+  color: #60a5fa;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+/* Slide fade animation */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
 
