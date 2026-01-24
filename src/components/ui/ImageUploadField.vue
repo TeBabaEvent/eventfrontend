@@ -6,14 +6,20 @@
     </label>
 
     <!-- Current Image Preview (when editing existing entity) -->
-    <div v-if="currentImageUrl && !previewUrl" class="current-image">
+    <div v-if="currentImageUrl && !previewUrl && !imageDeleted" class="current-image">
       <img :src="resolveImageUrl(currentImageUrl)" :alt="label" />
       <div class="current-image__overlay">
         <span class="current-image__badge">Image actuelle</span>
-        <button type="button" class="current-image__change" @click="triggerFileInput">
-          <i class="fas fa-camera"></i>
-          Changer
-        </button>
+        <div class="current-image__actions">
+          <button type="button" class="current-image__btn current-image__btn--change" @click="triggerFileInput">
+            <i class="fas fa-camera"></i>
+            Changer
+          </button>
+          <button type="button" class="current-image__btn current-image__btn--delete" @click="markImageForDeletion" :disabled="isDeleting">
+            <i class="fas fa-trash"></i>
+            {{ isDeleting ? 'Suppression...' : 'Supprimer' }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -183,6 +189,7 @@ const {
   previewUrl,
   originalFile,
   isUploading,
+  isDeleting,
   uploadProgress,
   error,
   isDragging,
@@ -193,6 +200,8 @@ const {
   setCroppedImage,
   uploadEventImage,
   uploadArtistImage,
+  deleteEventImage,
+  deleteArtistImage,
   clear
 } = useImageUpload({
   maxSizeMB: props.maxSizeMB
@@ -204,6 +213,7 @@ const isCropModalOpen = ref(false)
 const originalPreviewUrl = ref<string | null>(null)
 const cropContainer = ref<HTMLElement | null>(null)
 const cropImage = ref<HTMLImageElement | null>(null)
+const imageDeleted = ref(false) // Track if existing image was marked for deletion
 
 // Crop state
 const cropArea = ref({ x: 0, y: 0, width: 100, height: 100 })
@@ -260,6 +270,49 @@ function removeImage() {
   originalPreviewUrl.value = null
   emit('update:modelValue', null)
   emit('removed')
+}
+
+/**
+ * Mark existing image for deletion (will be deleted when form is submitted)
+ */
+function markImageForDeletion() {
+  imageDeleted.value = true
+  emit('update:modelValue', null)
+  emit('removed')
+}
+
+/**
+ * Delete existing image from backend immediately
+ * Called by parent component when needed
+ */
+async function deleteExistingImage(): Promise<boolean> {
+  const entityId = props.entityId
+  if (!entityId) {
+    return false
+  }
+
+  let success = false
+
+  if (props.entityType === 'event') {
+    success = await deleteEventImage(entityId)
+  } else if (props.entityType === 'artist') {
+    success = await deleteArtistImage(entityId)
+  }
+
+  if (success) {
+    imageDeleted.value = true
+    emit('update:modelValue', null)
+    emit('removed')
+  }
+
+  return success
+}
+
+/**
+ * Reset the deleted state (e.g., when canceling)
+ */
+function resetDeletedState() {
+  imageDeleted.value = false
 }
 
 function resolveImageUrl(url: string): string {
@@ -557,7 +610,10 @@ onUnmounted(() => {
 defineExpose({
   upload,
   clear,
-  hasFile: computed(() => !!originalFile.value)
+  deleteExistingImage,
+  resetDeletedState,
+  hasFile: computed(() => !!originalFile.value),
+  isMarkedForDeletion: computed(() => imageDeleted.value)
 })
 </script>
 
@@ -623,12 +679,16 @@ defineExpose({
   border-radius: 4px;
 }
 
-.current-image__change {
+.current-image__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.current-image__btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -638,8 +698,26 @@ defineExpose({
   transition: all 0.15s ease;
 }
 
-.current-image__change:hover {
+.current-image__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.current-image__btn--change {
+  background: var(--color-primary);
+}
+
+.current-image__btn--change:hover:not(:disabled) {
   background: #b91c3a;
+  transform: scale(1.02);
+}
+
+.current-image__btn--delete {
+  background: rgba(239, 68, 68, 0.8);
+}
+
+.current-image__btn--delete:hover:not(:disabled) {
+  background: #dc2626;
   transform: scale(1.02);
 }
 

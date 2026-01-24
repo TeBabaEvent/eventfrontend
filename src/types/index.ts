@@ -28,7 +28,6 @@ export interface Event {
     from: number
     currency: string
   }
-  image?: string
   image_url?: string
   youtube_shorts_url?: string
   instagram_reels_url?: string

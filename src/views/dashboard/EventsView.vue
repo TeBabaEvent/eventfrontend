@@ -568,7 +568,7 @@ async function editEvent(event: Event) {
       nl: event.description_translations?.nl || '',
       sq: event.description_translations?.sq || ''
     },
-    image_url: event.image_url || event.image || '',
+    image_url: event.image_url || '',
     maps_embed_url: event.maps_embed_url || '',
     youtube_shorts_url: event.youtube_shorts_url || '',
     instagram_reels_url: event.instagram_reels_url || '',
@@ -628,8 +628,19 @@ async function handleSubmit() {
                        formData.value.description_translations.sq ||
                        formData.value.description
 
-    // Don't include image_url in initial save if we have a new file to upload
+    // Check image states
     const hasNewImage = imageUploadRef.value?.hasFile
+    const isImageMarkedForDeletion = imageUploadRef.value?.isMarkedForDeletion
+
+    // Determine image_url to send
+    let imageUrlToSend = formData.value.image_url
+    if (hasNewImage) {
+      // Keep old URL temporarily, will be replaced after upload
+      imageUrlToSend = editingEvent.value?.image_url || null
+    } else if (isImageMarkedForDeletion) {
+      // Image was marked for deletion - set to null
+      imageUrlToSend = null
+    }
 
     const data = {
       title: primaryTitle,
@@ -643,7 +654,7 @@ async function handleSubmit() {
       address: formData.value.address,
       city: formData.value.city,
       maps_embed_url: formData.value.maps_embed_url,
-      image_url: hasNewImage ? editingEvent.value?.image_url : formData.value.image_url,
+      image_url: imageUrlToSend,
       youtube_shorts_url: formData.value.youtube_shorts_url,
       instagram_reels_url: formData.value.instagram_reels_url,
       capacity: formData.value.capacity,
@@ -680,6 +691,14 @@ async function handleSubmit() {
 
     const savedEvent = await response.json()
     const eventId = savedEvent.id || editingEvent.value?.id
+
+    // Delete existing image from server if marked for deletion (and editing an existing event)
+    if (isImageMarkedForDeletion && editingEvent.value?.id && editingEvent.value?.image_url && imageUploadRef.value) {
+      const deleted = await imageUploadRef.value.deleteExistingImage()
+      if (deleted) {
+        logger.log('Image deleted from server')
+      }
+    }
 
     // Upload image if we have a new file
     if (hasNewImage && eventId && imageUploadRef.value) {

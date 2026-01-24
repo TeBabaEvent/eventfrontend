@@ -182,7 +182,7 @@ const featuredEvent = computed(() => {
 
 const optimizedHeroImage = computed(() => {
   if (!featuredEvent.value) return ''
-  const url = featuredEvent.value.image_url || featuredEvent.value.image || ''
+  const url = featuredEvent.value.image_url || ''
   return getOptimizedImageUrl(url)
 })
 

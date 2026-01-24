@@ -259,7 +259,7 @@ const displayTitle = computed(() => {
 })
 
 const optimizedImage = computed(() => {
-  const url = props.event.image_url || props.event.image || ''
+  const url = props.event.image_url || ''
   return getOptimizedImageUrl(url)
 })
 

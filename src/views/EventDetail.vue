@@ -500,7 +500,7 @@ const displayDescription = computed(() => {
 // Resolve hero image URL (backend handles optimization)
 const optimizedHeroImage = computed(() => {
   if (!event.value) return ''
-  const url = event.value.image_url || event.value.image || ''
+  const url = event.value.image_url || ''
   return getOptimizedImageUrl(url)
 })
 

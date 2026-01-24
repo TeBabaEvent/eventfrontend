@@ -119,7 +119,7 @@ export function useEventSeo(event: Ref<Event | null>) {
       : event.value.city || ''
   })
   const eventImage = computed(() =>
-    event.value?.image_url || event.value?.image || `${SITE_URL}/og-image.jpg`
+    event.value?.image_url || `${SITE_URL}/og-image.jpg`
   )
 
   // Description enrichie pour le partage

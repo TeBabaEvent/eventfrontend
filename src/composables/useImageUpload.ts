@@ -29,6 +29,7 @@ export interface UseImageUploadReturn {
   uploadProgress: ReturnType<typeof ref<number>>
   error: ReturnType<typeof ref<string | null>>
   isDragging: ReturnType<typeof ref<boolean>>
+  isDeleting: ReturnType<typeof ref<boolean>>
 
   // Computed
   hasImage: ComputedRef<boolean>
@@ -41,6 +42,8 @@ export interface UseImageUploadReturn {
   setCroppedImage: (blob: Blob) => void
   uploadEventImage: (eventId: string) => Promise<string | null>
   uploadArtistImage: (artistId: string) => Promise<string | null>
+  deleteEventImage: (eventId: string) => Promise<boolean>
+  deleteArtistImage: (artistId: string) => Promise<boolean>
   clear: () => void
   validateFile: (file: File) => string | null
 }
@@ -59,6 +62,7 @@ export function useImageUpload(options: ImageUploadOptions = {}): UseImageUpload
   const originalFile = ref<File | null>(null)
   const croppedBlob = ref<Blob | null>(null)
   const isUploading = ref(false)
+  const isDeleting = ref(false)
   const uploadProgress = ref(0)
   const error = ref<string | null>(null)
   const isDragging = ref(false)
@@ -229,6 +233,52 @@ export function useImageUpload(options: ImageUploadOptions = {}): UseImageUpload
   }
 
   /**
+   * Delete image from backend
+   */
+  async function deleteImage(endpoint: string): Promise<boolean> {
+    isDeleting.value = true
+    error.value = null
+
+    try {
+      const response = await fetch(buildApiUrl(endpoint), {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || errorData.message || `Erreur ${response.status}`)
+      }
+
+      logger.log('Image deleted successfully')
+      return true
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erreur lors de la suppression'
+      error.value = message
+      logger.error('Delete error:', err)
+      return false
+
+    } finally {
+      isDeleting.value = false
+    }
+  }
+
+  /**
+   * Delete event image
+   */
+  async function deleteEventImage(eventId: string): Promise<boolean> {
+    return deleteImage(API_ENDPOINTS.DELETE_EVENT_IMAGE(eventId))
+  }
+
+  /**
+   * Delete artist image
+   */
+  async function deleteArtistImage(artistId: string): Promise<boolean> {
+    return deleteImage(API_ENDPOINTS.DELETE_ARTIST_IMAGE(artistId))
+  }
+
+  /**
    * Clear all state
    */
   function clear() {
@@ -249,6 +299,7 @@ export function useImageUpload(options: ImageUploadOptions = {}): UseImageUpload
     originalFile,
     croppedBlob,
     isUploading,
+    isDeleting,
     uploadProgress,
     error,
     isDragging,
@@ -264,6 +315,8 @@ export function useImageUpload(options: ImageUploadOptions = {}): UseImageUpload
     setCroppedImage,
     uploadEventImage,
     uploadArtistImage,
+    deleteEventImage,
+    deleteArtistImage,
     clear,
     validateFile
   }

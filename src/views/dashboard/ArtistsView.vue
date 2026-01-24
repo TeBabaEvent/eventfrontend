@@ -348,14 +348,25 @@ async function handleSubmit() {
                        formData.value.description_translations.sq ||
                        formData.value.description
 
-    // Don't include image_url in initial save if we have a new file to upload
+    // Check image states
     const hasNewImage = imageUploadRef.value?.hasFile
+    const isImageMarkedForDeletion = imageUploadRef.value?.isMarkedForDeletion
+
+    // Determine image_url to send
+    let imageUrlToSend = formData.value.image_url
+    if (hasNewImage) {
+      // Keep old URL temporarily, will be replaced after upload
+      imageUrlToSend = editingArtist.value?.image_url || null
+    } else if (isImageMarkedForDeletion) {
+      // Image was marked for deletion - set to null
+      imageUrlToSend = null
+    }
 
     const data = {
       ...formData.value,
       role: primaryRole,
       description: primaryDesc,
-      image_url: hasNewImage ? editingArtist.value?.image_url : formData.value.image_url
+      image_url: imageUrlToSend
     }
 
     const url = editingArtist.value
@@ -378,6 +389,14 @@ async function handleSubmit() {
 
     const savedArtist = await response.json()
     const artistId = savedArtist.id || editingArtist.value?.id
+
+    // Delete existing image from server if marked for deletion (and editing an existing artist)
+    if (isImageMarkedForDeletion && editingArtist.value?.id && editingArtist.value?.image_url && imageUploadRef.value) {
+      const deleted = await imageUploadRef.value.deleteExistingImage()
+      if (deleted) {
+        logger.log('Image deleted from server')
+      }
+    }
 
     // Upload image if we have a new file
     if (hasNewImage && artistId && imageUploadRef.value) {

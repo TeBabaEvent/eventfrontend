@@ -58,7 +58,9 @@ export const API_ENDPOINTS = {
 
   // Upload - Images
   UPLOAD_EVENT_IMAGE: (eventId: string) => `/api/upload/event/${eventId}/image`,
-  UPLOAD_ARTIST_IMAGE: (artistId: string) => `/api/upload/artist/${artistId}/image`
+  UPLOAD_ARTIST_IMAGE: (artistId: string) => `/api/upload/artist/${artistId}/image`,
+  DELETE_EVENT_IMAGE: (eventId: string) => `/api/upload/event/${eventId}/image`,
+  DELETE_ARTIST_IMAGE: (artistId: string) => `/api/upload/artist/${artistId}/image`
 } as const
 
 // Helper pour construire une URL complète
