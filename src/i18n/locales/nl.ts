@@ -689,6 +689,16 @@ Met vriendelijke groeten`
       instructions: 'U ontvangt uw tickets per e-mail zodra de betaling ter plaatse is uitgevoerd.',
       contact: 'Contact via WhatsApp'
     },
+    pendingBankTransfer: {
+      title: 'Overschrijving in afwachting',
+      subtitle: 'Voer de bankoverschrijving uit met onderstaande gegevens.',
+      bankDetails: 'Bankgegevens',
+      accountName: 'Rekeninghouder',
+      communication: 'Mededeling',
+      warning: 'Plaatsen zijn niet gegarandeerd zolang de overschrijving niet is ontvangen. Gebruik het bestelnummer als mededeling.',
+      instructions: 'U ontvangt uw tickets per e-mail zodra de overschrijving is bevestigd.',
+      contact: 'Bevestig overschrijving via WhatsApp'
+    },
     failed: {
       title: 'Betaling mislukt',
       subtitle: 'Er is een fout opgetreden tijdens de betaling. Probeer het opnieuw.'

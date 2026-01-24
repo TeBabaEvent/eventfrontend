@@ -104,6 +104,105 @@
           </p>
         </div>
 
+        <!-- Pending Bank Transfer State -->
+        <div v-else-if="order && order.status === 'pending_cash' && order.payment_method === 'bank_transfer'" key="pending_bank_transfer" class="payment-card payment-card--pending-bank-transfer">
+          <div class="payment-card__icon payment-card__icon--bank-transfer">
+            <i class="fas fa-university"></i>
+          </div>
+
+          <h1 class="payment-card__title">{{ $t('payment.pendingBankTransfer.title') }}</h1>
+          <p class="payment-card__subtitle">{{ $t('payment.pendingBankTransfer.subtitle') }}</p>
+
+          <!-- Order Summary -->
+          <div class="order-summary order-summary--bank-transfer">
+            <div class="order-summary__header">
+              <span class="order-number">{{ order.order_number }}</span>
+              <span class="order-badge order-badge--pending">{{ $t('dashboard.orders.status.pending_cash') }}</span>
+            </div>
+
+            <div class="order-summary__details">
+              <div class="detail-row">
+                <span class="detail-label">
+                  <i class="fas fa-calendar-alt"></i>
+                  {{ $t('payment.event') }}
+                </span>
+                <span class="detail-value">{{ eventName }}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="detail-label">
+                  <i class="fas fa-ticket-alt"></i>
+                  {{ $t('payment.quantity') }}
+                </span>
+                <span class="detail-value">{{ totalQuantity }} {{ totalQuantity > 1 ? $t('payment.tickets') : $t('payment.ticket') }}</span>
+              </div>
+
+              <div class="detail-row detail-row--total">
+                <span class="detail-label">
+                  <i class="fas fa-euro-sign"></i>
+                  {{ $t('payment.total') }}
+                </span>
+                <span class="detail-value detail-value--amount">{{ formatAmount(order.amount) }} €</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bank Account Details -->
+          <div class="bank-details" v-if="order.bank_account_iban">
+            <h3 class="bank-details__title">
+              <i class="fas fa-landmark"></i>
+              {{ $t('payment.pendingBankTransfer.bankDetails') }}
+            </h3>
+            <div class="bank-details__content">
+              <div class="bank-detail-row">
+                <span class="bank-detail-label">{{ $t('payment.pendingBankTransfer.accountName') }}</span>
+                <span class="bank-detail-value">{{ order.bank_account_name }}</span>
+              </div>
+              <div class="bank-detail-row">
+                <span class="bank-detail-label">IBAN</span>
+                <span class="bank-detail-value bank-detail-value--mono">{{ order.bank_account_iban }}</span>
+              </div>
+              <div class="bank-detail-row" v-if="order.bank_account_bic">
+                <span class="bank-detail-label">BIC/SWIFT</span>
+                <span class="bank-detail-value bank-detail-value--mono">{{ order.bank_account_bic }}</span>
+              </div>
+              <div class="bank-detail-row bank-detail-row--communication">
+                <span class="bank-detail-label">{{ $t('payment.pendingBankTransfer.communication') }}</span>
+                <span class="bank-detail-value bank-detail-value--mono bank-detail-value--highlight">{{ order.order_number }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warning Notice -->
+          <div class="warning-notice">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>{{ $t('payment.pendingBankTransfer.warning') }}</p>
+          </div>
+
+          <!-- Instructions -->
+          <div class="email-notice">
+            <i class="fas fa-envelope"></i>
+            <p>{{ $t('payment.pendingBankTransfer.instructions') }}</p>
+          </div>
+
+          <!-- WhatsApp Contact -->
+          <a :href="whatsappLinkBankTransfer" target="_blank" class="whatsapp-btn">
+            <i class="fab fa-whatsapp"></i>
+            {{ $t('payment.pendingBankTransfer.contact') }}
+          </a>
+
+          <!-- Actions -->
+          <div class="payment-card__actions">
+            <button class="btn btn--primary" @click="goToEvent">
+              <i class="fas fa-arrow-left"></i>
+              {{ $t('payment.viewEvent') }}
+            </button>
+            <button class="btn btn--ghost" @click="goToHome">
+              {{ $t('payment.backToHome') }}
+            </button>
+          </div>
+        </div>
+
         <!-- Pending Cash State -->
         <div v-else-if="order && order.status === 'pending_cash'" key="pending_cash" class="payment-card payment-card--pending-cash">
           <div class="payment-card__icon payment-card__icon--cash">
@@ -285,6 +384,12 @@ const eventName = computed(() => {
 const whatsappLink = computed(() => {
   const phone = CONTACT_INFO.whatsapp.replace(/[^0-9+]/g, '')
   const message = `Bonjour, j'ai une réservation en attente de paiement cash.\n\nNuméro de commande: ${order.value?.order_number || ''}\nNom: ${order.value?.customer_name || ''}\nÉvénement: ${eventName.value}\n\nMerci de me contacter pour plus d'informations.`
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+})
+
+const whatsappLinkBankTransfer = computed(() => {
+  const phone = CONTACT_INFO.whatsapp.replace(/[^0-9+]/g, '')
+  const message = `Bonjour, j'ai effectué un virement bancaire pour ma réservation.\n\nNuméro de commande: ${order.value?.order_number || ''}\nMontant: ${order.value?.amount ? formatAmount(order.value.amount) : '0.00'} €\nNom: ${order.value?.customer_name || ''}\nÉvénement: ${eventName.value}\n\nMerci de confirmer la réception du paiement.`
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
 })
 
@@ -480,6 +585,11 @@ onMounted(() => {
   opacity: 1;
 }
 
+.payment-card--pending-bank-transfer::before {
+  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  opacity: 1;
+}
+
 .payment-card--failed::before,
 .payment-card--error::before {
   background: linear-gradient(90deg, transparent, #ef4444, transparent);
@@ -534,6 +644,12 @@ onMounted(() => {
 .payment-card__icon--cash {
   background: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
+  animation: iconPop 0.5s ease-out;
+}
+
+.payment-card__icon--bank-transfer {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
   animation: iconPop 0.5s ease-out;
 }
 
@@ -690,6 +806,82 @@ onMounted(() => {
   margin: 0;
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================
+   BANK DETAILS (Bank Transfer)
+   ============================================ */
+
+.bank-details {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.bank-details__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #3b82f6;
+  margin: 0 0 0.75rem;
+}
+
+.bank-details__title i {
+  font-size: 1rem;
+}
+
+.bank-details__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bank-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.bank-detail-row:last-child {
+  border-bottom: none;
+}
+
+.bank-detail-row--communication {
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.bank-detail-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.bank-detail-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: right;
+}
+
+.bank-detail-value--mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.bank-detail-value--highlight {
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
 }
 
 /* ============================================

@@ -693,6 +693,16 @@ Cordialement`
       instructions: 'Vous recevrez vos billets par email une fois le paiement effectué sur place.',
       contact: 'Nous contacter sur WhatsApp'
     },
+    pendingBankTransfer: {
+      title: 'Virement en attente',
+      subtitle: 'Effectuez le virement bancaire avec les informations ci-dessous.',
+      bankDetails: 'Coordonnées bancaires',
+      accountName: 'Titulaire du compte',
+      communication: 'Communication',
+      warning: 'Les places ne sont pas garanties tant que le virement n\'est pas reçu. Utilisez le numéro de commande comme communication.',
+      instructions: 'Vous recevrez vos billets par email une fois le virement confirmé.',
+      contact: 'Confirmer le virement sur WhatsApp'
+    },
     failed: {
       title: 'Paiement échoué',
       subtitle: 'Une erreur est survenue lors du paiement. Veuillez réessayer.'

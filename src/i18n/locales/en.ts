@@ -689,6 +689,16 @@ Best regards`
       instructions: 'You will receive your tickets by email once payment is made on site.',
       contact: 'Contact us on WhatsApp'
     },
+    pendingBankTransfer: {
+      title: 'Bank transfer pending',
+      subtitle: 'Please make the bank transfer using the information below.',
+      bankDetails: 'Bank details',
+      accountName: 'Account holder',
+      communication: 'Reference',
+      warning: 'Seats are not guaranteed until the transfer is received. Use the order number as reference.',
+      instructions: 'You will receive your tickets by email once the transfer is confirmed.',
+      contact: 'Confirm transfer on WhatsApp'
+    },
     failed: {
       title: 'Payment failed',
       subtitle: 'An error occurred during payment. Please try again.'

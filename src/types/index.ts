@@ -210,7 +210,7 @@ export interface CartCheckoutResponse {
   pay_url: string
   amount: number
   total_items: number
-  payment_method: 'online' | 'cash'
+  payment_method: 'online' | 'cash' | 'bank_transfer'
   is_pending_cash: boolean
   paypal_order_id?: string
 }
@@ -237,7 +237,11 @@ export interface Order {
   total_quantity?: number
   amount: number // En centimes
   status: 'pending' | 'pending_cash' | 'completed' | 'failed' | 'refunded' | 'cancelled'
-  payment_method?: 'online' | 'cash'
+  payment_method?: 'online' | 'cash' | 'bank_transfer'
+  // Bank account details (for bank_transfer payments)
+  bank_account_iban?: string
+  bank_account_name?: string
+  bank_account_bic?: string
   ccv_reference?: string
   paypal_order_id?: string
   mollie_payment_id?: string  // Legacy
@@ -359,7 +363,7 @@ export interface OrderListItem {
   total_quantity: number
   amount: number // En EUR
   status: 'pending' | 'pending_cash' | 'completed' | 'failed' | 'refunded' | 'cancelled'
-  payment_method?: 'online' | 'cash'
+  payment_method?: 'online' | 'cash' | 'bank_transfer'
   ccv_reference?: string
   paypal_order_id?: string
   mollie_payment_id?: string  // Legacy
@@ -400,7 +404,7 @@ export interface OrderDetail {
   total_quantity: number
   amount: number // En EUR
   status: 'pending' | 'pending_cash' | 'completed' | 'failed' | 'refunded' | 'cancelled'
-  payment_method?: 'online' | 'cash'
+  payment_method?: 'online' | 'cash' | 'bank_transfer'
   ccv_reference?: string
   paypal_order_id?: string
   mollie_payment_id?: string  // Legacy

@@ -689,6 +689,16 @@ Me respekt`
       instructions: 'Do të merrni biletat tuaja me email pasi pagesa të kryhet në vend.',
       contact: 'Na kontaktoni në WhatsApp'
     },
+    pendingBankTransfer: {
+      title: 'Transfertë bankare në pritje',
+      subtitle: 'Kryeni transfertën bankare me informacionet e mëposhtme.',
+      bankDetails: 'Detajet bankare',
+      accountName: 'Mbajtësi i llogarisë',
+      communication: 'Komunikimi',
+      warning: 'Vendet nuk garantohen derisa transferta të merret. Përdorni numrin e porosisë si komunikim.',
+      instructions: 'Do të merrni biletat tuaja me email pasi transferta të konfirmohet.',
+      contact: 'Konfirmoni transfertën në WhatsApp'
+    },
     failed: {
       title: 'Pagesa dështoi',
       subtitle: 'Ndodhi një gabim gjatë pagesës. Ju lutem provoni përsëri.'
