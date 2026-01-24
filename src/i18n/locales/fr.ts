@@ -485,6 +485,7 @@ Cordialement`
       status: {
         pending: 'En attente',
         pending_cash: 'Cash en attente',
+        pending_bank_transfer: 'Virement en attente',
         completed: 'Payée',
         failed: 'Échouée',
         refunded: 'Remboursée',

@@ -485,6 +485,7 @@ Met vriendelijke groeten`
       status: {
         pending: 'In afwachting',
         pending_cash: 'Cash in afwachting',
+        pending_bank_transfer: 'Overschrijving in afwachting',
         completed: 'Betaald',
         failed: 'Mislukt',
         refunded: 'Terugbetaald',
@@ -506,7 +507,9 @@ Met vriendelijke groeten`
       actions: {
         view: 'Details bekijken',
         resendEmail: 'E-mail opnieuw verzenden',
-        refund: 'Terugbetalen'
+        refund: 'Terugbetalen',
+        markPaid: 'Als betaald markeren',
+        markingPaid: 'Verwerken...'
       },
       detail: {
         customer: 'Klant',
@@ -539,13 +542,15 @@ Met vriendelijke groeten`
       },
       success: {
         emailSent: 'E-mail succesvol verzonden',
-        refunded: 'Bestelling succesvol terugbetaald'
+        refunded: 'Bestelling succesvol terugbetaald',
+        markedPaid: 'Bestelling als betaald gemarkeerd'
       },
       errors: {
         loadFailed: 'Fout bij laden van bestellingen',
         detailFailed: 'Fout bij laden van besteldetails',
         emailFailed: 'Fout bij verzenden van e-mail',
-        refundFailed: 'Fout bij terugbetaling'
+        refundFailed: 'Fout bij terugbetaling',
+        markPaidFailed: 'Fout bij bevestigen van betaling'
       }
     }
   },

@@ -485,6 +485,7 @@ Best regards`
       status: {
         pending: 'Pending',
         pending_cash: 'Cash pending',
+        pending_bank_transfer: 'Transfer pending',
         completed: 'Paid',
         failed: 'Failed',
         refunded: 'Refunded',
@@ -506,7 +507,9 @@ Best regards`
       actions: {
         view: 'View details',
         resendEmail: 'Resend email',
-        refund: 'Refund'
+        refund: 'Refund',
+        markPaid: 'Mark as paid',
+        markingPaid: 'Processing...'
       },
       detail: {
         customer: 'Customer',
@@ -539,13 +542,15 @@ Best regards`
       },
       success: {
         emailSent: 'Email sent successfully',
-        refunded: 'Order refunded successfully'
+        refunded: 'Order refunded successfully',
+        markedPaid: 'Order marked as paid'
       },
       errors: {
         loadFailed: 'Error loading orders',
         detailFailed: 'Error loading order details',
         emailFailed: 'Error sending email',
-        refundFailed: 'Error processing refund'
+        refundFailed: 'Error processing refund',
+        markPaidFailed: 'Error confirming payment'
       }
     }
   },

@@ -196,9 +196,9 @@
               <span class="amount">{{ formatPrice(order.amount) }}</span>
             </td>
             <td class="col-status">
-              <span :class="['status-badge', `status-badge--${order.status}`]">
-                <i :class="getStatusIcon(order.status)"></i>
-                {{ $t(`dashboard.orders.status.${order.status}`) }}
+              <span :class="['status-badge', `status-badge--${getDisplayStatus(order)}`]">
+                <i :class="getStatusIcon(getDisplayStatus(order))"></i>
+                {{ $t(`dashboard.orders.status.${getDisplayStatus(order)}`) }}
               </span>
             </td>
             <td class="col-date">
@@ -258,9 +258,9 @@
                 <div class="drawer__order-id">
                   <code>{{ selectedOrder.order_number }}</code>
                 </div>
-                <span :class="['status-pill', `status-pill--${selectedOrder.status}`]">
-                  <i :class="getStatusIcon(selectedOrder.status)"></i>
-                  {{ $t(`dashboard.orders.status.${selectedOrder.status}`) }}
+                <span :class="['status-pill', `status-pill--${getDisplayStatus(selectedOrder)}`]">
+                  <i :class="getStatusIcon(getDisplayStatus(selectedOrder))"></i>
+                  {{ $t(`dashboard.orders.status.${getDisplayStatus(selectedOrder)}`) }}
                 </span>
               </div>
               <button class="drawer__close" @click="closeDrawer">
@@ -650,11 +650,20 @@ function formatTime(dateStr: string): string {
   }).format(date)
 }
 
+function getDisplayStatus(order: { status: string; payment_method?: string }): string {
+  // Differentiate between cash and bank_transfer for pending_cash orders
+  if (order.status === 'pending_cash' && order.payment_method === 'bank_transfer') {
+    return 'pending_bank_transfer'
+  }
+  return order.status
+}
+
 function getStatusIcon(status: string): string {
   const icons: Record<string, string> = {
     completed: 'fas fa-check',
     pending: 'fas fa-clock',
     pending_cash: 'fas fa-money-bill-wave',
+    pending_bank_transfer: 'fas fa-university',
     failed: 'fas fa-times',
     refunded: 'fas fa-undo',
     cancelled: 'fas fa-ban'
@@ -1570,6 +1579,11 @@ onUnmounted(() => {
   color: #22c55e;
 }
 
+.status-badge--pending_bank_transfer {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
 /* Actions */
 .action-btn {
   width: 30px;
@@ -1728,6 +1742,12 @@ onUnmounted(() => {
   background: rgba(34, 197, 94, 0.15);
   color: #22c55e;
   border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.status-pill--pending_bank_transfer {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
 .drawer__close {

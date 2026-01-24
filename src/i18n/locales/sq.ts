@@ -485,6 +485,7 @@ Me respekt`
       status: {
         pending: 'Në pritje',
         pending_cash: 'Cash në pritje',
+        pending_bank_transfer: 'Transfertë në pritje',
         completed: 'E paguar',
         failed: 'E dështuar',
         refunded: 'E rimbursuar',
@@ -506,7 +507,9 @@ Me respekt`
       actions: {
         view: 'Shiko detajet',
         resendEmail: 'Ridërgo emailin',
-        refund: 'Rimburso'
+        refund: 'Rimburso',
+        markPaid: 'Shëno si të paguar',
+        markingPaid: 'Duke përpunuar...'
       },
       detail: {
         customer: 'Klienti',
@@ -539,13 +542,15 @@ Me respekt`
       },
       success: {
         emailSent: 'Emaili u dërgua me sukses',
-        refunded: 'Porosia u rimbursua me sukses'
+        refunded: 'Porosia u rimbursua me sukses',
+        markedPaid: 'Porosia u shënua si e paguar'
       },
       errors: {
         loadFailed: 'Gabim gjatë ngarkimit të porosive',
         detailFailed: 'Gabim gjatë ngarkimit të detajeve',
         emailFailed: 'Gabim gjatë dërgimit të emailit',
-        refundFailed: 'Gabim gjatë rimbursimit'
+        refundFailed: 'Gabim gjatë rimbursimit',
+        markPaidFailed: 'Gabim gjatë konfirmimit të pagesës'
       }
     }
   },
